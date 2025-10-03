@@ -11,6 +11,7 @@ import freeHugs from "@/assets/free-hugs.png";
 import abductMe from "@/assets/abduct-me.png";
 import sasquatches from "@/assets/sasquatches.png";
 import whiteIdolMorning from "@/assets/white-idol-morning.png";
+import fathers from "@/assets/fathers.png";
 
 const PRODUCT_DATA = {
   "rbf-champion": {
@@ -253,6 +254,52 @@ Taped neck and shoulders for durability: Built to last longer than your latest m
 Wash: Keep those dawn hues bright—cold water, similar colors.
 Dry: Tumble dry low or hang it up, just like you do with your standards.
 Store: Perfect for anyone who loves crisp mornings, scenic views, and a clever reveal.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
+  "fathers": {
+    title: "Fathers",
+    subtitle: "If dad can't fix it we're all screwed",
+    category: "FATHERS",
+    price: 15.69,
+    image: fathers,
+    description: `This premium fitted short sleeve is more than just comfy and light — it's a wearable warning. The bold print makes it clear: if Dad can't fix it, we're all officially doomed. Great for family BBQs, DIY disasters, or just reminding everyone who really keeps things from falling apart.
+
+.: The unisex cotton crew tee comes with a light fabric (4.3 oz/yd² (146 g/m²)) making it an excellent all-season choice. Made with 100% combed, ring-spun cotton for long-lasting comfort and dad-level durability.
+.: Fabric blends: Heather colors - 90% cotton, 10% polyester
+.: The classic fit and crew neckline offer a timeless style perfect for accessorizing — maybe with a wrench or a roll of duct tape. Ideal for casual wear, garage work, or passive-aggressively proving a point.
+
+Seamless double-needle collar: Because your morning should be seamless—unlike your snooze-button streak.
+
+Double-needle sleeve and bottom hems: Reinforced to survive trail dust, coffee drips, and spontaneous road trips.
+
+100% cotton: Soft, breathable, and perfect for days you want to look like you tried (but didn't).
+
+Taped neck and shoulders for durability: Built to last longer than your latest morning routine hack.`,
+    fit: `Whether you're small or rocking 5XL, we've got a size that fits your vibe.`,
+    care: `General: This tee is the triple threat—comfort, style, and durability all rolled into one sunrise-ready package.
+Wash: Keep those dawn hues bright—cold water, similar colors.
+Dry: Tumble dry low or hang it up, just like you do with your standards.`,
     sizeChart: {
       cm: [
         { size: "S", length: "71.1", width: "91.4", chest: "45.7" },

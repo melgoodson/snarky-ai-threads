@@ -5,6 +5,7 @@ import freeHugs from "@/assets/free-hugs.png";
 import abductMe from "@/assets/abduct-me.png";
 import sasquatches from "@/assets/sasquatches.png";
 import whiteIdolMorning from "@/assets/white-idol-morning.png";
+import fathers from "@/assets/fathers.png";
 
 const SAMPLE_PRODUCTS = [
   {
@@ -43,11 +44,11 @@ const SAMPLE_PRODUCTS = [
     category: "ADULT HUMOR"
   },
   {
-    id: "orgy-starter-kit",
-    title: "Orgy Starter Kit",
-    price: 27.99,
-    image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=800&fit=crop",
-    category: "ADULTS"
+    id: "fathers",
+    title: "Fathers",
+    price: 15.69,
+    image: fathers,
+    category: "FATHERS"
   },
   {
     id: "slavery-gets-done",
