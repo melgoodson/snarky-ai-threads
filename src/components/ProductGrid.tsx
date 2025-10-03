@@ -2,6 +2,7 @@ import { ProductCard } from "./ProductCard";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
+import abductMe from "@/assets/abduct-me.png";
 
 const SAMPLE_PRODUCTS = [
   {
@@ -19,10 +20,10 @@ const SAMPLE_PRODUCTS = [
     category: "SARCASM"
   },
   {
-    id: "alien-abductor",
-    title: "Alien Abductor",
-    price: 26.99,
-    image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&h=800&fit=crop",
+    id: "abduct-me",
+    title: "Abduct Me",
+    price: 21.69,
+    image: abductMe,
     category: "ALIENS"
   },
   {

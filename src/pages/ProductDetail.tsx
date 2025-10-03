@@ -8,6 +8,7 @@ import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
+import abductMe from "@/assets/abduct-me.png";
 
 const PRODUCT_DATA = {
   "rbf-champion": {
@@ -124,6 +125,46 @@ Dry: Tumble low or hang—just like your standards (which should be high).
 Store: Perfect for fans who want a quality, ethically made tee that doesn't take itself too seriously.
 
 No blood, just bad decisions. Artwork is parody/fan-inspired.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
+  "abduct-me": {
+    title: "Abduct Me",
+    subtitle: "",
+    category: "ALIENS",
+    price: 21.69,
+    image: abductMe,
+    description: `Make a statement without saying a word! This heavyweight cotton T-shirt isn't just a durable staple—it's your new favorite sidekick for casual wear with an attitude. Front and center: bold graffiti cartoon text "ABDUCT ME" with a human sprinting after a zooming UFO. A relaxed style that screams, "I'm comfy, I'm cool, and yes, I'd absolutely board the mothership."
+
+Seamless double-needle collar: Because your shirt should be seamless—unlike your conspiracy theories.
+Double-needle sleeve and bottom hems: Reinforced to withstand even your most chaotic close encounters.
+100% cotton: Soft, breathable, and perfect for days you want to look like you tried (but didn't).
+Taped neck and shoulders for durability: Built to last longer than your latest situationship with extraterrestrials.`,
+    fit: `Whether you're small or rocking 5XL, we've got a size that fits your vibe.`,
+    care: `General: This tee is the triple threat—comfort, style, and durability all rolled into one snarky package.
+Wash: Keep the sass (and the signal) strong—cold water, similar colors.
+Dry: Tumble dry low or hang it up, just like you do with your high standards.
+Store: Perfect for anyone seeking a high-quality, ethically made tee that doesn't take itself too seriously—earthling or otherwise.`,
     sizeChart: {
       cm: [
         { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
