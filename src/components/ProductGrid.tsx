@@ -1,5 +1,6 @@
 import { ProductCard } from "./ProductCard";
 import rbfChampion from "@/assets/rbf-champion.png";
+import snarkyHumans from "@/assets/snarky-humans.png";
 
 const SAMPLE_PRODUCTS = [
   {
@@ -45,11 +46,11 @@ const SAMPLE_PRODUCTS = [
     category: "DARK"
   },
   {
-    id: "not-haitian",
-    title: "Not Haitian",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&h=800&fit=crop",
-    category: "POLITICAL"
+    id: "snarky-humans",
+    title: "Snarky Humans Laughing Design",
+    price: 20.69,
+    image: snarkyHumans,
+    category: "SNARKY HUMANS"
   },
   {
     id: "bird-flu-survivor",

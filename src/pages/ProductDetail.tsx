@@ -6,6 +6,7 @@ import { ShoppingCart, ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 import rbfChampion from "@/assets/rbf-champion.png";
+import snarkyHumans from "@/assets/snarky-humans.png";
 
 const PRODUCT_DATA = {
   "rbf-champion": {
@@ -54,6 +55,46 @@ Snarky graphic. Bomb-proof basics. A perfect gift for the RBFer in your life—o
         { size: "3XL", length: "33", chest: "28" },
         { size: "4XL", length: "33.9", chest: "29.9" },
         { size: "5XL", length: "35", chest: "31.9" },
+      ],
+    },
+  },
+  "snarky-humans": {
+    title: "Snarky Humans",
+    subtitle: "Laughing Design",
+    category: "SNARKY HUMANS",
+    price: 20.69,
+    image: snarkyHumans,
+    description: `Make a statement without saying a word! This heavyweight cotton T-shirt isn't just a durable staple—it's your new favorite sidekick for casual wear with an attitude. A relaxed style that screams, "I'm comfy, I'm cool, and yes, I'm probably judging you."
+
+Seamless double-needle collar: Because your shirt should be seamless, unlike your drama.
+Double-needle sleeve and bottom hems: Reinforced to withstand even your most intense eye rolls.
+100% cotton: Soft, breathable, and perfect for those days when you want to look like you tried (but didn't).
+Taped neck and shoulders for durability: Built to last longer than your last situationship.`,
+    fit: `Whether you're small or rocking 5XL, we've got a size that fits your vibe.`,
+    care: `General: This tee is the triple threat—comfort, style, and durability all rolled into one snarky package.
+Wash: Keep the sass fresh—cold water, similar colors.
+Dry: Tumble dry low or hang it up, just like you do with your high standards.
+Store: Perfect for anyone looking for a high-quality, ethically made tee that doesn't take itself too seriously.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
       ],
     },
   },
@@ -146,6 +187,9 @@ const ProductDetail = () => {
                           <tr className="border-b border-border">
                             <th className="text-left p-2 text-sm font-semibold">Size</th>
                             <th className="text-left p-2 text-sm font-semibold">Length (A)</th>
+                            {'width' in product.sizeChart.cm[0] && (
+                              <th className="text-left p-2 text-sm font-semibold">Width</th>
+                            )}
                             <th className="text-left p-2 text-sm font-semibold">Half Chest (B)</th>
                           </tr>
                         </thead>
@@ -154,6 +198,7 @@ const ProductDetail = () => {
                             <tr key={row.size} className="border-b border-border">
                               <td className="p-2 text-sm">{row.size}</td>
                               <td className="p-2 text-sm">{row.length}</td>
+                              {'width' in row && <td className="p-2 text-sm">{row.width}</td>}
                               <td className="p-2 text-sm">{row.chest}</td>
                             </tr>
                           ))}
@@ -170,6 +215,9 @@ const ProductDetail = () => {
                           <tr className="border-b border-border">
                             <th className="text-left p-2 text-sm font-semibold">Size</th>
                             <th className="text-left p-2 text-sm font-semibold">Length (A)</th>
+                            {'width' in product.sizeChart.inches[0] && (
+                              <th className="text-left p-2 text-sm font-semibold">Width</th>
+                            )}
                             <th className="text-left p-2 text-sm font-semibold">Half Chest (B)</th>
                           </tr>
                         </thead>
@@ -178,6 +226,7 @@ const ProductDetail = () => {
                             <tr key={row.size} className="border-b border-border">
                               <td className="p-2 text-sm">{row.size}</td>
                               <td className="p-2 text-sm">{row.length}</td>
+                              {'width' in row && <td className="p-2 text-sm">{row.width}</td>}
                               <td className="p-2 text-sm">{row.chest}</td>
                             </tr>
                           ))}
