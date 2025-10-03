@@ -65,13 +65,6 @@ const SAMPLE_PRODUCTS = [
     image: snarkyHumans,
     category: "SNARKY HUMANS"
   },
-  {
-    id: "bird-flu-survivor",
-    title: "Bird Flu Survivor",
-    price: 23.99,
-    image: "https://images.unsplash.com/photo-1614160242806-9ce55f3f5bba?w=800&h=800&fit=crop",
-    category: "HEALTH"
-  }
 ];
 
 export const ProductGrid = () => {
