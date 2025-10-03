@@ -9,6 +9,7 @@ import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
 import abductMe from "@/assets/abduct-me.png";
+import sasquatches from "@/assets/sasquatches.png";
 
 const PRODUCT_DATA = {
   "rbf-champion": {
@@ -165,6 +166,49 @@ Taped neck and shoulders for durability: Built to last longer than your latest s
 Wash: Keep the sass (and the signal) strong—cold water, similar colors.
 Dry: Tumble dry low or hang it up, just like you do with your high standards.
 Store: Perfect for anyone seeking a high-quality, ethically made tee that doesn't take itself too seriously—earthling or otherwise.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
+  "sasquatches": {
+    title: "Sasquatches",
+    subtitle: "",
+    category: "HUMOR",
+    price: 21.36,
+    image: sasquatches,
+    description: `Make a statement without saying a word! This heavyweight cotton T-shirt isn't just a durable staple—it's your new favorite sidekick for casual wear with an attitude. Front and center: a cozy forest camp scene—family by the campfire, tents set up, picnic table loaded with food—while a giant Sasquatch peeks from behind a tree. The text ties it all together: "SASQUATCHES" up top, and "successfully avoiding humans for thousands of years" underneath. A relaxed style that says, "I'm comfy, I'm outdoorsy, and yes, I might have seen something."
+
+Seamless double-needle collar: Because your shirt should be seamless, unlike your blurry trail-cam footage.
+
+Double-needle sleeve and bottom hems: Reinforced to survive campfire smoke, ghost stories, and panicked marshmallow drops.
+
+100% cotton: Soft, breathable, and perfect for days you want to look like you tried (but didn't).
+
+Taped neck and shoulders for durability: Built to last longer than humanity's best attempts at Bigfoot selfies.`,
+    fit: `Whether you're small or rocking 5XL, we've got a size that fits your vibe.`,
+    care: `General: This tee is the triple threat—comfort, style, and durability all rolled into one snarky package.
+Wash: Keep the camp vibes fresh—cold water, similar colors.
+Dry: Tumble dry low or hang it up, just like you do with your high standards.
+Store: Perfect for anyone who loves quality, ethical gear—and a good cryptid joke around the fire.`,
     sizeChart: {
       cm: [
         { size: "S", length: "71.1", width: "91.4", chest: "45.7" },

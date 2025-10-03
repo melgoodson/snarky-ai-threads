@@ -3,6 +3,7 @@ import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
 import abductMe from "@/assets/abduct-me.png";
+import sasquatches from "@/assets/sasquatches.png";
 
 const SAMPLE_PRODUCTS = [
   {
@@ -27,10 +28,10 @@ const SAMPLE_PRODUCTS = [
     category: "ALIENS"
   },
   {
-    id: "emergency-warranty",
-    title: "Emergency Warranty",
-    price: 23.99,
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop",
+    id: "sasquatches",
+    title: "Sasquatches",
+    price: 21.36,
+    image: sasquatches,
     category: "HUMOR"
   },
   {
