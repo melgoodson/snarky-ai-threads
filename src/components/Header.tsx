@@ -33,6 +33,12 @@ export const Header = () => {
           <a href="/collections" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             COLLECTIONS
           </a>
+          <a href="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            BLOG
+          </a>
+          <a href="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            FAQ
+          </a>
           <a href="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             ABOUT
           </a>
