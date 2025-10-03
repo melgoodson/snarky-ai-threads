@@ -234,7 +234,7 @@ Store: Perfect for anyone who loves quality, ethical gear—and a good cryptid j
     },
   },
   "white-idol-morning": {
-    title: "White Idol Good Morning",
+    title: "Good Morning",
     subtitle: "",
     category: "ADULT HUMOR",
     price: 21.69,

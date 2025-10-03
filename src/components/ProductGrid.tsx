@@ -37,7 +37,7 @@ const SAMPLE_PRODUCTS = [
   },
   {
     id: "white-idol-morning",
-    title: "White Idol Good Morning",
+    title: "Good Morning",
     price: 21.69,
     image: whiteIdolMorning,
     category: "ADULT HUMOR"
