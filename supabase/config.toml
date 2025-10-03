@@ -2,3 +2,6 @@ project_id = "waldggnsstpxasmauwda"
 
 [functions.printify-webhook]
 verify_jwt = false
+
+[functions.setup-printify-webhooks]
+verify_jwt = false
