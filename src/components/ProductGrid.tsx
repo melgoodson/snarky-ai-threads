@@ -1,57 +1,58 @@
 import { ProductCard } from "./ProductCard";
+import rbfChampion from "@/assets/rbf-champion.png";
 
 const SAMPLE_PRODUCTS = [
   {
-    id: 1,
-    title: "You're Fired",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=800&fit=crop",
+    id: "rbf-champion",
+    title: "RBF Champion (I'm coming for you bitch)",
+    price: 21.36,
+    image: rbfChampion,
     category: "ATTITUDE"
   },
   {
-    id: 2,
+    id: "free-hugs",
     title: "Free Hugs",
     price: 22.99,
     image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&h=800&fit=crop",
     category: "SARCASM"
   },
   {
-    id: 3,
+    id: "alien-abductor",
     title: "Alien Abductor",
     price: 26.99,
     image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&h=800&fit=crop",
     category: "ALIENS"
   },
   {
-    id: 4,
+    id: "emergency-warranty",
     title: "Emergency Warranty",
     price: 23.99,
     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop",
     category: "HUMOR"
   },
   {
-    id: 5,
+    id: "orgy-starter-kit",
     title: "Orgy Starter Kit",
     price: 27.99,
     image: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=800&fit=crop",
     category: "ADULTS"
   },
   {
-    id: 6,
+    id: "slavery-gets-done",
     title: "Slavery Gets Done",
     price: 25.99,
     image: "https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=800&h=800&fit=crop",
     category: "DARK"
   },
   {
-    id: 7,
+    id: "not-haitian",
     title: "Not Haitian",
     price: 24.99,
     image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&h=800&fit=crop",
     category: "POLITICAL"
   },
   {
-    id: 8,
+    id: "bird-flu-survivor",
     title: "Bird Flu Survivor",
     price: 23.99,
     image: "https://images.unsplash.com/photo-1614160242806-9ce55f3f5bba?w=800&h=800&fit=crop",
@@ -74,7 +75,7 @@ export const ProductGrid = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {SAMPLE_PRODUCTS.map((product) => (
-            <ProductCard key={product.id} {...product} />
+            <ProductCard key={product.id} id={product.id} {...product} />
           ))}
         </div>
       </div>

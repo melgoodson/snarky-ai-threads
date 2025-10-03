@@ -2,16 +2,23 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+
 interface ProductCardProps {
+  id: string;
   title: string;
   price: number;
   image: string;
   category?: string;
 }
 
-export const ProductCard = ({ title, price, image, category }: ProductCardProps) => {
+export const ProductCard = ({ id, title, price, image, category }: ProductCardProps) => {
+  const navigate = useNavigate();
   return (
-    <Card className="group overflow-hidden border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)]">
+    <Card 
+      className="group overflow-hidden border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)] cursor-pointer"
+      onClick={() => navigate(`/product/${id}`)}
+    >
       <div className="relative aspect-square overflow-hidden bg-secondary">
         <img
           src={image}
