@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,30 +12,28 @@ serve(async (req) => {
   }
 
   try {
-    const printifyToken = Deno.env.get('PRINTIFY_API_TOKEN');
+    const { orderId } = await req.json();
+
+    if (!orderId) {
+      throw new Error('Order ID is required');
+    }
+
+    const printifyApiToken = Deno.env.get('PRINTIFY_API_TOKEN');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    if (!printifyToken) {
+    if (!printifyApiToken) {
       throw new Error('PRINTIFY_API_TOKEN not configured');
     }
 
+    console.log('Creating Printify order for order:', orderId);
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { orderId, shopId } = await req.json();
-
-    console.log('Creating Printify order for:', orderId);
-
-    // Fetch order details from database
+    // Fetch order details
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select(`
-        *,
-        order_items (
-          *,
-          products (*)
-        )
-      `)
+      .select('*, order_items(*)')
       .eq('id', orderId)
       .single();
 
@@ -43,54 +41,75 @@ serve(async (req) => {
       throw new Error('Order not found');
     }
 
-    // Build Printify order payload
-    const printifyOrderPayload = {
-      external_id: order.id,
-      label: order.email,
-      line_items: order.order_items.map((item: any) => ({
-        product_id: item.printify_product_id,
-        variant_id: parseInt(item.variant_id),
-        quantity: item.quantity,
-      })),
+    console.log('Order details:', order);
+
+    // Get shop ID
+    const shopsResponse = await fetch('https://api.printify.com/v1/shops.json', {
+      headers: {
+        'Authorization': `Bearer ${printifyApiToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const shops = await shopsResponse.json();
+    const shopId = shops[0]?.id;
+
+    if (!shopId) {
+      throw new Error('No Printify shop found');
+    }
+
+    // Format line items for Printify
+    const lineItems = order.order_items.map((item: any) => ({
+      product_id: item.printify_product_id,
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+    }));
+
+    const shippingAddress = order.shipping_address;
+
+    // Create order in Printify
+    const printifyOrderData = {
+      external_id: orderId,
+      label: `Order ${orderId}`,
+      line_items: lineItems,
       shipping_method: 1, // Standard shipping
       send_shipping_notification: true,
       address_to: {
-        first_name: order.shipping_address.firstName,
-        last_name: order.shipping_address.lastName,
+        first_name: shippingAddress.firstName,
+        last_name: shippingAddress.lastName,
         email: order.email,
-        phone: order.shipping_address.phone || '',
-        country: order.shipping_address.country,
-        region: order.shipping_address.state || '',
-        address1: order.shipping_address.address1,
-        address2: order.shipping_address.address2 || '',
-        city: order.shipping_address.city,
-        zip: order.shipping_address.zip,
+        phone: shippingAddress.phone,
+        country: shippingAddress.country,
+        region: shippingAddress.state,
+        address1: shippingAddress.address1,
+        address2: shippingAddress.address2 || '',
+        city: shippingAddress.city,
+        zip: shippingAddress.zip,
       },
     };
 
-    console.log('Sending order to Printify:', printifyOrderPayload);
+    console.log('Creating Printify order with data:', printifyOrderData);
 
-    // Create order in Printify
-    const response = await fetch(
+    const createOrderResponse = await fetch(
       `https://api.printify.com/v1/shops/${shopId}/orders.json`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${printifyToken}`,
+          'Authorization': `Bearer ${printifyApiToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(printifyOrderPayload),
+        body: JSON.stringify(printifyOrderData),
       }
     );
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Printify API error:', error);
-      throw new Error(`Printify API error: ${response.status}`);
+    if (!createOrderResponse.ok) {
+      const errorText = await createOrderResponse.text();
+      console.error('Printify order creation failed:', errorText);
+      throw new Error(`Failed to create Printify order: ${errorText}`);
     }
 
-    const printifyOrder = await response.json();
-    console.log('Printify order created:', printifyOrder.id);
+    const printifyOrder = await createOrderResponse.json();
+    console.log('Printify order created:', printifyOrder);
 
     // Store Printify order mapping
     const { error: mappingError } = await supabase
@@ -115,6 +134,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         printifyOrderId: printifyOrder.id,
+        status: printifyOrder.status,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
