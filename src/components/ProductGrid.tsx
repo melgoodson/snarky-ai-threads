@@ -4,6 +4,7 @@ import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
 import abductMe from "@/assets/abduct-me.png";
 import sasquatches from "@/assets/sasquatches.png";
+import whiteIdolMorning from "@/assets/white-idol-morning.png";
 
 const SAMPLE_PRODUCTS = [
   {
@@ -33,6 +34,13 @@ const SAMPLE_PRODUCTS = [
     price: 21.36,
     image: sasquatches,
     category: "HUMOR"
+  },
+  {
+    id: "white-idol-morning",
+    title: "White Idol Good Morning",
+    price: 21.69,
+    image: whiteIdolMorning,
+    category: "ADULT HUMOR"
   },
   {
     id: "orgy-starter-kit",
