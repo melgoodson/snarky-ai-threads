@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
+import freeHugs from "@/assets/free-hugs.png";
 
 const PRODUCT_DATA = {
   "rbf-champion": {
@@ -75,6 +76,54 @@ Taped neck and shoulders for durability: Built to last longer than your last sit
 Wash: Keep the sass fresh—cold water, similar colors.
 Dry: Tumble dry low or hang it up, just like you do with your high standards.
 Store: Perfect for anyone looking for a high-quality, ethically made tee that doesn't take itself too seriously.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
+  "free-hugs": {
+    title: "Free Hugs",
+    subtitle: "",
+    category: "SARCASM",
+    price: 21.69,
+    image: freeHugs,
+    description: `Make 'em laugh nervously from across the room. This heavyweight cotton T-shirt serves creepy-cute realness: a cartoon Freddy Krueger with arms wide like he's going in for a hug, "FREE HUGS" arced above in red-and-green stripes, and two tiny kids sprinting away in the distance. It's comfortable, durable, and just the right amount of "I'm friendly… probably."
+
+Seamless double-needle collar: Smooth where it counts—unlike your plot twists.
+
+Double-needle sleeve & bottom hems: Reinforced to survive jump scares and side-eye.
+
+100% cotton: Soft, breathable, and perfect for days you want max chill with minimum effort.
+
+Taped neck & shoulders: Built to last longer than your latest horror phase.`,
+    fit: `Whether you're S or rocking 5XL, pick your poison—this one fits true and feels deadly comfy.`,
+    care: `General: Spooky, snarky, and sturdy—your new go-to for midnight snacks and matinee slashers.
+
+Wash: Cold water, similar colors. Keep the stripes bold and the vibes bolder.
+
+Dry: Tumble low or hang—just like your standards (which should be high).
+
+Store: Perfect for fans who want a quality, ethically made tee that doesn't take itself too seriously.
+
+No blood, just bad decisions. Artwork is parody/fan-inspired.`,
     sizeChart: {
       cm: [
         { size: "S", length: "71.1", width: "91.4", chest: "45.7" },

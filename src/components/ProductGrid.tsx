@@ -1,6 +1,7 @@
 import { ProductCard } from "./ProductCard";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
+import freeHugs from "@/assets/free-hugs.png";
 
 const SAMPLE_PRODUCTS = [
   {
@@ -13,8 +14,8 @@ const SAMPLE_PRODUCTS = [
   {
     id: "free-hugs",
     title: "Free Hugs",
-    price: 22.99,
-    image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&h=800&fit=crop",
+    price: 21.69,
+    image: freeHugs,
     category: "SARCASM"
   },
   {
