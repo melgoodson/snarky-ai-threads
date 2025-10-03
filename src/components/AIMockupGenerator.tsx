@@ -41,10 +41,21 @@ export const AIMockupGenerator = ({ productImage }: AIMockupGeneratorProps) => {
 
     setGenerating(true);
     try {
+      // Convert product image URL to base64
+      const response = await fetch(productImage);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      
+      const productImageBase64 = await new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
       const { data, error } = await supabase.functions.invoke("generate-mockup", {
         body: {
           userImage,
-          productImage,
+          productImage: productImageBase64,
         },
       });
 
