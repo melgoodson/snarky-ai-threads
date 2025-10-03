@@ -4,14 +4,23 @@ import { Button } from "@/components/ui/button";
 export const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      {/* Top Banner */}
+      <div className="border-b border-border bg-background">
+        <div className="container px-4 py-3">
+          <h1 className="text-xl md:text-2xl font-black tracking-tighter text-center">
+            <span className="text-foreground">SNARKY HUMANS PRESENTS</span>{" "}
+            <span className="text-foreground">SNARKY A$$</span>{" "}
+            <span className="text-primary">THREADS</span>
+          </h1>
+        </div>
+      </div>
+
+      {/* Navigation Menu */}
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-black tracking-tighter text-foreground">
-            SNARKY A$$ <span className="text-primary">THREADS</span>
-          </h1>
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
