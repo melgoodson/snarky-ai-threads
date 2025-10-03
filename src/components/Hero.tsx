@@ -32,11 +32,16 @@ export const Hero = () => {
             Bold designs for people who don't give a damn. Drop-shipped straight to your door.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button variant="hero" size="xl" className="group">
+            <Button variant="hero" size="xl" className="group" onClick={() => {
+              const productsSection = document.getElementById('products');
+              if (productsSection) {
+                productsSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}>
               SHOP NOW
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button variant="outline" size="xl">
+            <Button variant="outline" size="xl" onClick={() => window.location.href = '/collections'}>
               VIEW COLLECTIONS
             </Button>
           </div>

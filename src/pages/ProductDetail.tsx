@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { useCart } from "@/contexts/CartContext";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
@@ -372,12 +374,26 @@ Store: Keep this T-shirt in a cool, dry place away from direct sunlight to maint
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addItem } = useCart();
   const product = PRODUCT_DATA[id as keyof typeof PRODUCT_DATA];
+  const [selectedSize, setSelectedSize] = useState<string>("M");
 
   if (!product) {
     navigate("/");
     return null;
   }
+
+  const handleAddToCart = () => {
+    addItem({
+      productId: id!,
+      title: product.title,
+      price: product.price,
+      size: selectedSize,
+      image: product.image,
+      printifyProductId: id,
+      variantId: selectedSize,
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -417,7 +433,23 @@ const ProductDetail = () => {
               </p>
             </div>
 
-            <Button size="xl" className="w-full group">
+            <div>
+              <label className="block text-sm font-semibold mb-2">SIZE</label>
+              <div className="flex flex-wrap gap-2">
+                {product.sizeChart.inches.map((item) => (
+                  <Button
+                    key={item.size}
+                    variant={selectedSize === item.size ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedSize(item.size)}
+                  >
+                    {item.size}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <Button size="xl" className="w-full group" onClick={handleAddToCart}>
               <ShoppingCart className="mr-2 h-5 w-5" />
               ADD TO CART
             </Button>

@@ -9,7 +9,9 @@ const Index = () => {
       <Header />
       <main className="flex-1">
         <Hero />
-        <ProductGrid />
+        <div id="products">
+          <ProductGrid />
+        </div>
       </main>
       <Footer />
     </div>
