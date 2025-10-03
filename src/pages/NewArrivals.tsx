@@ -1,4 +1,6 @@
-import { ProductCard } from "./ProductCard";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
@@ -8,10 +10,10 @@ import whiteIdolMorning from "@/assets/white-idol-morning.png";
 import fathers from "@/assets/fathers.png";
 import dark from "@/assets/dark.png";
 
-const SAMPLE_PRODUCTS = [
+const ALL_PRODUCTS = [
   {
     id: "rbf-champion",
-    title: "RBF Champion (I'm coming for you bitch)",
+    title: "RBF Champion",
     price: 21.36,
     image: rbfChampion,
     category: "ATTITUDE"
@@ -67,25 +69,33 @@ const SAMPLE_PRODUCTS = [
   },
 ];
 
-export const ProductGrid = () => {
+const NewArrivals = () => {
   return (
-    <section id="products" className="py-16 md:py-24">
-      <div className="container px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">
-            FEATURED <span className="text-primary">DESIGNS</span>
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Our most popular snarky shirts. Because normal is boring.
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <section className="py-16 md:py-24">
+          <div className="container px-4">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
+                NEW <span className="text-primary">ARRIVALS</span>
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Fresh drops of snarky goodness. Get them before they're gone.
+              </p>
+            </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {SAMPLE_PRODUCTS.map((product) => (
-            <ProductCard key={product.id} id={product.id} {...product} />
-          ))}
-        </div>
-      </div>
-    </section>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {ALL_PRODUCTS.map((product) => (
+                <ProductCard key={product.id} id={product.id} {...product} />
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
   );
 };
+
+export default NewArrivals;

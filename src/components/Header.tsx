@@ -15,16 +15,23 @@ export const Header = () => {
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <a 
+            href="#products" 
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
             SHOP
           </a>
-          <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <a href="/new-arrivals" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             NEW ARRIVALS
           </a>
-          <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <a href="/collections" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             COLLECTIONS
           </a>
-          <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <a href="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             ABOUT
           </a>
         </nav>
