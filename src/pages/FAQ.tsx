@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import {
@@ -172,12 +173,30 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>FAQ - Snarky Humans Presents Snarky A$$ Threads | Sizing, Shipping, Spicy Meter Guide</title>
+        <meta name="description" content="Get answers to all your questions about Snarky A$$ Threads. Learn about sizing, shipping, returns, our Spicy Meter rating system (Mild/Medium/Nuclear), gifting bundles, and more." />
+        <meta name="keywords" content="snarky tshirts faq, spicy meter guide, sizing guide, shipping policy, returns policy, adult humor apparel, graphic tee care, bundle discounts, gift guide" />
+        <link rel="canonical" href={`${window.location.origin}/faq`} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="FAQ - Snarky A$$ Threads | Your Questions Answered" />
+        <meta property="og:description" content="Everything you need to know about ordering, sizing, shipping, and our Spicy Meter rating system. 30+ answers to common questions." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/faq`} />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="FAQ - Snarky A$$ Threads" />
+        <meta name="twitter:description" content="Get answers about sizing, shipping, our Spicy Meter system, and more." />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      </Helmet>
       <Header />
       <main className="flex-1">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
         
         <section className="container px-4 py-16">
           <div className="max-w-4xl mx-auto">

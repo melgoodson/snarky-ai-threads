@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,8 +50,56 @@ const Blog = () => {
     }
   ];
 
+  const blogSchema = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "Snarky A$$ Threads Blog",
+    "description": "Tips, stories, and insights from the world of snarky apparel",
+    "url": `${window.location.origin}/blog`,
+    "blogPost": blogPosts.map(post => ({
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "description": post.excerpt,
+      "datePublished": post.date,
+      "author": {
+        "@type": "Organization",
+        "name": "Snarky Humans"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Snarky Humans",
+        "logo": {
+          "@type": "ImageObject",
+          "url": `${window.location.origin}/logo.png`
+        }
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Blog - Snarky Humans Presents Snarky A$$ Threads | Humor Apparel Tips & Stories</title>
+        <meta name="description" content="Discover tips, stories, and insights about snarky apparel. Learn about our Spicy Meter, care tips for graphic tees, gifting guides, and the culture of irreverent humor." />
+        <meta name="keywords" content="snarky apparel blog, graphic tee tips, humor tshirt guide, spicy meter explained, bachelor party gifts, tshirt care, irreverent fashion, edgy humor apparel" />
+        <link rel="canonical" href={`${window.location.origin}/blog`} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Blog - Snarky A$$ Threads | Humor Apparel Insights" />
+        <meta property="og:description" content="Tips, stories, and insights from the world of snarky apparel. Learn about designs, care, and irreverent humor culture." />
+        <meta property="og:type" content="blog" />
+        <meta property="og:url" content={`${window.location.origin}/blog`} />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Blog - Snarky A$$ Threads" />
+        <meta name="twitter:description" content="Tips and insights from the world of snarky, irreverent apparel." />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(blogSchema)}
+        </script>
+      </Helmet>
       <Header />
       <main className="flex-1">
         <section className="container px-4 py-16">
