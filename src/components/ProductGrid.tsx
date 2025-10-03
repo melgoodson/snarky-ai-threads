@@ -6,6 +6,7 @@ import abductMe from "@/assets/abduct-me.png";
 import sasquatches from "@/assets/sasquatches.png";
 import whiteIdolMorning from "@/assets/white-idol-morning.png";
 import fathers from "@/assets/fathers.png";
+import dark from "@/assets/dark.png";
 
 const SAMPLE_PRODUCTS = [
   {
@@ -51,10 +52,10 @@ const SAMPLE_PRODUCTS = [
     category: "FATHERS"
   },
   {
-    id: "slavery-gets-done",
-    title: "Slavery Gets Done",
-    price: 25.99,
-    image: "https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=800&h=800&fit=crop",
+    id: "dark",
+    title: "Dark",
+    price: 15.69,
+    image: dark,
     category: "DARK"
   },
   {

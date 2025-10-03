@@ -12,6 +12,7 @@ import abductMe from "@/assets/abduct-me.png";
 import sasquatches from "@/assets/sasquatches.png";
 import whiteIdolMorning from "@/assets/white-idol-morning.png";
 import fathers from "@/assets/fathers.png";
+import dark from "@/assets/dark.png";
 
 const PRODUCT_DATA = {
   "rbf-champion": {
@@ -320,6 +321,49 @@ Dry: Tumble dry low or hang it up, just like you do with your standards.`,
         { size: "3XL", length: "33", width: "56", chest: "28" },
         { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
         { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
+  "dark": {
+    title: "Dark",
+    subtitle: "Snarky punching people with words and attitude",
+    category: "DARK",
+    price: 15.69,
+    image: dark,
+    description: `Soft, sassy, and ready to make a statement – just like you. This t-shirt isn't just for wearing; it's for owning the room with your snarky attitude. Designed with DTG printing in mind, it offers a high-density stitch surface so your sarcasm shines crisply, every time.
+
+Key Features:
+
+Seamless double-needle collar – Because rough edges are for amateurs.
+
+Tear-away label – Perfect for those who don't do labels.
+
+Tubular fit – Reduces torque because you're already twisted enough.
+
+Available in a wide range of colors – A blank canvas for your most cutting comebacks.
+
+Why punch people when words (and this shirt) do it better?`,
+    fit: `A durable, comfortable, and versatile t-shirt that excels in printability and wearability, making it a top choice for custom designs.`,
+    care: `General: A durable, comfortable, and versatile t-shirt that excels in printability and wearability, making it a top choice for custom designs.
+Wash: The t-shirt should be washed with similar colors and can sustain regular washing without losing color or shape.
+Dry: Tumble dry low or hang dry to maintain the integrity of the print and fabric.
+Store: Keep this T-shirt in a cool, dry place away from direct sunlight to maintain its color and fabric integrity.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71", width: "92", chest: "46" },
+        { size: "M", length: "74", width: "102", chest: "51" },
+        { size: "L", length: "76", width: "112", chest: "56" },
+        { size: "XL", length: "79", width: "122", chest: "61" },
+        { size: "2XL", length: "81", width: "132", chest: "66" },
+        { size: "3XL", length: "85", width: "142", chest: "71" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36.2", chest: "18.1" },
+        { size: "M", length: "29.1", width: "40.2", chest: "20.1" },
+        { size: "L", length: "29.9", width: "44.1", chest: "22" },
+        { size: "XL", length: "31.1", width: "48", chest: "24" },
+        { size: "2XL", length: "31.9", width: "52", chest: "26" },
+        { size: "3XL", length: "33.5", width: "55.9", chest: "28" },
       ],
     },
   },
