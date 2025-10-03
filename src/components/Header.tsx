@@ -15,14 +15,7 @@ export const Header = () => {
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          <a 
-            href="#products" 
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          >
+          <a href="/#products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             SHOP
           </a>
           <a href="/new-arrivals" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
