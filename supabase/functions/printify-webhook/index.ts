@@ -83,7 +83,7 @@ serve(async (req) => {
 
         console.log('Order status updated to delivered');
       }
-    } else if (type === 'order:canceled') {
+    } else if (type === 'order:canceled' || type === 'order:cancelled') {
       // Order was canceled
       const printifyOrderId = resource.id;
 

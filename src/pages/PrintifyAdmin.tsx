@@ -137,10 +137,10 @@ const PrintifyAdmin = () => {
                           className="flex items-center justify-between p-2 bg-background rounded"
                         >
                           <span className="text-sm">{result.event}</span>
-                          {result.status === 'success' ? (
+                          {result.status === 'success' || result.status === 'exists' ? (
                             <span className="flex items-center gap-1 text-green-600">
                               <Check className="h-4 w-4" />
-                              <span className="text-xs">Registered</span>
+                              <span className="text-xs">{result.status === 'exists' ? 'Already exists' : 'Registered'}{result.note ? ` • ${result.note}` : ''}</span>
                             </span>
                           ) : (
                             <span className="flex items-center gap-1 text-red-600">

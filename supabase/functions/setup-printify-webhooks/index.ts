@@ -43,26 +43,24 @@ serve(async (req) => {
     // Webhook URL
     const webhookUrl = `https://waldggnsstpxasmauwda.supabase.co/functions/v1/printify-webhook`;
 
-    // Events to register
+    // Events to register (with fallback spelling for cancelled)
     const events = [
       'order:shipment:created',
       'order:shipment:delivered',
-      'order:canceled'
+      'order:canceled', // we'll try 'order:cancelled' if this fails validation
     ];
 
-    const results = [];
+    const results: Array<{ event: string; status: 'success'|'exists'|'failed'; webhook_id?: string; error?: string; note?: string }> = [];
 
-    // Register each webhook
-    for (const event of events) {
-      console.log(`Registering webhook for ${event}...`);
-      
-      const webhookResponse = await fetch(
+    async function registerWebhook(event: string): Promise<{ status: 'success'|'exists'|'failed'; webhook_id?: string; error?: string }> {
+      const resp = await fetch(
         `https://api.printify.com/v1/shops/${shopId}/webhooks.json`,
         {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${printifyApiToken}`,
             'Content-Type': 'application/json',
+            'User-Agent': 'LovableApp/1.0',
           },
           body: JSON.stringify({
             topic: event,
@@ -70,27 +68,36 @@ serve(async (req) => {
           }),
         }
       );
+      const json = await resp.json();
+      if (resp.ok) return { status: 'success', webhook_id: json.id };
 
-      const result = await webhookResponse.json();
-      
-      if (webhookResponse.ok) {
-        console.log(`Successfully registered ${event}`);
-        results.push({
-          event,
-          status: 'success',
-          webhook_id: result.id,
-        });
-      } else {
-        console.error(`Failed to register ${event}:`, result);
-        results.push({
-          event,
-          status: 'failed',
-          error: result.message || 'Unknown error',
-        });
+      const reason: string = json?.errors?.reason || json?.message || 'Unknown error';
+      // Treat "already exists" as success-equivalent
+      if (reason?.toLowerCase().includes('already exists')) {
+        return { status: 'exists', webhook_id: json?.id };
       }
+      return { status: 'failed', error: reason };
     }
 
-    const allSuccess = results.every(r => r.status === 'success');
+    // Register each webhook with fallback for cancelled spelling
+    for (const event of events) {
+      console.log(`Registering webhook for ${event}...`);
+      let res = await registerWebhook(event);
+
+      // If canceled failed validation, retry with British spelling
+      if (event === 'order:canceled' && res.status === 'failed' && res.error?.toLowerCase().includes('validation')) {
+        console.log('Retrying with alternate topic: order:cancelled');
+        const retry = await registerWebhook('order:cancelled');
+        if (retry.status !== 'failed') {
+          results.push({ event: 'order:cancelled', status: retry.status, webhook_id: retry.webhook_id, note: 'Registered with alternate topic spelling' });
+          continue;
+        }
+      }
+
+      results.push({ event, ...res });
+    }
+
+    const allSuccess = results.every(r => r.status === 'success' || r.status === 'exists');
 
     return new Response(
       JSON.stringify({
