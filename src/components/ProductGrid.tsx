@@ -53,7 +53,7 @@ const SAMPLE_PRODUCTS = [
   },
   {
     id: "dark",
-    title: "Dark",
+    title: "Snarky punching people with words and attitude",
     price: 15.69,
     image: dark,
     category: "DARK"

@@ -325,7 +325,7 @@ Dry: Tumble dry low or hang it up, just like you do with your standards.`,
     },
   },
   "dark": {
-    title: "Dark",
+    title: "Snarky punching people with words and attitude",
     subtitle: "Snarky punching people with words and attitude",
     category: "DARK",
     price: 15.69,
