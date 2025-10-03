@@ -19,7 +19,7 @@ export const Hero = () => {
               loop 
               muted 
               playsInline
-              className="w-48 h-48 object-contain"
+              className="w-full max-w-2xl h-auto object-contain"
             >
               <source src={logoAnimation} type="video/mp4" />
             </video>
