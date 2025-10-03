@@ -8,6 +8,7 @@ import ProductDetail from "./pages/ProductDetail";
 import NewArrivals from "./pages/NewArrivals";
 import Collections from "./pages/Collections";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/new-arrivals" element={<NewArrivals />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/funny-snarky-shirts-make-friends" element={<BlogPost />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/about" element={<About />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

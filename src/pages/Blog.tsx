@@ -7,11 +7,20 @@ import { Badge } from "@/components/ui/badge";
 const Blog = () => {
   const blogPosts = [
     {
+      title: "How Funny Snarky Shirts Make You New Friends: The Ultimate Ice Breaker",
+      excerpt: "Discover why wearing snarky, funny graphic tees is the secret weapon for making friends, starting conversations, and building instant connections with like-minded people.",
+      date: "March 15, 2024",
+      category: "Lifestyle & Culture",
+      readTime: "8 min read",
+      slug: "funny-snarky-shirts-make-friends"
+    },
+    {
       title: "The Rise of Snarky Apparel: Why Humor Sells",
       excerpt: "Explore how snarky, irreverent designs have taken over the apparel industry and why customers can't get enough of edgy humor.",
       date: "March 15, 2024",
       category: "Industry Trends",
-      readTime: "5 min read"
+      readTime: "5 min read",
+      slug: null
     },
     {
       title: "Understanding Our Spicy Meter: A Guide",
@@ -126,9 +135,15 @@ const Blog = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">{post.excerpt}</p>
-                    <button className="mt-4 text-primary font-medium hover:underline">
-                      Read More →
-                    </button>
+                    {post.slug ? (
+                      <a href={`/blog/${post.slug}`} className="inline-block mt-4 text-primary font-medium hover:underline">
+                        Read More →
+                      </a>
+                    ) : (
+                      <button className="mt-4 text-primary font-medium hover:underline">
+                        Read More →
+                      </button>
+                    )}
                   </CardContent>
                 </Card>
               ))}
