@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import melFounder from "@/assets/mel-founder.png";
 
 const About = () => {
   return (
@@ -19,6 +20,14 @@ const About = () => {
             </div>
 
             <article className="space-y-8 text-lg">
+              <div className="mb-12">
+                <img 
+                  src={melFounder} 
+                  alt="Mel, founder of Snarky Humans, relaxing at home with his pets and Snarky Humans products" 
+                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
+                />
+              </div>
+
               <p className="text-xl font-bold">
                 Mel didn't plan to start a brand. He planned to make it home.
               </p>
