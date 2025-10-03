@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import logoAnimation from "@/assets/logo-animation.mp4";
 
 export const Hero = () => {
   return (
@@ -11,6 +12,18 @@ export const Hero = () => {
 
       <div className="relative z-10 container px-4 text-center">
         <div className="max-w-3xl mx-auto space-y-8">
+          {/* Animated Logo */}
+          <div className="flex justify-center mb-8">
+            <video 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="w-48 h-48 object-contain"
+            >
+              <source src={logoAnimation} type="video/mp4" />
+            </video>
+          </div>
           <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
             WEAR YOUR
             <span className="block text-primary mt-2">ATTITUDE</span>
