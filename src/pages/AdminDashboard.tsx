@@ -191,6 +191,20 @@ export default function AdminDashboard() {
               <Button
                 variant="outline"
                 className="h-auto p-4 flex flex-col items-start gap-2"
+                onClick={() => navigate('/product-management')}
+              >
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  <span className="font-bold">Product Management</span>
+                </div>
+                <p className="text-xs text-muted-foreground text-left">
+                  Manage product catalog, pricing, and availability
+                </p>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2"
                 onClick={() => navigate('/printify-admin')}
               >
                 <div className="flex items-center gap-2">

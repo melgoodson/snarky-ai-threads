@@ -20,6 +20,8 @@ import PrintifyAdmin from "./pages/PrintifyAdmin";
 import CustomDesign from "./pages/CustomDesign";
 import AdminDashboard from "./pages/AdminDashboard";
 import TeeinblueAdmin from "./pages/TeeinblueAdmin";
+import Auth from "./pages/Auth";
+import ProductManagement from "./pages/ProductManagement";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/custom-design" element={<CustomDesign />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/teeinblue-admin" element={<TeeinblueAdmin />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/product-management" element={<ProductManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
