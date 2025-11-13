@@ -97,6 +97,9 @@ export const Header = () => {
             <Search className="h-5 w-5" />
           </Button>
           <Cart />
+          <Button variant="outline" onClick={() => window.location.href = '/auth'}>
+            Sign In
+          </Button>
         </div>
       </div>
     </header>
