@@ -22,6 +22,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import TeeinblueAdmin from "./pages/TeeinblueAdmin";
 import Auth from "./pages/Auth";
 import ProductManagement from "./pages/ProductManagement";
+import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/teeinblue-admin" element={<TeeinblueAdmin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/product-management" element={<ProductManagement />} />
+            <Route path="/profile" element={<UserProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
