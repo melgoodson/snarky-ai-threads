@@ -88,11 +88,11 @@ const PrintifyAdmin = () => {
       <div className="max-w-4xl mx-auto space-y-8">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/admin")}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
+          Back to Admin
         </Button>
         
         <div>
