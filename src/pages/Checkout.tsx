@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { Header } from '@/components/Header';
@@ -31,6 +31,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
+  const [designData, setDesignData] = useState<any>(null);
   const [formData, setFormData] = useState<CheckoutForm>({
     email: '',
     firstName: '',
@@ -45,8 +46,16 @@ const Checkout = () => {
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutForm, string>>>({});
 
-  if (items.length === 0) {
-    navigate('/');
+  useEffect(() => {
+    const stored = localStorage.getItem("customDesign");
+    if (stored) {
+      setDesignData(JSON.parse(stored));
+    } else if (items.length === 0) {
+      navigate('/');
+    }
+  }, [items.length, navigate]);
+
+  if (!designData && items.length === 0) {
     return null;
   }
 
@@ -76,26 +85,38 @@ const Checkout = () => {
     setLoading(true);
 
     try {
+      const amount = designData ? 34 : totalPrice;
+      
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           email: formData.email,
-          total_amount: totalPrice,
+          total_amount: amount,
           shipping_address: formData,
           status: 'pending',
+          artwork_url: designData?.artworkUrl,
+          mockup_url: designData?.mockupUrl,
         })
         .select()
         .single();
 
       if (orderError) throw orderError;
 
-      const orderItems = items.map(item => ({
-        order_id: order.id,
-        printify_product_id: item.printifyProductId || item.productId,
-        variant_id: item.variantId || '0',
-        quantity: item.quantity,
-        price: item.price,
-      }));
+      const orderItems = designData 
+        ? [{
+            order_id: order.id,
+            printify_product_id: "placeholder",
+            variant_id: "placeholder",
+            quantity: 1,
+            price: amount,
+          }]
+        : items.map(item => ({
+            order_id: order.id,
+            printify_product_id: item.printifyProductId || item.productId,
+            variant_id: item.variantId || '0',
+            quantity: item.quantity,
+            price: item.price,
+          }));
 
       const { error: itemsError } = await supabase
         .from('order_items')
@@ -113,6 +134,18 @@ const Checkout = () => {
         toast.error('Order placed but fulfillment may be delayed');
       }
 
+      // Send confirmation email
+      await supabase.functions.invoke("send-order-confirmation", {
+        body: {
+          email: formData.email,
+          orderId: order.id,
+          totalAmount: amount.toFixed(2),
+        },
+      });
+
+      if (designData) {
+        localStorage.removeItem("customDesign");
+      }
       clearCart();
       navigate(`/order-confirmation/${order.id}`);
     } catch (error) {
