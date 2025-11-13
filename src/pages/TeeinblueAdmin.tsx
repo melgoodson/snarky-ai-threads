@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 const TeeinblueAdmin = () => {
+  const navigate = useNavigate();
   const [syncingProducts, setSyncingProducts] = useState(false);
   const [syncResult, setSyncResult] = useState<any>(null);
 
@@ -31,14 +35,26 @@ const TeeinblueAdmin = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Teeinblue Integration</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your Teeinblue product catalog and order fulfillment
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 bg-background p-8">
+        <div className="container mx-auto max-w-4xl">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/admin")}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Admin
+          </Button>
+
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold">Teeinblue Integration</h1>
+              <p className="text-muted-foreground mt-2">
+                Manage your Teeinblue product catalog and order fulfillment
+              </p>
+            </div>
 
         <Card>
           <CardHeader>
@@ -106,6 +122,9 @@ const TeeinblueAdmin = () => {
           </CardContent>
         </Card>
       </div>
+    </div>
+    </main>
+    <Footer />
     </div>
   );
 };

@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, Search, Package, AlertCircle, Loader2 } from "lucide-react";
+import { Download, Search, Package, AlertCircle, Loader2, Settings, Warehouse, ShoppingBag } from "lucide-react";
 
 interface Order {
   id: string;
@@ -183,6 +183,54 @@ export default function AdminDashboard() {
               Export CSV
             </Button>
           </div>
+
+          {/* Admin Navigation */}
+          <Card className="p-6">
+            <h2 className="text-lg font-bold mb-4">Integration Management</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2"
+                onClick={() => navigate('/printify-admin')}
+              >
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="h-5 w-5 text-primary" />
+                  <span className="font-bold">Printify Admin</span>
+                </div>
+                <p className="text-xs text-muted-foreground text-left">
+                  Setup webhooks and sync products from Printify
+                </p>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2"
+                onClick={() => navigate('/teeinblue-admin')}
+              >
+                <div className="flex items-center gap-2">
+                  <Warehouse className="h-5 w-5 text-primary" />
+                  <span className="font-bold">Teeinblue Admin</span>
+                </div>
+                <p className="text-xs text-muted-foreground text-left">
+                  Manage Teeinblue integration and products
+                </p>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2"
+                onClick={() => navigate('/admin')}
+              >
+                <div className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-primary" />
+                  <span className="font-bold">Order Management</span>
+                </div>
+                <p className="text-xs text-muted-foreground text-left">
+                  View and manage all customer orders
+                </p>
+              </Button>
+            </div>
+          </Card>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
