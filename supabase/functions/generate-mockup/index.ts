@@ -102,6 +102,8 @@ serve(async (req) => {
       throw new Error("No image generated");
     }
 
+    console.log("Mockup generated successfully");
+
     return new Response(
       JSON.stringify({ image: generatedImage }),
       {
