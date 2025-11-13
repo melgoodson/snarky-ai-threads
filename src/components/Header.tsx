@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Cart } from "@/components/Cart";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 export const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -62,32 +63,32 @@ export const Header = () => {
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          <a href="/#products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/#products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             SHOP
-          </a>
-          <a href="/new-arrivals" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/new-arrivals" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             NEW ARRIVALS
-          </a>
-          <a href="/collections" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/collections" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             COLLECTIONS
-          </a>
-          <a href="/custom-design" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/custom-design" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             CUSTOMIZE
-          </a>
-          <a href="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             BLOG
-          </a>
-          <a href="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             FAQ
-          </a>
-          <a href="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          </Link>
+          <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             ABOUT
-          </a>
+          </Link>
           {isAdmin && (
-            <a href="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+            <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
               <Shield className="h-4 w-4" />
               ADMIN
-            </a>
+            </Link>
           )}
         </nav>
 
