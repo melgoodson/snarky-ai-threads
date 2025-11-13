@@ -120,11 +120,11 @@ const OrderConfirmation = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button onClick={() => navigate('/')} variant="default">
-                CONTINUE SHOPPING
+              <Button onClick={() => navigate(`/order-tracking/${orderId}`)} variant="default">
+                TRACK YOUR ORDER
               </Button>
-              <Button onClick={() => navigate('/blog')} variant="outline">
-                READ OUR BLOG
+              <Button onClick={() => navigate('/')} variant="outline">
+                CONTINUE SHOPPING
               </Button>
             </div>
           </Card>
