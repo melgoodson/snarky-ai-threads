@@ -17,6 +17,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import NotFound from "./pages/NotFound";
 import PrintifyAdmin from "./pages/PrintifyAdmin";
 import CustomDesign from "./pages/CustomDesign";
+import TeeinblueAdmin from "./pages/TeeinblueAdmin";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
             <Route path="/printify-admin" element={<PrintifyAdmin />} />
             <Route path="/custom-design" element={<CustomDesign />} />
+            <Route path="/teeinblue-admin" element={<TeeinblueAdmin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.generate-design]
 verify_jwt = false
+
+[functions.create-teeinblue-order]
+verify_jwt = false
+
+[functions.sync-teeinblue-products]
+verify_jwt = false
+
+[functions.teeinblue-webhook]
+verify_jwt = false
+
+[functions.generate-teeinblue-mockup]
+verify_jwt = false
