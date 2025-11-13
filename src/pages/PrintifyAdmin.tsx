@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Check, X, Webhook, Database } from "lucide-react";
+import { Loader2, Check, X, Webhook, Database, ArrowLeft } from "lucide-react";
 
 const PrintifyAdmin = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [webhookResult, setWebhookResult] = useState<any>(null);
   const [syncResult, setSyncResult] = useState<any>(null);
@@ -84,6 +86,15 @@ const PrintifyAdmin = () => {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto space-y-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Home
+        </Button>
+        
         <div>
           <h1 className="text-4xl font-bold mb-2">Printify Integration Admin</h1>
           <p className="text-muted-foreground">
