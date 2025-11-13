@@ -18,5 +18,8 @@ verify_jwt = false
 [functions.teeinblue-webhook]
 verify_jwt = false
 
+[functions.send-order-confirmation]
+verify_jwt = false
+
 [functions.generate-teeinblue-mockup]
 verify_jwt = false
