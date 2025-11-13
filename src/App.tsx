@@ -14,6 +14,7 @@ import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import OrderTracking from "./pages/OrderTracking";
 import NotFound from "./pages/NotFound";
 import PrintifyAdmin from "./pages/PrintifyAdmin";
 import CustomDesign from "./pages/CustomDesign";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+            <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
             <Route path="/printify-admin" element={<PrintifyAdmin />} />
             <Route path="/custom-design" element={<CustomDesign />} />
             <Route path="/admin" element={<AdminDashboard />} />
