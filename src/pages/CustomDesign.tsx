@@ -71,6 +71,36 @@ export default function CustomDesign() {
 
     setGeneratingMockup(true);
     try {
+      // Validate artwork quality first
+      const { data: qualityData, error: qualityError } = await supabase.functions.invoke(
+        "validate-artwork-quality",
+        {
+          body: {
+            imageUrl: selectedImage,
+            productType: selectedProduct,
+          },
+        }
+      );
+
+      if (qualityError) {
+        console.error("Quality check error:", qualityError);
+        toast.error("Failed to validate artwork quality");
+        setGeneratingMockup(false);
+        return;
+      }
+
+      if (!qualityData.passes) {
+        toast.error(
+          `⚠️ Quality Warning: ${qualityData.warnings.join(". ")}. Image is ${qualityData.width}x${qualityData.height}px (${qualityData.actualDPI} DPI), but needs ${qualityData.requiredWidth}x${qualityData.requiredHeight}px (${qualityData.requiredDPI} DPI) for best print quality.`,
+          { duration: 8000 }
+        );
+      } else {
+        toast.success(
+          `✓ Quality Check Passed: ${qualityData.width}x${qualityData.height}px (${qualityData.actualDPI} DPI)`,
+          { duration: 3000 }
+        );
+      }
+
       const productTemplate = productTypes.find((p) => p.id === selectedProduct);
       
       const { data, error } = await supabase.functions.invoke("generate-mockup", {

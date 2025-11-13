@@ -21,5 +21,17 @@ verify_jwt = false
 [functions.send-order-confirmation]
 verify_jwt = false
 
+[functions.monitor-orders]
+verify_jwt = false
+
+[functions.send-shipping-notification]
+verify_jwt = false
+
+[functions.send-delivery-notification]
+verify_jwt = false
+
+[functions.validate-artwork-quality]
+verify_jwt = false
+
 [functions.generate-teeinblue-mockup]
 verify_jwt = false

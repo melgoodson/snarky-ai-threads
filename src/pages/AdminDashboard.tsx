@@ -58,14 +58,14 @@ export default function AdminDashboard() {
         return;
       }
 
-      const { data: roles, error } = await supabase
+      const { data: roles } = await (supabase as any)
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "admin")
-        .single();
+        .maybeSingle();
 
-      if (error || !roles) {
+      if (!roles) {
         toast.error("Access denied: Admin privileges required");
         navigate("/");
         return;
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      setOrders((data as any) || []);
     } catch (error: any) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to load orders");
