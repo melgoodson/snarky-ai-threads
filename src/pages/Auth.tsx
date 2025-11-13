@@ -12,12 +12,14 @@ import { z } from 'zod';
 
 const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const usernameSchema = z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be less than 20 characters').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores');
 
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
     // Check if user is already logged in
@@ -39,10 +41,13 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const validateInputs = () => {
+  const validateInputs = (includeUsername = false) => {
     try {
       emailSchema.parse(email);
       passwordSchema.parse(password);
+      if (includeUsername) {
+        usernameSchema.parse(username);
+      }
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -55,7 +60,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateInputs()) return;
+    if (!validateInputs(true)) return;
 
     setLoading(true);
     try {
@@ -66,6 +71,9 @@ const Auth = () => {
         password,
         options: {
           emailRedirectTo: redirectUrl,
+          data: {
+            username: username,
+          },
         },
       });
 
@@ -76,9 +84,10 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
-        toast.success('Check your email to confirm your account!');
+        toast.success('Account created successfully!');
         setEmail('');
         setPassword('');
+        setUsername('');
       }
     } catch (error: any) {
       toast.error('An unexpected error occurred');
@@ -183,6 +192,24 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">Username</Label>
+                  <Input
+                    id="signup-username"
+                    type="text"
+                    placeholder="cooluser123"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={3}
+                    maxLength={20}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    3-20 characters, letters, numbers, and underscores only
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <div className="relative">

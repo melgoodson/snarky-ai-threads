@@ -1,4 +1,4 @@
-import { Search, Menu, Shield } from "lucide-react";
+import { Search, Menu, Shield, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Cart } from "@/components/Cart";
 import { useEffect, useState } from "react";
@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 
 export const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
@@ -24,8 +25,11 @@ export const Header = () => {
       
       if (!user) {
         setIsAdmin(false);
+        setIsLoggedIn(false);
         return;
       }
+
+      setIsLoggedIn(true);
 
       const { data: roles } = await (supabase as any)
         .from("user_roles")
@@ -38,6 +42,7 @@ export const Header = () => {
     } catch (error) {
       console.error("Admin check error:", error);
       setIsAdmin(false);
+      setIsLoggedIn(false);
     }
   };
 
@@ -97,9 +102,16 @@ export const Header = () => {
             <Search className="h-5 w-5" />
           </Button>
           <Cart />
-          <Button variant="outline" onClick={() => window.location.href = '/auth'}>
-            Sign In
-          </Button>
+          {isLoggedIn ? (
+            <Button variant="outline" onClick={() => window.location.href = '/profile'}>
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={() => window.location.href = '/auth'}>
+              Sign In
+            </Button>
+          )}
         </div>
       </div>
     </header>
