@@ -1,119 +1,134 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Sparkles, Image as ImageIcon } from "lucide-react";
+import { Loader2, Upload, Check, Sparkles } from "lucide-react";
 
-const productTypes = [
-  { id: "tshirt", name: "T-Shirt", image: "/placeholder.svg" },
-  { id: "hoodie", name: "Hoodie", image: "/placeholder.svg" },
-  { id: "mug", name: "Mug", image: "/placeholder.svg" },
-  { id: "card", name: "Greeting Card", image: "/placeholder.svg" },
-  { id: "tote", name: "Tote Bag", image: "/placeholder.svg" },
-];
+interface Product {
+  id: string;
+  title: string;
+  printify_product_id: string;
+  brand: string;
+  model: string;
+  category: string;
+  description: string;
+  images: string[];
+  template_image_url: string;
+  price: number;
+  retail_price: number;
+}
 
 export default function CustomDesign() {
   const navigate = useNavigate();
-  const [prompt, setPrompt] = useState("");
-  const [generating, setGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [userImage, setUserImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [mockupImage, setMockupImage] = useState<string | null>(null);
 
-  const generateArtwork = async () => {
-    if (!prompt.trim()) {
-      toast.error("Please enter a description for your design");
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("is_active", true)
+        .order("category", { ascending: true });
+
+      if (error) throw error;
+
+      const formattedProducts: Product[] = (data || []).map((p) => {
+        const imagesArray = Array.isArray(p.images) 
+          ? p.images.map(img => typeof img === 'string' ? img : String(img))
+          : [];
+        
+        return {
+          id: p.id,
+          title: p.title,
+          printify_product_id: p.printify_product_id,
+          brand: p.brand || "",
+          model: p.model || "",
+          category: p.category || "",
+          description: p.description || "",
+          images: imagesArray,
+          template_image_url: p.template_image_url || "",
+          price: Number(p.price) || 0,
+          retail_price: Number(p.retail_price) || 0,
+        };
+      });
+
+      setProducts(formattedProducts);
+    } catch (error: any) {
+      console.error("Error fetching products:", error);
+      toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
       return;
     }
 
-    setGenerating(true);
-    const images: string[] = [];
-
+    setUploading(true);
     try {
-      for (let i = 0; i < 3; i++) {
-        const { data, error } = await supabase.functions.invoke("generate-design", {
-          body: { prompt: prompt.trim(), referenceImage: null },
-        });
-
-        if (error) throw error;
-        if (data?.image) {
-          images.push(data.image);
-        }
-      }
-
-      setGeneratedImages(images);
-      toast.success("Artwork generated!");
-    } catch (error: any) {
-      console.error("Error:", error);
-      toast.error(error.message || "Failed to generate artwork");
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        setUserImage(base64);
+        setMockupImage(null);
+        toast.success("Image uploaded successfully!");
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
     } finally {
-      setGenerating(false);
+      setUploading(false);
     }
   };
 
-  const selectImage = (imageUrl: string) => {
-    setSelectedImage(imageUrl);
-    setMockupImage(null);
-  };
-
   const generateMockup = async () => {
-    if (!selectedImage || !selectedProduct) {
-      toast.error("Please select both an image and a product");
+    if (!selectedProduct || !userImage) {
+      toast.error("Please select a product and upload your image");
       return;
     }
 
     setGeneratingMockup(true);
     try {
-      // Validate artwork quality first
-      const { data: qualityData, error: qualityError } = await supabase.functions.invoke(
-        "validate-artwork-quality",
-        {
-          body: {
-            imageUrl: selectedImage,
-            productType: selectedProduct,
-          },
-        }
-      );
-
-      if (qualityError) {
-        console.error("Quality check error:", qualityError);
-        toast.error("Failed to validate artwork quality");
-        setGeneratingMockup(false);
-        return;
-      }
-
-      if (!qualityData.passes) {
-        toast.error(
-          `⚠️ Quality Warning: ${qualityData.warnings.join(". ")}. Image is ${qualityData.width}x${qualityData.height}px (${qualityData.actualDPI} DPI), but needs ${qualityData.requiredWidth}x${qualityData.requiredHeight}px (${qualityData.requiredDPI} DPI) for best print quality.`,
-          { duration: 8000 }
-        );
-      } else {
-        toast.success(
-          `✓ Quality Check Passed: ${qualityData.width}x${qualityData.height}px (${qualityData.actualDPI} DPI)`,
-          { duration: 3000 }
-        );
-      }
-
-      const productTemplate = productTypes.find((p) => p.id === selectedProduct);
-      
-      const { data, error } = await supabase.functions.invoke("generate-mockup", {
-        body: { userImage: selectedImage, productImage: productTemplate?.image },
+      const { data, error } = await supabase.functions.invoke("generate-user-mockup", {
+        body: {
+          userImage,
+          productImage: selectedProduct.template_image_url,
+          productTitle: selectedProduct.title,
+        },
       });
 
       if (error) throw error;
-      if (data?.image) {
-        setMockupImage(data.image);
-        toast.success("Mockup generated!");
+
+      if (data?.mockupUrl) {
+        setMockupImage(data.mockupUrl);
+        toast.success("Mockup generated! See how it looks on you!");
+      } else {
+        throw new Error("No mockup image returned");
       }
     } catch (error: any) {
-      console.error("Error:", error);
+      console.error("Mockup generation error:", error);
       toast.error(error.message || "Failed to generate mockup");
     } finally {
       setGeneratingMockup(false);
@@ -121,145 +136,200 @@ export default function CustomDesign() {
   };
 
   const proceedToCheckout = () => {
-    if (!mockupImage || !selectedImage || !selectedProduct) {
+    if (!selectedProduct || !mockupImage) {
       toast.error("Please complete all steps before checkout");
       return;
     }
-    
-    localStorage.setItem("customDesign", JSON.stringify({
-      artworkUrl: selectedImage,
-      mockupUrl: mockupImage,
-      productType: selectedProduct,
-    }));
-    
+
+    localStorage.setItem(
+      "customDesign",
+      JSON.stringify({
+        productId: selectedProduct.id,
+        mockupUrl: mockupImage,
+        artworkUrl: userImage,
+      })
+    );
+
     navigate("/checkout");
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold">Create Your Custom Design</h1>
-            <p className="text-muted-foreground text-lg">Describe your vision and let AI bring it to life</p>
-          </div>
+      <main className="flex-1 container mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto space-y-12">
+          {/* Step 1: Select Product */}
+          <section>
+            <h2 className="text-3xl font-black text-foreground mb-2">
+              Step 1: Choose Your Product
+            </h2>
+            <p className="text-muted-foreground mb-8">
+              Select the product you'd like to personalize
+            </p>
 
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <h2 className="text-2xl font-semibold">Step 1: Generate Your Artwork</h2>
-            </div>
-            <Textarea
-              placeholder="Describe your design... (e.g., 'A majestic lion with cosmic background')"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="min-h-24"
-              disabled={generating}
-            />
-            <Button onClick={generateArtwork} disabled={generating || !prompt.trim()} className="w-full" size="lg">
-              {generating ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating 3 designs...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Designs
-                </>
-              )}
-            </Button>
-
-            {generatedImages.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                {generatedImages.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === img ? "border-primary shadow-lg scale-105" : "border-border hover:border-primary/50"
-                    }`}
-                    onClick={() => selectImage(img)}
-                  >
-                    <img src={img} alt={`Design ${idx + 1}`} className="w-full aspect-[9/16] object-cover" />
-                    {selectedImage === img && (
-                      <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm font-medium">
-                        Selected
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <Card
+                  key={product.id}
+                  className={`cursor-pointer transition-all duration-300 hover:shadow-xl overflow-hidden ${
+                    selectedProduct?.id === product.id
+                      ? "ring-4 ring-primary shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
+                      : "hover:border-primary/50"
+                  }`}
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setMockupImage(null);
+                  }}
+                >
+                  <div className="relative aspect-square bg-secondary">
+                    <img
+                      src={product.template_image_url}
+                      alt={product.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {selectedProduct?.id === product.id && (
+                      <div className="absolute top-4 right-4 bg-primary text-primary-foreground rounded-full p-2">
+                        <Check className="h-5 w-5" />
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          {selectedImage && (
-            <Card className="p-6 space-y-4">
-              <div className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-primary" />
-                <h2 className="text-2xl font-semibold">Step 2: Choose Your Product</h2>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {productTypes.map((product) => (
-                  <div
-                    key={product.id}
-                    className={`cursor-pointer rounded-lg border-2 p-4 transition-all text-center ${
-                      selectedProduct === product.id ? "border-primary shadow-lg scale-105" : "border-border hover:border-primary/50"
-                    }`}
-                    onClick={() => setSelectedProduct(product.id)}
-                  >
-                    <div className="aspect-square bg-muted rounded-md mb-2 flex items-center justify-center">
-                      <span className="text-4xl">
-                        {product.id === "tshirt" && "👕"}
-                        {product.id === "hoodie" && "🧥"}
-                        {product.id === "mug" && "☕"}
-                        {product.id === "card" && "💌"}
-                        {product.id === "tote" && "👜"}
-                      </span>
-                    </div>
-                    <p className="font-medium">{product.name}</p>
+                  <div className="p-4 space-y-2">
+                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">
+                      {product.category}
+                    </span>
+                    <h3 className="font-bold text-lg text-foreground line-clamp-2">
+                      {product.title}
+                    </h3>
+                    {product.brand && (
+                      <p className="text-sm text-muted-foreground">
+                        {product.brand} {product.model && `• ${product.model}`}
+                      </p>
+                    )}
+                    <p className="text-2xl font-black text-foreground">
+                      ${product.retail_price.toFixed(2)}
+                    </p>
                   </div>
-                ))}
-              </div>
-              
-              {selectedProduct && (
-                <Button onClick={generateMockup} disabled={generatingMockup} className="w-full" size="lg">
-                  {generatingMockup ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating Mockup...
-                    </>
+                </Card>
+              ))}
+            </div>
+          </section>
+
+          {/* Step 2: Upload Image */}
+          {selectedProduct && (
+            <section className="border-t border-border pt-12">
+              <h2 className="text-3xl font-black text-foreground mb-2">
+                Step 2: Upload Your Photo
+              </h2>
+              <p className="text-muted-foreground mb-8">
+                Upload a photo to see how the product looks on you or with you
+              </p>
+
+              <div className="max-w-2xl mx-auto">
+                <Card className="p-8">
+                  {!userImage ? (
+                    <label className="flex flex-col items-center justify-center min-h-[300px] cursor-pointer hover:bg-secondary/50 transition-colors border-2 border-dashed border-border rounded-lg">
+                      <Upload className="h-16 w-16 text-muted-foreground mb-4" />
+                      <span className="text-lg font-semibold text-foreground mb-2">
+                        Click to upload your photo
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        PNG, JPG up to 10MB
+                      </span>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
                   ) : (
-                    "Generate Mockup"
+                    <div className="space-y-4">
+                      <img
+                        src={userImage}
+                        alt="Your uploaded image"
+                        className="w-full rounded-lg"
+                      />
+                      <div className="flex gap-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setUserImage(null);
+                            setMockupImage(null);
+                          }}
+                          className="flex-1"
+                        >
+                          Upload Different Photo
+                        </Button>
+                        <Button
+                          onClick={generateMockup}
+                          disabled={generatingMockup}
+                          className="flex-1"
+                        >
+                          {generatingMockup ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate Mockup
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   )}
-                </Button>
-              )}
-            </Card>
+                </Card>
+              </div>
+            </section>
           )}
 
+          {/* Step 3: Preview Mockup */}
           {mockupImage && (
-            <Card className="p-6 space-y-4">
-              <h2 className="text-2xl font-semibold">Step 3: Preview & Order</h2>
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-1">
-                  <img src={mockupImage} alt="Product mockup" className="w-full rounded-lg shadow-lg" />
-                </div>
-                <div className="flex-1 space-y-4">
-                  <h3 className="text-xl font-semibold">Your Custom Design</h3>
-                  <p className="text-muted-foreground">
-                    Product: {productTypes.find((p) => p.id === selectedProduct)?.name}
-                  </p>
-                  <div className="space-y-2">
-                    <Button onClick={generateMockup} variant="outline" className="w-full">
-                      Regenerate Mockup
+            <section className="border-t border-border pt-12">
+              <h2 className="text-3xl font-black text-foreground mb-2">
+                Step 3: Preview Your Design
+              </h2>
+              <p className="text-muted-foreground mb-8">
+                Here's how your personalized product looks!
+              </p>
+
+              <div className="max-w-3xl mx-auto">
+                <Card className="p-8">
+                  <img
+                    src={mockupImage}
+                    alt="Product mockup"
+                    className="w-full rounded-lg mb-6"
+                  />
+                  <div className="flex gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setMockupImage(null)}
+                      className="flex-1"
+                    >
+                      Try Different Image
                     </Button>
-                    <Button onClick={proceedToCheckout} className="w-full" size="lg">
-                      Proceed to Checkout
+                    <Button onClick={proceedToCheckout} className="flex-1">
+                      Proceed to Checkout →
                     </Button>
                   </div>
-                </div>
+                </Card>
               </div>
-            </Card>
+            </section>
           )}
         </div>
       </main>
