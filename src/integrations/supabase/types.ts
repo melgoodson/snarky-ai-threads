@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_generated_images: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          prompt_text: string
+          selected: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          prompt_text: string
+          selected?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          prompt_text?: string
+          selected?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -64,31 +91,43 @@ export type Database = {
       }
       orders: {
         Row: {
+          artwork_url: string | null
           created_at: string | null
           email: string
+          fulfillment_status: string | null
           id: string
+          mockup_url: string | null
           shipping_address: Json
           status: string | null
+          teeinblue_order_id: string | null
           total_amount: number
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          artwork_url?: string | null
           created_at?: string | null
           email: string
+          fulfillment_status?: string | null
           id?: string
+          mockup_url?: string | null
           shipping_address: Json
           status?: string | null
+          teeinblue_order_id?: string | null
           total_amount: number
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          artwork_url?: string | null
           created_at?: string | null
           email?: string
+          fulfillment_status?: string | null
           id?: string
+          mockup_url?: string | null
           shipping_address?: Json
           status?: string | null
+          teeinblue_order_id?: string | null
           total_amount?: number
           updated_at?: string | null
           user_id?: string | null
@@ -138,43 +177,112 @@ export type Database = {
       }
       products: {
         Row: {
+          base_cost: number | null
           category: string | null
           created_at: string | null
           description: string | null
           id: string
           images: Json | null
           is_active: boolean | null
-          price: number
+          price: number | null
+          print_area_dimensions: Json | null
+          printify_blueprint_id: string | null
           printify_product_id: string
+          retail_price: number | null
+          template_image_url: string | null
           title: string
           updated_at: string | null
           variants: Json | null
         }
         Insert: {
+          base_cost?: number | null
           category?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           images?: Json | null
           is_active?: boolean | null
-          price: number
+          price?: number | null
+          print_area_dimensions?: Json | null
+          printify_blueprint_id?: string | null
           printify_product_id: string
+          retail_price?: number | null
+          template_image_url?: string | null
           title: string
           updated_at?: string | null
           variants?: Json | null
         }
         Update: {
+          base_cost?: number | null
           category?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           images?: Json | null
           is_active?: boolean | null
-          price?: number
+          price?: number | null
+          print_area_dimensions?: Json | null
+          printify_blueprint_id?: string | null
           printify_product_id?: string
+          retail_price?: number | null
+          template_image_url?: string | null
           title?: string
           updated_at?: string | null
           variants?: Json | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          cart_state: Json | null
+          created_at: string | null
+          id: string
+          last_design_step: string | null
+          last_visited_page: string | null
+          preferences: Json | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          cart_state?: Json | null
+          created_at?: string | null
+          id: string
+          last_design_step?: string | null
+          last_visited_page?: string | null
+          preferences?: Json | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          cart_state?: Json | null
+          created_at?: string | null
+          id?: string
+          last_design_step?: string | null
+          last_visited_page?: string | null
+          preferences?: Json | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -183,10 +291,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -313,6 +427,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

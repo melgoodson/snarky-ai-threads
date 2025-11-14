@@ -117,14 +117,19 @@ const ProductManagement = () => {
       <Header />
       <main className="flex-1 bg-background p-8">
         <div className="container mx-auto max-w-7xl">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/admin')}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Admin
-          </Button>
+          <div className="flex justify-between items-center mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/admin')}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Admin
+            </Button>
+            <Button onClick={() => navigate('/create-product')}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Product from Blueprint
+            </Button>
+          </div>
 
           <div className="flex items-center justify-between mb-6">
             <div>
