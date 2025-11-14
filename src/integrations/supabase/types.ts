@@ -178,12 +178,14 @@ export type Database = {
       products: {
         Row: {
           base_cost: number | null
+          brand: string | null
           category: string | null
           created_at: string | null
           description: string | null
           id: string
           images: Json | null
           is_active: boolean | null
+          model: string | null
           price: number | null
           print_area_dimensions: Json | null
           printify_blueprint_id: string | null
@@ -196,12 +198,14 @@ export type Database = {
         }
         Insert: {
           base_cost?: number | null
+          brand?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           images?: Json | null
           is_active?: boolean | null
+          model?: string | null
           price?: number | null
           print_area_dimensions?: Json | null
           printify_blueprint_id?: string | null
@@ -214,12 +218,14 @@ export type Database = {
         }
         Update: {
           base_cost?: number | null
+          brand?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           images?: Json | null
           is_active?: boolean | null
+          model?: string | null
           price?: number | null
           print_area_dimensions?: Json | null
           printify_blueprint_id?: string | null
