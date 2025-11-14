@@ -329,6 +329,29 @@ export default function CustomDesign() {
                   </div>
                 </div>
 
+                {/* Custom Design Templates */}
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Or Choose To Add Your Image To one Of Our Designs</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((templateId) => (
+                      <Card
+                        key={templateId}
+                        className="p-6 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
+                      >
+                        <div className="space-y-3">
+                          <div className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center">
+                            <Sparkles className="h-12 w-12 text-muted-foreground" />
+                          </div>
+                          <h4 className="font-bold text-lg">Design Template {templateId}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Upload your image to customize this design
+                          </p>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Custom Prompt */}
                 <div>
                   <h3 className="text-xl font-bold mb-4">Or Describe Your Custom Design</h3>
