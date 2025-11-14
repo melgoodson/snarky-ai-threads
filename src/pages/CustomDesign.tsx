@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import template1 from "@/assets/template-1.png";
 import { Loader2, Upload, Check, Sparkles, Palette } from "lucide-react";
 
 interface Product {
@@ -333,10 +334,32 @@ export default function CustomDesign() {
                 <div>
                   <h3 className="text-xl font-bold mb-4">Or Choose To Add Your Image To one Of Our Designs</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map((templateId) => (
+                    {/* Template 1 - I AM THE BEST */}
+                    <Card className="p-4 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+                      <div className="space-y-3">
+                        <div className="aspect-square bg-background rounded-lg overflow-hidden">
+                          <img 
+                            src={template1} 
+                            alt="I AM THE BEST Template" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <h4 className="font-bold text-lg">I AM THE BEST</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Upload your image and add custom text
+                        </p>
+                        <Input 
+                          placeholder="Your text here"
+                          className="text-sm"
+                        />
+                      </div>
+                    </Card>
+
+                    {/* Template 2-4 Placeholders */}
+                    {[2, 3, 4].map((templateId) => (
                       <Card
                         key={templateId}
-                        className="p-6 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
+                        className="p-4 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
                       >
                         <div className="space-y-3">
                           <div className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center">
