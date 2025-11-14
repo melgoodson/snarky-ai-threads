@@ -337,7 +337,7 @@ export default function CustomDesign() {
                     {/* Template 1 - I AM THE BEST */}
                     <Card className="p-4 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
                       <div className="space-y-3">
-                        <div className="aspect-square bg-background rounded-lg overflow-hidden">
+                        <div className="aspect-square bg-white rounded-lg overflow-hidden">
                           <img 
                             src={template1} 
                             alt="I AM THE BEST Template" 
