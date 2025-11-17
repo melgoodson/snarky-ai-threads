@@ -85,73 +85,28 @@ const Checkout = () => {
     setLoading(true);
 
     try {
-      const amount = designData ? 34 : totalPrice;
-      
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          email: formData.email,
-          total_amount: amount,
-          shipping_address: formData,
-          status: 'pending',
-          artwork_url: designData?.artworkUrl,
-          mockup_url: designData?.mockupUrl,
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      const orderItems = designData 
-        ? [{
-            order_id: order.id,
-            printify_product_id: "placeholder",
-            variant_id: "placeholder",
-            quantity: 1,
-            price: amount,
-          }]
-        : items.map(item => ({
-            order_id: order.id,
-            printify_product_id: item.printifyProductId || item.productId,
-            variant_id: item.variantId || '0',
-            quantity: item.quantity,
-            price: item.price,
-          }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      const { error: printifyError } = await supabase.functions.invoke(
-        'create-printify-order',
-        { body: { orderId: order.id } }
+      // Create Stripe checkout session
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+        'create-checkout',
+        {
+          body: {
+            cartItems: items,
+            shippingAddress: formData,
+          },
+        }
       );
 
-      if (printifyError) {
-        console.error('Printify order creation failed:', printifyError);
-        toast.error('Order placed but fulfillment may be delayed');
-      }
+      if (checkoutError) throw checkoutError;
 
-      // Send confirmation email
-      await supabase.functions.invoke("send-order-confirmation", {
-        body: {
-          email: formData.email,
-          orderId: order.id,
-          totalAmount: amount.toFixed(2),
-        },
-      });
-
-      if (designData) {
-        localStorage.removeItem("customDesign");
+      // Redirect to Stripe checkout
+      if (checkoutData?.url) {
+        window.location.href = checkoutData.url;
+      } else {
+        throw new Error('No checkout URL returned');
       }
-      clearCart();
-      navigate(`/order-confirmation/${order.id}`);
     } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Failed to place order. Please try again.');
-    } finally {
+      console.error('Error creating checkout:', error);
+      toast.error('Failed to create checkout. Please try again.');
       setLoading(false);
     }
   };

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Order {
   id: string;
@@ -24,12 +25,42 @@ const OrderConfirmation = () => {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!orderId) return;
+      // Extract session ID from URL if it's a Stripe session ID
+      let orderIdToFetch = orderId;
+      
+      if (orderId?.startsWith('cs_')) {
+        // This is a Stripe session ID, verify payment first
+        try {
+          const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+            'verify-payment',
+            {
+              body: { sessionId: orderId },
+            }
+          );
+
+          if (verifyError) throw verifyError;
+          
+          if (verifyData?.orderId) {
+            orderIdToFetch = verifyData.orderId;
+            // Update URL to show the actual order ID
+            navigate(`/order-confirmation/${orderIdToFetch}`, { replace: true });
+          }
+        } catch (error) {
+          console.error('Error verifying payment:', error);
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (!orderIdToFetch) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .eq('id', orderId)
+        .eq('id', orderIdToFetch)
         .maybeSingle();
 
       if (error) {
@@ -41,7 +72,7 @@ const OrderConfirmation = () => {
     };
 
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, navigate]);
 
   if (loading) {
     return (
