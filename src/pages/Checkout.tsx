@@ -88,7 +88,7 @@ const Checkout = () => {
       ? [{
           id: `custom-${designData.productId}`,
           productId: designData.productId,
-          title: designData.title,
+          title: designData.title || 'Custom T-Shirt',
           price: getPriceFromDesign(designData),
           size: designData.size || 'M',
           image: designData.image || designData.mockupUrl,
