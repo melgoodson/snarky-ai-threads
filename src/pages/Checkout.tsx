@@ -30,6 +30,9 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
+  
+  console.log('Checkout page - cart items:', items);
+  console.log('Checkout page - total price:', totalPrice);
   const [loading, setLoading] = useState(false);
   const [designData, setDesignData] = useState<any>(null);
   const [formData, setFormData] = useState<CheckoutForm>({
