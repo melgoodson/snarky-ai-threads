@@ -11,7 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, User, Package, Palette, LogOut, Save } from 'lucide-react';
+import { Loader2, User, Package, Palette, LogOut, Save, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -45,6 +55,9 @@ const UserProfile = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [designToDelete, setDesignToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -113,13 +126,42 @@ const UserProfile = () => {
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(12);
+        .limit(10);
 
       if (error) throw error;
       setDesigns(data || []);
     } catch (error: any) {
       console.error('Error fetching designs:', error);
     }
+  };
+
+  const handleDeleteDesign = async () => {
+    if (!designToDelete) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('ai_generated_images')
+        .delete()
+        .eq('id', designToDelete);
+
+      if (error) throw error;
+
+      toast.success('Design deleted successfully');
+      setDesigns(designs.filter(d => d.id !== designToDelete));
+      setDeleteDialogOpen(false);
+      setDesignToDelete(null);
+    } catch (error: any) {
+      console.error('Error deleting design:', error);
+      toast.error('Failed to delete design');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteDialog = (designId: string) => {
+    setDesignToDelete(designId);
+    setDeleteDialogOpen(true);
   };
 
   const handleUpdateProfile = async () => {
@@ -159,16 +201,24 @@ const UserProfile = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'delivered':
         return 'bg-green-500';
       case 'shipped':
         return 'bg-blue-500';
       case 'processing':
+      case 'ordered':
         return 'bg-yellow-500';
+      case 'pending':
+        return 'bg-orange-500';
       default:
         return 'bg-muted';
     }
+  };
+
+  const formatStatus = (status: string) => {
+    if (status === 'processing') return 'ordered';
+    return status;
   };
 
   if (loading) {
@@ -272,7 +322,10 @@ const UserProfile = () => {
                     </div>
                     <div className="p-4 bg-muted rounded-lg">
                       <p className="text-sm text-muted-foreground">Designs Created</p>
-                      <p className="text-2xl font-bold">{designs.length}</p>
+                      <p className="text-2xl font-bold">{designs.length}/10</p>
+                      {designs.length >= 10 && (
+                        <p className="text-xs text-orange-500 mt-1">Limit reached</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -314,7 +367,7 @@ const UserProfile = () => {
                             <TableCell>${order.total_amount.toFixed(2)}</TableCell>
                             <TableCell>
                               <Badge className={getStatusColor(order.fulfillment_status)} variant="secondary">
-                                {order.fulfillment_status}
+                                {formatStatus(order.fulfillment_status)}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -342,7 +395,12 @@ const UserProfile = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Your Designs</CardTitle>
-                  <CardDescription>AI-generated designs you've created</CardDescription>
+                  <CardDescription>
+                    AI-generated designs you've created ({designs.length}/10 max)
+                    {designs.length >= 10 && (
+                      <span className="text-orange-500 ml-2">• Delete designs to create new ones</span>
+                    )}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {designs.length === 0 ? (
@@ -362,10 +420,19 @@ const UserProfile = () => {
                             alt={design.prompt_text}
                             className="w-full aspect-square object-cover rounded-lg"
                           />
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                            <p className="text-white text-sm text-center px-2">
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex flex-col items-center justify-center p-4">
+                            <p className="text-white text-sm text-center mb-3">
                               {design.prompt_text}
                             </p>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => openDeleteDialog(design.id)}
+                              className="flex items-center gap-2"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </Button>
                           </div>
                           {design.selected && (
                             <Badge className="absolute top-2 right-2" variant="secondary">
@@ -383,6 +450,34 @@ const UserProfile = () => {
         </div>
       </main>
       <Footer />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Design</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this design? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteDesign}
+              disabled={deleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
