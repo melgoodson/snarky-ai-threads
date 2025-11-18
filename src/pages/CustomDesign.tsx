@@ -238,20 +238,27 @@ export default function CustomDesign() {
   };
 
   const proceedToCheckout = () => {
+    console.log("Proceed to checkout clicked");
+    console.log("Selected Product:", selectedProduct);
+    console.log("Generated Design:", generatedDesign);
+    console.log("Final Mockup:", finalMockup);
+    
     if (!selectedProduct || !generatedDesign || !finalMockup) {
+      console.error("Missing required data for checkout");
       toast.error("Please complete all steps before checkout");
       return;
     }
 
-    localStorage.setItem(
-      "customDesign",
-      JSON.stringify({
-        productId: selectedProduct.id,
-        mockupUrl: finalMockup,
-        artworkUrl: generatedDesign,
-      })
-    );
-
+    const customDesignData = {
+      productId: selectedProduct.id,
+      mockupUrl: finalMockup,
+      artworkUrl: generatedDesign,
+    };
+    
+    console.log("Storing custom design data:", customDesignData);
+    localStorage.setItem("customDesign", JSON.stringify(customDesignData));
+    
+    console.log("Navigating to checkout...");
     navigate("/checkout");
   };
 
