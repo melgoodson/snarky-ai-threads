@@ -255,8 +255,7 @@ export default function CustomDesign() {
       ? selectedProduct.images[0] 
       : finalMockup;
 
-    // Fallback to 39.99 USD if no price is set on the product
-    const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 39.99;
+    const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
     const customDesignData = {
       productId: selectedProduct.id,
