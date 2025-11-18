@@ -55,9 +55,6 @@ const About = () => {
                     <strong>T-shirts and hoodies</strong> with unapologetic energy
                   </li>
                   <li>
-                    <strong>Candles</strong> that are big, loud, and funny on purpose
-                  </li>
-                  <li>
                     <strong>Mugs</strong> built for brutal honesty before coffee kicks in
                   </li>
                 </ul>
@@ -95,7 +92,7 @@ const About = () => {
               </h2>
 
               <p className="leading-relaxed">
-                Snarky Humans is a veteran-owned label that supports veteran life by keeping it real. If you want to support veterans, start by supporting the people building things after the dust settles. Wear the shirt. Light the candle. Sip from the mug that says exactly what you mean. Give the dog a better treat and the cat a better target than your ottoman. It is small habit after small habit until a hard day feels a little lighter.
+                Snarky Humans is a veteran-owned label that supports veteran life by keeping it real. If you want to support veterans, start by supporting the people building things after the dust settles. Wear the shirt. Sip from the mug that says exactly what you mean. Give the dog a better treat and the cat a better target than your ottoman. It is small habit after small habit until a hard day feels a little lighter.
               </p>
 
               <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
