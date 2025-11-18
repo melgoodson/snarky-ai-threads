@@ -63,6 +63,25 @@ const Checkout = () => {
     }
   }, [items.length, navigate]);
 
+  const getPriceFromDesign = (design: any): number => {
+    const title = (design?.title || '').toLowerCase();
+
+    // If a valid numeric price was stored, use it
+    const storedPrice = Number(design?.price);
+    if (!Number.isNaN(storedPrice) && storedPrice > 0) {
+      return storedPrice;
+    }
+
+    // Fallbacks based on product type in the title
+    if (title.includes('hood')) return 69.99; // Hoodie
+    if (title.includes('mug')) return 19.99;  // Mug
+    if (title.includes('card')) return 8.99;  // Card
+    if (title.includes('tee') || title.includes('shirt')) return 39.99; // Tee
+
+    // Safe final fallback
+    return 39.99;
+  };
+
   const checkoutItems: CheckoutItem[] = items.length
     ? items
     : designData
@@ -70,7 +89,7 @@ const Checkout = () => {
           id: `custom-${designData.productId}`,
           productId: designData.productId,
           title: designData.title,
-          price: Number(designData.price) || 0,
+          price: getPriceFromDesign(designData),
           size: designData.size || 'M',
           image: designData.image || designData.mockupUrl,
           quantity: 1,
