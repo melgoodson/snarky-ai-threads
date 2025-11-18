@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import template1 from "@/assets/template-1.png";
 import { Loader2, Upload, Check, Sparkles, Palette } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 interface Product {
   id: string;
@@ -50,6 +51,7 @@ const PRESET_DESIGNS = [
 
 export default function CustomDesign() {
   const navigate = useNavigate();
+  const { addItem } = useCart();
   const [currentStep, setCurrentStep] = useState(1);
   
   // Step 1: Design
@@ -258,6 +260,21 @@ export default function CustomDesign() {
     console.log("Storing custom design data:", customDesignData);
     localStorage.setItem("customDesign", JSON.stringify(customDesignData));
     
+    // Add the custom product to cart with its price
+    const productImage = selectedProduct.images && selectedProduct.images.length > 0 
+      ? selectedProduct.images[0] 
+      : finalMockup;
+    
+    addItem({
+      productId: selectedProduct.id,
+      title: `Custom ${selectedProduct.title}`,
+      price: selectedProduct.retail_price || selectedProduct.price || 0,
+      size: "M", // Default size, can be made configurable
+      image: productImage,
+      printifyProductId: selectedProduct.printify_product_id,
+    });
+    
+    console.log("Added to cart with price:", selectedProduct.retail_price || selectedProduct.price);
     console.log("Navigating to checkout...");
     navigate("/checkout");
   };
