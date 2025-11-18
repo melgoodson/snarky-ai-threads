@@ -254,11 +254,14 @@ export default function CustomDesign() {
     const productImage = selectedProduct.images && selectedProduct.images.length > 0 
       ? selectedProduct.images[0] 
       : finalMockup;
+
+    // Fallback to 39.99 USD if no price is set on the product
+    const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 39.99;
     
     const customDesignData = {
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
-      price: selectedProduct.retail_price || selectedProduct.price || 0,
+      price: basePrice,
       size: "M",
       image: productImage,
       mockupUrl: finalMockup,
@@ -272,13 +275,13 @@ export default function CustomDesign() {
     addItem({
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
-      price: selectedProduct.retail_price || selectedProduct.price || 0,
+      price: basePrice,
       size: "M", // Default size, can be made configurable
       image: productImage,
       printifyProductId: selectedProduct.printify_product_id,
     });
     
-    console.log("Added to cart with price:", selectedProduct.retail_price || selectedProduct.price);
+    console.log("Added to cart with price:", basePrice);
     console.log("Navigating to checkout...");
     navigate("/checkout");
   };
