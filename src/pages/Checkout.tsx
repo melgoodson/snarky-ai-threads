@@ -54,7 +54,10 @@ const Checkout = () => {
   useEffect(() => {
     const stored = localStorage.getItem("customDesign");
     if (stored) {
-      setDesignData(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      console.log('Parsed design data from localStorage:', parsed);
+      console.log('Price from design data:', parsed.price, typeof parsed.price);
+      setDesignData(parsed);
     } else if (items.length === 0) {
       navigate('/');
     }
@@ -67,7 +70,7 @@ const Checkout = () => {
           id: `custom-${designData.productId}`,
           productId: designData.productId,
           title: designData.title,
-          price: designData.price,
+          price: Number(designData.price) || 0,
           size: designData.size || 'M',
           image: designData.image || designData.mockupUrl,
           quantity: 1,
@@ -76,8 +79,11 @@ const Checkout = () => {
         }]
       : [];
 
+  console.log('Checkout items:', checkoutItems);
+  console.log('Checkout items prices:', checkoutItems.map(item => ({ title: item.title, price: item.price, type: typeof item.price })));
+
   const effectiveTotal = checkoutItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (Number(item.price) || 0) * item.quantity,
     0
   );
 
