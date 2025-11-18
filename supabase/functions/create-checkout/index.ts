@@ -61,10 +61,10 @@ serve(async (req) => {
 
     // Convert cart items to Stripe line items
     const lineItems = cartItems.map((item: any) => {
-      // Determine product type from title
+      // Determine product type from title (with safe fallback)
       let productType = "t-shirt"; // default
-      const title = item.title.toLowerCase();
-      if (title.includes("hoodie")) productType = "hoodie";
+      const title = (item.title || "").toLowerCase();
+      if (title.includes("hoodie") || title.includes("sweatshirt")) productType = "hoodie";
       else if (title.includes("mug")) productType = "mug";
       else if (title.includes("card")) productType = "card";
 
