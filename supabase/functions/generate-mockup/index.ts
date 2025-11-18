@@ -44,18 +44,18 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Image 1 shows a t-shirt already printed with the FINAL DESIGN. Image 2 shows the PERSON. STEP 1: Extract the exact graphic from the t-shirt in Image 1 (do NOT redesign or change colors, text, or style). STEP 2: Put that same graphic onto a plain t-shirt worn by the person in Image 2, positioned naturally on the chest area. The result must look like a realistic photo of the person wearing that same designed t-shirt. Preserve the person's pose, lighting, and background.",
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: productImageData,
-                },
+                text: "IMAGE A: Person photo. IMAGE B: Product t-shirt that already has the FINAL DESIGN printed on it (may include a different model/body). STEP 1: From IMAGE B, precisely extract ONLY the graphic/print from the shirt (ignore the original model/body and background). STEP 2: Place that exact graphic onto a plain t-shirt worn by the person in IMAGE A, centered on the chest, matching perspective and lighting. The final image must look like a realistic photo of the person from IMAGE A wearing a t-shirt with that same design, with NO trace of the original model from IMAGE B.",
               },
               {
                 type: "image_url",
                 image_url: {
                   url: userImageData,
+                },
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: productImageData,
                 },
               },
             ],
