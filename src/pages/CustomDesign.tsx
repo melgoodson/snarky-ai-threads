@@ -251,19 +251,23 @@ export default function CustomDesign() {
       return;
     }
 
+    const productImage = selectedProduct.images && selectedProduct.images.length > 0 
+      ? selectedProduct.images[0] 
+      : finalMockup;
+    
     const customDesignData = {
       productId: selectedProduct.id,
+      title: `Custom ${selectedProduct.title}`,
+      price: selectedProduct.retail_price || selectedProduct.price || 0,
+      size: "M",
+      image: productImage,
       mockupUrl: finalMockup,
       artworkUrl: generatedDesign,
+      printifyProductId: selectedProduct.printify_product_id,
     };
     
     console.log("Storing custom design data:", customDesignData);
     localStorage.setItem("customDesign", JSON.stringify(customDesignData));
-    
-    // Add the custom product to cart with its price
-    const productImage = selectedProduct.images && selectedProduct.images.length > 0 
-      ? selectedProduct.images[0] 
-      : finalMockup;
     
     addItem({
       productId: selectedProduct.id,

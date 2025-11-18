@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '@/contexts/CartContext';
+import { useCart, CartItem } from '@/contexts/CartContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,8 @@ const checkoutSchema = z.object({
 });
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
+
+type CheckoutItem = CartItem;
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -58,7 +60,28 @@ const Checkout = () => {
     }
   }, [items.length, navigate]);
 
-  if (!designData && items.length === 0) {
+  const checkoutItems: CheckoutItem[] = items.length
+    ? items
+    : designData
+      ? [{
+          id: `custom-${designData.productId}`,
+          productId: designData.productId,
+          title: designData.title,
+          price: designData.price,
+          size: designData.size || 'M',
+          image: designData.image || designData.mockupUrl,
+          quantity: 1,
+          printifyProductId: designData.printifyProductId,
+          variantId: undefined,
+        }]
+      : [];
+
+  const effectiveTotal = checkoutItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  if (!designData && checkoutItems.length === 0) {
     return null;
   }
 
@@ -93,7 +116,7 @@ const Checkout = () => {
         'create-checkout',
         {
           body: {
-            cartItems: items,
+            cartItems: checkoutItems,
             shippingAddress: formData,
           },
         }
@@ -288,7 +311,7 @@ const Checkout = () => {
             <Card className="p-6 sticky top-24">
               <h2 className="text-xl font-black mb-4">ORDER SUMMARY</h2>
               <div className="space-y-4">
-                {items.map(item => (
+                {checkoutItems.map(item => (
                   <div key={item.id} className="flex gap-4">
                     <img
                       src={item.image}
@@ -309,7 +332,7 @@ const Checkout = () => {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>${effectiveTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
@@ -317,7 +340,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between text-lg font-black border-t pt-2">
                     <span>TOTAL</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>${effectiveTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
