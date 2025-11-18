@@ -44,7 +44,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "IMPORTANT: The first image shows a t-shirt with a design already printed on it. Take that EXACT design from the t-shirt in the first image and composite it onto a t-shirt being worn by the person in the second image. Make it look like the person is naturally wearing a t-shirt with that exact design. The design should be perfectly placed on the chest area of the t-shirt they're wearing. Make it photorealistic and professionally composited.",
+                text: "Image 1 shows a t-shirt already printed with the FINAL DESIGN. Image 2 shows the PERSON. STEP 1: Extract the exact graphic from the t-shirt in Image 1 (do NOT redesign or change colors, text, or style). STEP 2: Put that same graphic onto a plain t-shirt worn by the person in Image 2, positioned naturally on the chest area. The result must look like a realistic photo of the person wearing that same designed t-shirt. Preserve the person's pose, lighting, and background.",
               },
               {
                 type: "image_url",
