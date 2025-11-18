@@ -44,7 +44,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Use the reference design from the product image and show a realistic T-shirt mockup on this human subject. The t-shirt should have the exact design from the reference image. Make it look natural and professionally composited, as if the person is actually wearing the shirt with that design.",
+                text: "IMPORTANT: The first image shows a t-shirt with a design already printed on it. Take that EXACT design from the t-shirt in the first image and composite it onto a t-shirt being worn by the person in the second image. Make it look like the person is naturally wearing a t-shirt with that exact design. The design should be perfectly placed on the chest area of the t-shirt they're wearing. Make it photorealistic and professionally composited.",
               },
               {
                 type: "image_url",
