@@ -50,7 +50,7 @@ export type Database = {
           printify_product_id: string
           product_id: string | null
           quantity: number
-          variant_id: string
+          variant_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -60,7 +60,7 @@ export type Database = {
           printify_product_id: string
           product_id?: string | null
           quantity: number
-          variant_id: string
+          variant_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -70,7 +70,7 @@ export type Database = {
           printify_product_id?: string
           product_id?: string | null
           quantity?: number
-          variant_id?: string
+          variant_id?: string | null
         }
         Relationships: [
           {

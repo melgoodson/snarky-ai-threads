@@ -70,14 +70,21 @@ serve(async (req) => {
     console.log("Order created:", order.id);
 
     // Create order items
-    const orderItems = cartItems.map((item: any) => ({
-      order_id: order.id,
-      product_id: item.productId,
-      printify_product_id: item.printifyProductId,
-      variant_id: item.variantId,
-      quantity: item.quantity,
-      price: item.price,
-    }));
+    console.log("Processing cart items:", JSON.stringify(cartItems, null, 2));
+    
+    const orderItems = cartItems.map((item: any) => {
+      const orderItem = {
+        order_id: order.id,
+        product_id: item.productId,
+        printify_product_id: item.printifyProductId || String(item.printifyProductId),
+        variant_id: item.variantId || item.variant_id || null,
+        quantity: item.quantity || 1,
+        price: item.price,
+      };
+      
+      console.log("Created order item:", JSON.stringify(orderItem, null, 2));
+      return orderItem;
+    });
 
     const { error: itemsError } = await supabaseClient
       .from("order_items")
@@ -85,10 +92,11 @@ serve(async (req) => {
 
     if (itemsError) {
       console.error("Error creating order items:", itemsError);
+      console.error("Order items that failed:", JSON.stringify(orderItems, null, 2));
       throw itemsError;
     }
 
-    console.log("Order items created");
+    console.log("Order items created successfully");
 
     // Trigger Printify order creation
     try {
