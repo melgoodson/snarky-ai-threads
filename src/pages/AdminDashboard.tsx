@@ -67,6 +67,18 @@ interface AnalyticsData {
   ordersByStatus: Array<{ name: string; value: number }>;
 }
 
+interface TrafficAnalytics {
+  totalPageViews: number;
+  uniqueVisitors: number;
+  totalSessions: number;
+  averageSessionDuration: number;
+  topPages: Array<{ page: string; views: number }>;
+  deviceBreakdown: Array<{ name: string; value: number }>;
+  browserBreakdown: Array<{ name: string; value: number }>;
+  avgScrollDepth: number;
+  clickEvents: number;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -76,6 +88,7 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [trafficAnalytics, setTrafficAnalytics] = useState<TrafficAnalytics | null>(null);
   const [dateRange, setDateRange] = useState<string>("30");
 
   useEffect(() => {
@@ -97,6 +110,92 @@ export default function AdminDashboard() {
       calculateAnalytics();
     }
   }, [orders, dateRange]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchTrafficAnalytics();
+    }
+  }, [isAdmin, dateRange]);
+
+  const fetchTrafficAnalytics = async () => {
+    try {
+      const daysAgo = parseInt(dateRange);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+
+      // Fetch analytics events
+      const { data: events, error: eventsError } = await supabase
+        .from('analytics_events')
+        .select('*')
+        .gte('created_at', cutoffDate.toISOString());
+
+      if (eventsError) throw eventsError;
+
+      // Fetch sessions
+      const { data: sessions, error: sessionsError } = await supabase
+        .from('analytics_sessions')
+        .select('*')
+        .gte('started_at', cutoffDate.toISOString());
+
+      if (sessionsError) throw sessionsError;
+
+      // Calculate metrics
+      const pageViews = events?.filter(e => e.event_type === 'page_view') || [];
+      const uniqueVisitors = new Set(pageViews.map(e => e.session_id)).size;
+      const totalSessions = sessions?.length || 0;
+      const avgDuration = sessions?.reduce((acc, s) => acc + (s.duration || 0), 0) / totalSessions || 0;
+
+      // Top pages
+      const pageViewCounts: Record<string, number> = {};
+      pageViews.forEach(e => {
+        pageViewCounts[e.page_url] = (pageViewCounts[e.page_url] || 0) + 1;
+      });
+      const topPages = Object.entries(pageViewCounts)
+        .map(([page, views]) => ({ page, views }))
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 10);
+
+      // Device breakdown
+      const deviceCounts: Record<string, number> = {};
+      events?.forEach(e => {
+        if (e.device_type) {
+          deviceCounts[e.device_type] = (deviceCounts[e.device_type] || 0) + 1;
+        }
+      });
+      const deviceBreakdown = Object.entries(deviceCounts).map(([name, value]) => ({ name, value }));
+
+      // Browser breakdown
+      const browserCounts: Record<string, number> = {};
+      events?.forEach(e => {
+        if (e.browser) {
+          browserCounts[e.browser] = (browserCounts[e.browser] || 0) + 1;
+        }
+      });
+      const browserBreakdown = Object.entries(browserCounts).map(([name, value]) => ({ name, value }));
+
+      // Average scroll depth
+      const scrollEvents = events?.filter(e => e.scroll_depth && e.scroll_depth > 0) || [];
+      const avgScrollDepth = scrollEvents.reduce((acc, e) => acc + (e.scroll_depth || 0), 0) / scrollEvents.length || 0;
+
+      // Click events
+      const clickEvents = events?.filter(e => e.event_type === 'click').length || 0;
+
+      setTrafficAnalytics({
+        totalPageViews: pageViews.length,
+        uniqueVisitors,
+        totalSessions,
+        averageSessionDuration: Math.round(avgDuration),
+        topPages,
+        deviceBreakdown,
+        browserBreakdown,
+        avgScrollDepth: Math.round(avgScrollDepth),
+        clickEvents,
+      });
+    } catch (error) {
+      console.error('Error fetching traffic analytics:', error);
+      toast.error('Failed to load traffic analytics');
+    }
+  };
 
   const checkAdminAccess = async () => {
     try {
@@ -316,6 +415,10 @@ export default function AdminDashboard() {
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Analytics
               </TabsTrigger>
+              <TabsTrigger value="traffic">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Traffic
+              </TabsTrigger>
               <TabsTrigger value="orders">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Orders
@@ -521,6 +624,161 @@ export default function AdminDashboard() {
                         />
                       </BarChart>
                     </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Traffic Analytics Tab */}
+            <TabsContent value="traffic" className="space-y-6">
+              {/* Key Traffic Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <TrendingUp className="h-4 w-4" />
+                      Page Views
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">{trafficAnalytics?.totalPageViews || 0}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Users className="h-4 w-4" />
+                      Unique Visitors
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">{trafficAnalytics?.uniqueVisitors || 0}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <BarChart3 className="h-4 w-4" />
+                      Sessions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">{trafficAnalytics?.totalSessions || 0}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4" />
+                      Avg Session
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold">{trafficAnalytics?.averageSessionDuration || 0}s</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Charts Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Device Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Device Breakdown</CardTitle>
+                    <CardDescription>Traffic by device type</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={trafficAnalytics?.deviceBreakdown || []}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          outerRadius={100}
+                          fill="hsl(var(--primary))"
+                          dataKey="value"
+                        >
+                          {trafficAnalytics?.deviceBreakdown?.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Browser Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Browser Breakdown</CardTitle>
+                    <CardDescription>Traffic by browser</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={trafficAnalytics?.browserBreakdown || []}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Top Pages & Engagement Metrics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Top Pages */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Pages</CardTitle>
+                    <CardDescription>Most visited pages</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {trafficAnalytics?.topPages?.slice(0, 5).map((page, index) => (
+                        <div key={index} className="flex justify-between items-center">
+                          <span className="text-sm font-medium truncate">{page.page}</span>
+                          <Badge variant="secondary">{page.views} views</Badge>
+                        </div>
+                      ))}
+                      {(!trafficAnalytics?.topPages || trafficAnalytics.topPages.length === 0) && (
+                        <p className="text-sm text-muted-foreground">No page view data yet</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Engagement Metrics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Engagement Metrics</CardTitle>
+                    <CardDescription>User interaction data</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Average Scroll Depth</span>
+                      <Badge variant="secondary">{trafficAnalytics?.avgScrollDepth || 0}%</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Total Click Events</span>
+                      <Badge variant="secondary">{trafficAnalytics?.clickEvents || 0}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Clicks per Session</span>
+                      <Badge variant="secondary">
+                        {trafficAnalytics && trafficAnalytics.totalSessions > 0
+                          ? (trafficAnalytics.clickEvents / trafficAnalytics.totalSessions).toFixed(1)
+                          : '0'}
+                      </Badge>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
