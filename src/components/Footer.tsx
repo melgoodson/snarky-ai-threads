@@ -80,6 +80,11 @@ export const Footer = () => {
                   Terms of Service
                 </a>
               </li>
+              <li>
+                <a href="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Admin Dashboard
+                </a>
+              </li>
             </ul>
           </div>
         </div>
