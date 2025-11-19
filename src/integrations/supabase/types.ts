@@ -41,6 +41,129 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          browser: string | null
+          created_at: string | null
+          device_type: string | null
+          element_class: string | null
+          element_id: string | null
+          element_text: string | null
+          entry_page: boolean | null
+          event_data: Json | null
+          event_type: string
+          exit_page: boolean | null
+          id: string
+          os: string | null
+          page_url: string
+          referrer: string | null
+          screen_resolution: string | null
+          scroll_depth: number | null
+          session_id: string
+          time_on_page: number | null
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          element_class?: string | null
+          element_id?: string | null
+          element_text?: string | null
+          entry_page?: boolean | null
+          event_data?: Json | null
+          event_type: string
+          exit_page?: boolean | null
+          id?: string
+          os?: string | null
+          page_url: string
+          referrer?: string | null
+          screen_resolution?: string | null
+          scroll_depth?: number | null
+          session_id: string
+          time_on_page?: number | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          element_class?: string | null
+          element_id?: string | null
+          element_text?: string | null
+          entry_page?: boolean | null
+          event_data?: Json | null
+          event_type?: string
+          exit_page?: boolean | null
+          id?: string
+          os?: string | null
+          page_url?: string
+          referrer?: string | null
+          screen_resolution?: string | null
+          scroll_depth?: number | null
+          session_id?: string
+          time_on_page?: number | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      analytics_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string | null
+          device_type: string | null
+          duration: number | null
+          ended_at: string | null
+          entry_page: string | null
+          exit_page: string | null
+          id: string
+          is_active: boolean | null
+          os: string | null
+          page_count: number | null
+          referrer: string | null
+          session_id: string
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          duration?: number | null
+          ended_at?: string | null
+          entry_page?: string | null
+          exit_page?: string | null
+          id?: string
+          is_active?: boolean | null
+          os?: string | null
+          page_count?: number | null
+          referrer?: string | null
+          session_id: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          duration?: number | null
+          ended_at?: string | null
+          entry_page?: string | null
+          exit_page?: string | null
+          id?: string
+          is_active?: boolean | null
+          os?: string | null
+          page_count?: number | null
+          referrer?: string | null
+          session_id?: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null

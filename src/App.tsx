@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import NewArrivals from "./pages/NewArrivals";
@@ -27,6 +28,11 @@ import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  useAnalytics();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <CartProvider>
@@ -34,6 +40,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AppContent />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/product/:id" element={<ProductDetail />} />
