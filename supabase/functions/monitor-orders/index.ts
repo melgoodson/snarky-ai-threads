@@ -18,12 +18,15 @@ serve(async (req) => {
 
     console.log("Order monitoring agent started");
 
-    // Find all pending orders without Printify order ID
+    // Find all paid orders without Printify order ID
     const { data: pendingOrders, error: fetchError } = await supabase
       .from("orders")
-      .select("*")
-      .eq("status", "pending")
-      .is("printify_order_id", null)
+      .select(`
+        *,
+        printify_orders!left(printify_order_id)
+      `)
+      .eq("status", "paid")
+      .is("printify_orders.printify_order_id", null)
       .order("created_at", { ascending: true })
       .limit(10);
 
