@@ -161,12 +161,14 @@ serve(async (req) => {
       );
 
       if (!variantsResponse.ok) {
+        const status = variantsResponse.status;
+        const statusText = variantsResponse.statusText;
         const errorText = await variantsResponse.text();
-        console.error(`Failed to fetch variants for ${productConfig.title}:`, errorText);
+        console.error(`Failed to fetch variants for ${productConfig.title} (status ${status} ${statusText})`, errorText);
         results.push({
           title: productConfig.title,
           success: false,
-          error: `Failed to fetch variants: ${errorText}`,
+          error: `Failed to fetch variants: status ${status} ${statusText} - ${errorText}`,
         });
         continue;
       }
