@@ -139,12 +139,82 @@ const PrintifyAdmin = () => {
           </p>
         </div>
 
+        {/* Bulk Product Creation - MOST IMPORTANT STEP */}
+        <Card className="border-primary bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Database className="h-6 w-6" />
+              Step 1: Create Your Blank Products in Printify
+            </CardTitle>
+            <CardDescription className="text-base">
+              This will create your T-Shirt (10 colors), Hoodie (10 colors), Mug, Tote Bag, and Greeting Cards in Printify with all variants
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">⚠️ Important:</p>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                This will create 5 new products in your Printify account. The 2 existing products you mentioned will remain unchanged.
+              </p>
+            </div>
+
+            <Button 
+              onClick={createBulkProducts} 
+              disabled={loading}
+              size="lg"
+              className="w-full sm:w-auto text-base h-12"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Creating Products...
+                </>
+              ) : (
+                "Create Blank Products in Printify"
+              )}
+            </Button>
+
+            {bulkCreateResult && (
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <div className="space-y-3">
+                  {bulkCreateResult.results.map((result: any, index: number) => (
+                    <div 
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-background rounded"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{result.title}</p>
+                        {result.success && (
+                          <p className="text-xs text-muted-foreground">
+                            {result.variantCount} variants created
+                          </p>
+                        )}
+                      </div>
+                      {result.success ? (
+                        <span className="flex items-center gap-1 text-green-600">
+                          <Check className="h-4 w-4" />
+                          <span className="text-xs">Created</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-red-600">
+                          <X className="h-4 w-4" />
+                          <span className="text-xs">Failed</span>
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Webhook Setup */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Webhook className="h-5 w-5" />
-              Webhook Setup
+              Step 2: Webhook Setup
             </CardTitle>
             <CardDescription>
               Register webhooks to receive order status updates (shipped, delivered, canceled)
@@ -206,77 +276,15 @@ const PrintifyAdmin = () => {
           </CardContent>
         </Card>
 
-        {/* Bulk Product Creation */}
-        <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Create Your 5 Products
-            </CardTitle>
-            <CardDescription>
-              Automatically create Tote Bag, T-Shirt (10 colors), Hoodie (10 colors), Mug, and Greeting Cards in Printify
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button 
-              onClick={createBulkProducts} 
-              disabled={loading}
-              className="w-full sm:w-auto"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Products...
-                </>
-              ) : (
-                "Create Products in Printify"
-              )}
-            </Button>
-
-            {bulkCreateResult && (
-              <div className="mt-4 p-4 bg-muted rounded-lg">
-                <div className="space-y-3">
-                  {bulkCreateResult.results.map((result: any, index: number) => (
-                    <div 
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-background rounded"
-                    >
-                      <div>
-                        <p className="text-sm font-medium">{result.title}</p>
-                        {result.success && (
-                          <p className="text-xs text-muted-foreground">
-                            {result.variantCount} variants created
-                          </p>
-                        )}
-                      </div>
-                      {result.success ? (
-                        <span className="flex items-center gap-1 text-green-600">
-                          <Check className="h-4 w-4" />
-                          <span className="text-xs">Created</span>
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-red-600">
-                          <X className="h-4 w-4" />
-                          <span className="text-xs">Failed</span>
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Product Sync */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Database className="h-5 w-5" />
-              Product Sync
+              Step 3: Product Sync
             </CardTitle>
             <CardDescription>
-              Sync published products from Printify to your database
+              After creating products, sync them to your database
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -326,11 +334,11 @@ const PrintifyAdmin = () => {
             <CardTitle className="text-sm">Next Steps</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Click "Setup Webhooks" to register all webhooks</li>
-              <li>Click "Sync Products" to import your Printify products</li>
-              <li>Check the results to verify everything worked</li>
-              <li>Your store is ready to display real products!</li>
+            <ol className="list-decimal list-inside space-y-2">
+              <li><strong>Create Products:</strong> Click "Create Blank Products in Printify" to add your 5 products</li>
+              <li><strong>Setup Webhooks:</strong> Register webhooks for order updates</li>
+              <li><strong>Sync Products:</strong> Import the created products to your database</li>
+              <li><strong>Done!</strong> Your store will display the new products</li>
             </ol>
           </CardContent>
         </Card>
