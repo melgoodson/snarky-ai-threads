@@ -50,14 +50,12 @@ serve(async (req) => {
         dbId: '6a3e8f69-01e5-412a-95db-92c2a72a4d0e', // Tote Bag
         blueprintId: 467,
         title: 'Tote Bag',
-        printProviderId: 99, // Common provider for totes
         variantFilter: (variants: any[]) => variants.filter(v => v.title.includes('Snowwhite')),
       },
       {
         dbId: '17c18ee5-d25b-4edd-b9b6-3acef0c7eca6', // T-Shirt
         blueprintId: 12,
         title: 'Unisex Jersey Short Sleeve Tee',
-        printProviderId: 5, // Common provider for apparel
         variantFilter: (variants: any[]) => {
           // Pick top 10 colors: Black, White, Navy, Gray, Red, Royal Blue, Forest Green, Maroon, Light Blue, Pink
           const topColors = ['Black', 'White', 'Navy', 'Dark Heather', 'Red', 'Royal', 'Forest', 'Maroon', 'Light Blue', 'Pink'];
@@ -70,7 +68,6 @@ serve(async (req) => {
         dbId: 'f3f95e6e-e350-4b0d-8b16-fef21e2a3f35', // Hoodie
         blueprintId: 77,
         title: 'Unisex Heavy Blend™ Hooded Sweatshirt',
-        printProviderId: 5,
         variantFilter: (variants: any[]) => {
           const topColors = ['Black', 'White', 'Navy', 'Dark Heather', 'Red', 'Royal', 'Forest', 'Maroon', 'Light Blue', 'Sport Grey'];
           return variants.filter(v => 
@@ -82,14 +79,12 @@ serve(async (req) => {
         dbId: '6d9b4b4b-34ba-4990-b8a7-b165db4e8541', // Mug
         blueprintId: 425,
         title: 'Mug 15oz',
-        printProviderId: 5,
         variantFilter: (variants: any[]) => variants.filter(v => v.title.includes('White')),
       },
       {
         dbId: 'e4332daa-23bc-4cef-9e35-36077b1e7ea5', // Greeting Cards
         blueprintId: 962,
         title: 'Greeting Cards',
-        printProviderId: 22, // Common provider for cards
         variantFilter: (variants: any[]) => variants, // All variants
       },
     ];
@@ -117,9 +112,46 @@ serve(async (req) => {
 
       const blueprint = await blueprintResponse.json();
 
-      // Fetch variants
+      // Fetch available print providers for this blueprint and pick the first one
+      const providersResponse = await fetch(
+        `https://api.printify.com/v1/catalog/blueprints/${productConfig.blueprintId}/print_providers.json`,
+        {
+          headers: {
+            'Authorization': `Bearer ${printifyApiToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!providersResponse.ok) {
+        const errorText = await providersResponse.text();
+        console.error(`Failed to fetch print providers for ${productConfig.title}:`, errorText);
+        results.push({
+          title: productConfig.title,
+          success: false,
+          error: `Failed to fetch print providers: ${errorText}`,
+        });
+        continue;
+      }
+
+      const providers = await providersResponse.json();
+      const selectedProvider = Array.isArray(providers) && providers.length > 0 ? providers[0] : null;
+
+      if (!selectedProvider) {
+        console.error(`No print providers found for ${productConfig.title}`);
+        results.push({
+          title: productConfig.title,
+          success: false,
+          error: 'No print providers found for this blueprint',
+        });
+        continue;
+      }
+
+      const printProviderId = selectedProvider.id;
+
+      // Fetch variants for the selected print provider
       const variantsResponse = await fetch(
-        `https://api.printify.com/v1/catalog/blueprints/${productConfig.blueprintId}/print_providers/${productConfig.printProviderId}/variants.json`,
+        `https://api.printify.com/v1/catalog/blueprints/${productConfig.blueprintId}/print_providers/${printProviderId}/variants.json`,
         {
           headers: {
             'Authorization': `Bearer ${printifyApiToken}`,
@@ -129,12 +161,28 @@ serve(async (req) => {
       );
 
       if (!variantsResponse.ok) {
-        console.error(`Failed to fetch variants for ${productConfig.title}`);
+        const errorText = await variantsResponse.text();
+        console.error(`Failed to fetch variants for ${productConfig.title}:`, errorText);
+        results.push({
+          title: productConfig.title,
+          success: false,
+          error: `Failed to fetch variants: ${errorText}`,
+        });
         continue;
       }
 
       const allVariants = await variantsResponse.json();
       const selectedVariants = productConfig.variantFilter(allVariants.variants || []);
+
+      if (!selectedVariants.length) {
+        console.error(`No variants matched filter for ${productConfig.title}`);
+        results.push({
+          title: productConfig.title,
+          success: false,
+          error: 'No variants matched the configured filter',
+        });
+        continue;
+      }
 
       console.log(`Selected ${selectedVariants.length} variants for ${productConfig.title}`);
 
@@ -143,7 +191,7 @@ serve(async (req) => {
         title: productConfig.title,
         description: `Custom ${productConfig.title}`,
         blueprint_id: productConfig.blueprintId,
-        print_provider_id: productConfig.printProviderId,
+        print_provider_id: printProviderId,
         variants: selectedVariants.map((variant: any) => ({
           id: variant.id,
           price: Math.round(variant.cost * 2.5), // 2.5x markup in cents
