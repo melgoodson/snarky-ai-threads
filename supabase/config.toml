@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.create-printify-order]
 verify_jwt = false
+
+[functions.get-printify-blueprint-details]
+verify_jwt = false
