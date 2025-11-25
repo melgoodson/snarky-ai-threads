@@ -11,6 +11,7 @@ const PrintifyAdmin = () => {
   const [loading, setLoading] = useState(false);
   const [webhookResult, setWebhookResult] = useState<any>(null);
   const [syncResult, setSyncResult] = useState<any>(null);
+  const [bulkCreateResult, setBulkCreateResult] = useState<any>(null);
   const { toast } = useToast();
 
   const setupWebhooks = async () => {
@@ -76,6 +77,42 @@ const PrintifyAdmin = () => {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to sync products",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createBulkProducts = async () => {
+    setLoading(true);
+    setBulkCreateResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('create-bulk-printify-products');
+      
+      if (error) throw error;
+      
+      setBulkCreateResult(data);
+      
+      if (data.success) {
+        const successCount = data.results.filter((r: any) => r.success).length;
+        toast({
+          title: "Products created!",
+          description: `Successfully created ${successCount} out of ${data.results.length} products`,
+        });
+      } else {
+        toast({
+          title: "Creation failed",
+          description: data.error || "Failed to create products",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Bulk product creation error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create products",
         variant: "destructive",
       });
     } finally {
@@ -163,6 +200,68 @@ const PrintifyAdmin = () => {
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Bulk Product Creation */}
+        <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Create Your 5 Products
+            </CardTitle>
+            <CardDescription>
+              Automatically create Tote Bag, T-Shirt (10 colors), Hoodie (10 colors), Mug, and Greeting Cards in Printify
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              onClick={createBulkProducts} 
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Products...
+                </>
+              ) : (
+                "Create Products in Printify"
+              )}
+            </Button>
+
+            {bulkCreateResult && (
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <div className="space-y-3">
+                  {bulkCreateResult.results.map((result: any, index: number) => (
+                    <div 
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-background rounded"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{result.title}</p>
+                        {result.success && (
+                          <p className="text-xs text-muted-foreground">
+                            {result.variantCount} variants created
+                          </p>
+                        )}
+                      </div>
+                      {result.success ? (
+                        <span className="flex items-center gap-1 text-green-600">
+                          <Check className="h-4 w-4" />
+                          <span className="text-xs">Created</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-red-600">
+                          <X className="h-4 w-4" />
+                          <span className="text-xs">Failed</span>
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

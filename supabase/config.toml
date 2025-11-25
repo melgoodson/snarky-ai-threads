@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.create-printify-product]
 verify_jwt = false
+
+[functions.create-bulk-printify-products]
+verify_jwt = false
