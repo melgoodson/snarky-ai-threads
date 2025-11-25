@@ -50,3 +50,9 @@ verify_jwt = false
 
 [functions.get-printify-blueprint-details]
 verify_jwt = false
+
+[functions.sync-printify-products]
+verify_jwt = false
+
+[functions.create-printify-product]
+verify_jwt = false
