@@ -188,7 +188,49 @@ serve(async (req) => {
 
       console.log(`Selected ${selectedVariants.length} variants for ${productConfig.title}`);
 
-      // Create product in Printify with explicit empty print areas (blank products)
+      // First, create and upload a placeholder image to Printify
+      console.log('Creating placeholder image for product...');
+      const placeholderResponse = await fetch(
+        `${supabaseUrl}/functions/v1/create-printify-placeholder`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!placeholderResponse.ok) {
+        const errorText = await placeholderResponse.text();
+        console.error(`Failed to create placeholder for ${productConfig.title}:`, errorText);
+        results.push({
+          title: productConfig.title,
+          success: false,
+          error: `Failed to create placeholder: ${errorText}`,
+        });
+        continue;
+      }
+
+      const placeholderData = await placeholderResponse.json();
+      const placeholderId = placeholderData.imageId;
+      console.log(`Placeholder created with ID: ${placeholderId}`);
+
+      // Get print areas from blueprint
+      const printAreas = blueprint.print_areas || [];
+      const firstPrintArea = printAreas[0];
+
+      if (!firstPrintArea) {
+        console.error(`No print areas found for ${productConfig.title}`);
+        results.push({
+          title: productConfig.title,
+          success: false,
+          error: 'No print areas available for this blueprint',
+        });
+        continue;
+      }
+
+      // Create product with placeholder in print areas
       const createProductPayload = {
         title: productConfig.title,
         description: `Custom ${productConfig.title}`,
@@ -199,8 +241,25 @@ serve(async (req) => {
           price: Math.round(variant.cost * 2.5), // 2.5x markup in cents
           is_enabled: true,
         })),
-        // Important: Printify requires the print_areas field to exist, even for blank products
-        print_areas: [],
+        print_areas: [
+          {
+            variant_ids: selectedVariants.map((v: any) => v.id),
+            placeholders: [
+              {
+                position: firstPrintArea.placeholders[0]?.id || 'front',
+                images: [
+                  {
+                    id: placeholderId,
+                    x: 0.5,
+                    y: 0.5,
+                    scale: 1,
+                    angle: 0,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       };
 
       const createResponse = await fetch(
