@@ -188,7 +188,7 @@ serve(async (req) => {
 
       console.log(`Selected ${selectedVariants.length} variants for ${productConfig.title}`);
 
-      // Create product in Printify without print areas (blank products)
+      // Create product in Printify with explicit empty print areas (blank products)
       const createProductPayload = {
         title: productConfig.title,
         description: `Custom ${productConfig.title}`,
@@ -199,6 +199,8 @@ serve(async (req) => {
           price: Math.round(variant.cost * 2.5), // 2.5x markup in cents
           is_enabled: true,
         })),
+        // Important: Printify requires the print_areas field to exist, even for blank products
+        print_areas: [],
       };
 
       const createResponse = await fetch(
