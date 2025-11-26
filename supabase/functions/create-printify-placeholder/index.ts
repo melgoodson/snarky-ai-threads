@@ -50,39 +50,42 @@ serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    const imageBase64 = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    console.log('Lovable AI raw response:', JSON.stringify(aiData));
 
-    if (!imageBase64) {
+    // Try multiple possible locations for the image URL based on gateway format
+    let imageUrl: string | undefined;
+    const choice = aiData.choices?.[0];
+
+    if (choice?.message?.images?.[0]?.image_url?.url) {
+      imageUrl = choice.message.images[0].image_url.url;
+    } else if (choice?.message?.content?.[0]?.image_url?.url) {
+      imageUrl = choice.message.content[0].image_url.url;
+    } else if (choice?.message?.content?.[0]?.type === 'image_url') {
+      imageUrl = choice.message.content[0].image_url?.url;
+    }
+
+    if (!imageUrl) {
       throw new Error('No image generated from Lovable AI');
     }
 
     console.log('Placeholder image generated successfully');
 
     // Extract base64 data (remove data:image/png;base64, prefix if present)
-    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-
-    // Convert base64 to blob
-    const binaryString = atob(base64Data);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    const blob = new Blob([bytes], { type: 'image/png' });
+    const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, '');
 
     console.log('Uploading placeholder to Printify...');
 
-    // Create form data for Printify upload
-    const formData = new FormData();
-    formData.append('file', blob, 'placeholder.png');
-    formData.append('file_name', 'placeholder.png');
-
-    // Upload to Printify
+    // Upload to Printify using JSON body (contents should be base64 string)
     const uploadResponse = await fetch('https://api.printify.com/v1/uploads/images.json', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${printifyApiToken}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify({
+        file_name: 'placeholder.png',
+        contents: base64Data,
+      }),
     });
 
     if (!uploadResponse.ok) {
