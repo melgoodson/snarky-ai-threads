@@ -79,7 +79,7 @@ serve(async (req) => {
         dbId: '6d9b4b4b-34ba-4990-b8a7-b165db4e8541', // Mug
         blueprintId: 425,
         title: 'Mug 15oz',
-        variantFilter: (variants: any[]) => variants.filter(v => v.title.includes('White')),
+        variantFilter: (variants: any[]) => variants, // All variants
       },
       {
         dbId: 'e4332daa-23bc-4cef-9e35-36077b1e7ea5', // Greeting Cards
@@ -188,7 +188,7 @@ serve(async (req) => {
 
       console.log(`Selected ${selectedVariants.length} variants for ${productConfig.title}`);
 
-      // Create product in Printify
+      // Create product in Printify without print areas (blank products)
       const createProductPayload = {
         title: productConfig.title,
         description: `Custom ${productConfig.title}`,
@@ -199,25 +199,6 @@ serve(async (req) => {
           price: Math.round(variant.cost * 2.5), // 2.5x markup in cents
           is_enabled: true,
         })),
-        print_areas: [
-          {
-            variant_ids: selectedVariants.map((v: any) => v.id),
-            placeholders: [
-              {
-                position: 'front',
-                images: [
-                  {
-                    id: 'front-placeholder',
-                    x: 0.5,
-                    y: 0.5,
-                    scale: 1,
-                    angle: 0,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
       };
 
       const createResponse = await fetch(
