@@ -69,9 +69,6 @@ serve(async (req) => {
     const products = printifyProducts.data || [];
 
     for (const product of products) {
-      // Only sync published products
-      if (!product.is_published) continue;
-
       const productData = {
         printify_product_id: product.id,
         title: product.title,
