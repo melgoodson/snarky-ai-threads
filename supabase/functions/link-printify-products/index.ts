@@ -87,15 +87,21 @@ serve(async (req) => {
         variantCount: 0,
       };
 
-      // Flexible title matching - check if Printify product title contains key terms
+      // More flexible title matching
       const dbTitleLower = dbProduct.title.toLowerCase();
-      const keyTerms = dbTitleLower.split(' ').filter((term: string) => term.length > 3);
+      const keyTerms = dbTitleLower.split(/[\s–—-]+/).filter((term: string) => term.length > 2);
 
       const matchedPrintifyProduct = printifyProducts.data?.find((pp: any) => {
         const ppTitleLower = pp.title.toLowerCase();
-        // Match if at least 2 key terms are found in the Printify product title
+        
+        // Count matching terms
         const matchCount = keyTerms.filter((term: string) => ppTitleLower.includes(term)).length;
-        return matchCount >= 2;
+        
+        // For short product names (1-2 key terms), require 1 match
+        // For longer names, require at least 2 matches
+        const requiredMatches = keyTerms.length <= 2 ? 1 : 2;
+        
+        return matchCount >= requiredMatches;
       });
 
       if (matchedPrintifyProduct) {
