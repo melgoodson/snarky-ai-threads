@@ -23,6 +23,8 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [magicLinkEmail, setMagicLinkEmail] = useState('');
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -128,6 +130,42 @@ const Auth = () => {
     }
   };
 
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      emailSchema.parse(magicLinkEmail);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signInWithOtp({
+        email: magicLinkEmail,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        setMagicLinkSent(true);
+        toast.success('Magic link sent! Check your email to sign in.');
+      }
+    } catch (error: any) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <Card className="w-full max-w-md">
@@ -139,8 +177,9 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="magic">Magic Link</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
@@ -199,6 +238,69 @@ const Auth = () => {
                   )}
                 </Button>
               </form>
+            </TabsContent>
+
+            <TabsContent value="magic">
+              {magicLinkSent ? (
+                <div className="space-y-4 text-center py-8">
+                  <Mail className="h-16 w-16 mx-auto text-primary" />
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Check your email!</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      We've sent a magic link to <strong>{magicLinkEmail}</strong>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Click the link in the email to sign in. You can close this page.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setMagicLinkSent(false);
+                      setMagicLinkEmail('');
+                    }}
+                    className="mt-4"
+                  >
+                    Send another link
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleMagicLink} className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Enter your email and we'll send you a magic link to sign in instantly - no password needed!
+                    </p>
+                    <Label htmlFor="magic-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="magic-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={magicLinkEmail}
+                        onChange={(e) => setMagicLinkEmail(e.target.value)}
+                        className="pl-9"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending magic link...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Send Magic Link
+                      </>
+                    )}
+                  </Button>
+                </form>
+              )}
             </TabsContent>
 
             <TabsContent value="signup">
