@@ -1,73 +1,62 @@
+import { useState, useEffect } from "react";
 import { ProductCard } from "./ProductCard";
-import rbfChampion from "@/assets/rbf-champion.png";
-import snarkyHumans from "@/assets/snarky-humans.png";
-import freeHugs from "@/assets/free-hugs.png";
-import abductMe from "@/assets/abduct-me.png";
-import sasquatches from "@/assets/sasquatches.png";
-import whiteIdolMorning from "@/assets/white-idol-morning.png";
-import fathers from "@/assets/fathers.png";
-import dark from "@/assets/dark.png";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const SAMPLE_PRODUCTS = [
-  {
-    id: "rbf-champion",
-    title: "RBF Champion (I'm coming for you bitch)",
-    price: 21.36,
-    image: rbfChampion,
-    category: "ATTITUDE"
-  },
-  {
-    id: "free-hugs",
-    title: "Free Hugs",
-    price: 21.69,
-    image: freeHugs,
-    category: "SARCASM"
-  },
-  {
-    id: "abduct-me",
-    title: "Abduct Me",
-    price: 21.69,
-    image: abductMe,
-    category: "ALIENS"
-  },
-  {
-    id: "sasquatches",
-    title: "Sasquatches",
-    price: 21.36,
-    image: sasquatches,
-    category: "HUMOR"
-  },
-  {
-    id: "white-idol-morning",
-    title: "Good Morning",
-    price: 21.69,
-    image: whiteIdolMorning,
-    category: "ADULT HUMOR"
-  },
-  {
-    id: "fathers",
-    title: "Fathers",
-    price: 15.69,
-    image: fathers,
-    category: "FATHERS"
-  },
-  {
-    id: "dark",
-    title: "Snarky punching people with words and attitude",
-    price: 15.69,
-    image: dark,
-    category: "DARK"
-  },
-  {
-    id: "snarky-humans",
-    title: "Snarky Humans Laughing Design",
-    price: 20.69,
-    image: snarkyHumans,
-    category: "SNARKY HUMANS"
-  },
-];
+interface Design {
+  id: string;
+  title: string;
+  description: string;
+  image_url: string;
+}
 
 export const ProductGrid = () => {
+  const [designs, setDesigns] = useState<Design[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDesigns();
+  }, []);
+
+  const fetchDesigns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("designs")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setDesigns(data || []);
+    } catch (error) {
+      console.error("Error fetching designs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section id="products" className="py-16 md:py-24">
+        <div className="container px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">
+              FEATURED <span className="text-primary">DESIGNS</span>
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Our most popular snarky shirts. Because normal is boring.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-96" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="products" className="py-16 md:py-24">
       <div className="container px-4">
@@ -81,8 +70,15 @@ export const ProductGrid = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {SAMPLE_PRODUCTS.map((product) => (
-            <ProductCard key={product.id} id={product.id} {...product} />
+          {designs.map((design) => (
+            <ProductCard
+              key={design.id}
+              id={design.id}
+              title={design.title}
+              price={0}
+              image={design.image_url}
+              category=""
+            />
           ))}
         </div>
       </div>
