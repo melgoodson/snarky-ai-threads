@@ -28,35 +28,26 @@ serve(async (req) => {
   try {
     console.log("Starting checkout process...");
     
-    // Try to get authenticated user, but allow guest checkout
-    let user = null;
-    let userEmail = null;
-    let userId = null;
-    
+    // Require authentication for checkout
     const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
-      try {
-        const token = authHeader.replace("Bearer ", "");
-        const { data } = await supabaseClient.auth.getUser(token);
-        user = data.user;
-        userEmail = user?.email;
-        userId = user?.id;
-        console.log("User authenticated:", userEmail);
-      } catch (error) {
-        console.log("No authenticated user, proceeding as guest");
-      }
+    if (!authHeader) {
+      throw new Error("Authentication required for checkout");
     }
+    
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error("Authentication failed:", authError);
+      throw new Error("Authentication required for checkout");
+    }
+    
+    console.log("User authenticated:", user.email);
 
     const { cartItems, shippingAddress } = await req.json();
     
-    // Use email from shipping address if user not authenticated
-    if (!userEmail && shippingAddress?.email) {
-      userEmail = shippingAddress.email;
-      console.log("Guest checkout with email:", userEmail);
-    }
-    
-    if (!userEmail) {
-      throw new Error("Email is required for checkout");
+    if (!user.email) {
+      throw new Error("User email is required for checkout");
     }
     
     if (!cartItems || cartItems.length === 0) {
@@ -72,8 +63,8 @@ serve(async (req) => {
     const { data: orderData, error: orderError } = await supabaseClient
       .from("orders")
       .insert({
-        user_id: userId,
-        email: userEmail,
+        user_id: user.id,
+        email: user.email,
         total_amount: totalAmount,
         shipping_address: shippingAddress,
         status: "pending",
@@ -114,7 +105,7 @@ serve(async (req) => {
     });
 
     // Check if customer exists
-    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
@@ -146,7 +137,7 @@ serve(async (req) => {
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : userEmail,
+      customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode: "payment",
       success_url: `${req.headers.get("origin")}/order-confirmation/{CHECKOUT_SESSION_ID}`,

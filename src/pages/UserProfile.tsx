@@ -28,6 +28,15 @@ interface Profile {
   username: string;
   preferences: any;
   created_at: string;
+  first_name?: string;
+  last_name?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  phone?: string;
 }
 
 interface Order {
@@ -55,6 +64,17 @@ const UserProfile = () => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [shippingInfo, setShippingInfo] = useState({
+    firstName: '',
+    lastName: '',
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: 'US',
+    phone: '',
+  });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [designToDelete, setDesignToDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -97,6 +117,17 @@ const UserProfile = () => {
       
       setProfile(data);
       setUsername(data.username);
+      setShippingInfo({
+        firstName: data.first_name || '',
+        lastName: data.last_name || '',
+        address1: data.address1 || '',
+        address2: data.address2 || '',
+        city: data.city || '',
+        state: data.state || '',
+        zip: data.zip || '',
+        country: data.country || 'US',
+        phone: data.phone || '',
+      });
     } catch (error: any) {
       console.error('Error fetching profile:', error);
       toast.error('Failed to load profile');
@@ -171,13 +202,24 @@ const UserProfile = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ username })
+        .update({ 
+          username,
+          first_name: shippingInfo.firstName,
+          last_name: shippingInfo.lastName,
+          address1: shippingInfo.address1,
+          address2: shippingInfo.address2,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          zip: shippingInfo.zip,
+          country: shippingInfo.country,
+          phone: shippingInfo.phone,
+        })
         .eq('id', profile.id);
 
       if (error) throw error;
       
       toast.success('Profile updated successfully!');
-      setProfile({ ...profile, username });
+      setProfile({ ...profile, username, ...shippingInfo });
     } catch (error: any) {
       console.error('Error updating profile:', error);
       if (error.code === '23505') {
@@ -291,6 +333,99 @@ const UserProfile = () => {
                       onChange={(e) => setUsername(e.target.value)}
                       minLength={3}
                       maxLength={20}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Shipping Address</CardTitle>
+                  <CardDescription>Save your default shipping address for faster checkout</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        value={shippingInfo.firstName}
+                        onChange={(e) => setShippingInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        value={shippingInfo.lastName}
+                        onChange={(e) => setShippingInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address1">Address Line 1</Label>
+                    <Input
+                      id="address1"
+                      value={shippingInfo.address1}
+                      onChange={(e) => setShippingInfo(prev => ({ ...prev, address1: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address2">Address Line 2</Label>
+                    <Input
+                      id="address2"
+                      value={shippingInfo.address2}
+                      onChange={(e) => setShippingInfo(prev => ({ ...prev, address2: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input
+                        id="city"
+                        value={shippingInfo.city}
+                        onChange={(e) => setShippingInfo(prev => ({ ...prev, city: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        value={shippingInfo.state}
+                        onChange={(e) => setShippingInfo(prev => ({ ...prev, state: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="zip">ZIP Code</Label>
+                      <Input
+                        id="zip"
+                        value={shippingInfo.zip}
+                        onChange={(e) => setShippingInfo(prev => ({ ...prev, zip: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Country</Label>
+                      <Input
+                        id="country"
+                        value={shippingInfo.country}
+                        onChange={(e) => setShippingInfo(prev => ({ ...prev, country: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={shippingInfo.phone}
+                      onChange={(e) => setShippingInfo(prev => ({ ...prev, phone: e.target.value }))}
                     />
                   </div>
 
