@@ -14,6 +14,8 @@ import BlogPost from "./pages/BlogPost";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Checkout from "./pages/Checkout";
+import Designs from "./pages/Designs";
+import DesignDetail from "./pages/DesignDetail";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import OrderTracking from "./pages/OrderTracking";
 import NotFound from "./pages/NotFound";
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/new-arrivals" element={<NewArrivals />} />
             <Route path="/collections" element={<Collections />} />
+            <Route path="/designs" element={<Designs />} />
+            <Route path="/designs/:id" element={<DesignDetail />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/funny-snarky-shirts-make-friends" element={<BlogPost />} />
             <Route path="/faq" element={<FAQ />} />
