@@ -52,9 +52,9 @@ export const Header = () => {
       <div className="border-b border-border bg-background">
         <div className="container px-4 py-3">
           <h1 className="text-xl md:text-2xl font-black tracking-tighter text-center">
-            <span className="text-primary">SNARKY HUMANS</span>{" "}
+            <span className="text-primary">SNARKY A$$ HUMANS</span>{" "}
             <span className="text-foreground">PRESENTS SNARKY A$$</span>{" "}
-            <span className="text-primary">THREADS</span>
+            <span className="text-primary">APPAREL</span>
           </h1>
         </div>
       </div>

@@ -174,8 +174,8 @@ const FAQ = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>FAQ - Snarky Humans Presents Snarky A$$ Threads | Sizing, Shipping, Spicy Meter Guide</title>
-        <meta name="description" content="Get answers to all your questions about Snarky A$$ Threads. Learn about sizing, shipping, returns, our Spicy Meter rating system (Mild/Medium/Nuclear), gifting bundles, and more." />
+        <title>FAQ - Snarky A$$ Humans Presents Snarky A$$ Apparel | Sizing, Shipping, Spicy Meter Guide</title>
+        <meta name="description" content="Get answers to all your questions about Snarky A$$ Apparel. Learn about sizing, shipping, returns, our Spicy Meter rating system (Mild/Medium/Nuclear), gifting bundles, and more." />
         <meta name="keywords" content="snarky tshirts faq, spicy meter guide, sizing guide, shipping policy, returns policy, adult humor apparel, graphic tee care, bundle discounts, gift guide" />
         <link rel="canonical" href={`${window.location.origin}/faq`} />
         

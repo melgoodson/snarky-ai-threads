@@ -88,7 +88,7 @@ const Blog = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Blog - Snarky Humans Presents Snarky A$$ Threads | Humor Apparel Tips & Stories</title>
+        <title>Blog - Snarky A$$ Humans Presents Snarky A$$ Apparel | Humor Apparel Tips & Stories</title>
         <meta name="description" content="Discover tips, stories, and insights about snarky apparel. Learn about our Spicy Meter, care tips for graphic tees, gifting guides, and the culture of irreverent humor." />
         <meta name="keywords" content="snarky apparel blog, graphic tee tips, humor tshirt guide, spicy meter explained, bachelor party gifts, tshirt care, irreverent fashion, edgy humor apparel" />
         <link rel="canonical" href={`${window.location.origin}/blog`} />
