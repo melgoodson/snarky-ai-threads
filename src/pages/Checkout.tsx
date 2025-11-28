@@ -136,23 +136,30 @@ const Checkout = () => {
     setLoading(true);
 
     try {
-      // Create Stripe checkout session
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        'create-checkout',
+      // Create Stripe checkout session via direct functions URL to avoid client misconfiguration issues
+      const response = await fetch(
+        `https://waldggnsstpxasmauwda.functions.supabase.co/create-checkout`,
         {
-          body: {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
             cartItems: checkoutItems,
             shippingAddress: formData,
-          },
+          }),
         }
       );
 
-      console.log('create-checkout response', { checkoutData, checkoutError });
+      const checkoutData = await response.json();
+      console.log('create-checkout fetch response', { status: response.status, checkoutData });
 
-      if (checkoutError) {
-        console.error('create-checkout error:', checkoutError);
-        toast.error(`Checkout error: ${checkoutError.message || 'Unknown error'}`);
-        throw checkoutError;
+      if (!response.ok) {
+        const message = checkoutData?.error || 'Checkout request failed';
+        console.error('create-checkout HTTP error:', message);
+        toast.error(`Checkout error: ${message}`);
+        throw new Error(message);
       }
 
       // Redirect to Stripe checkout in the same tab to avoid popup blockers

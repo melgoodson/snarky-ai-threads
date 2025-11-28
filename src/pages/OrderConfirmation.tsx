@@ -31,14 +31,27 @@ const OrderConfirmation = () => {
       if (orderId?.startsWith('cs_')) {
         // This is a Stripe session ID, verify payment first
         try {
-          const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
-            'verify-payment',
+          const response = await fetch(
+            `https://waldggnsstpxasmauwda.functions.supabase.co/verify-payment`,
             {
-              body: { sessionId: orderId },
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              },
+              body: JSON.stringify({ sessionId: orderId }),
             }
           );
 
-          if (verifyError) throw verifyError;
+          const verifyData = await response.json();
+          console.log('verify-payment fetch response', { status: response.status, verifyData });
+
+          if (!response.ok) {
+            const message = verifyData?.error || 'Payment verification failed';
+            console.error('verify-payment HTTP error:', message);
+            toast.error(`Payment verification error: ${message}`);
+            throw new Error(message);
+          }
           
           if (verifyData?.orderId) {
             orderIdToFetch = verifyData.orderId;
