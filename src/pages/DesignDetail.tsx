@@ -22,6 +22,7 @@ interface Product {
   title: string;
   printify_product_id: string;
   price: number | null;
+  retail_price: number | null;
   images: any;
   variants: any;
 }
@@ -84,7 +85,7 @@ const DesignDetail = () => {
     addItem({
       productId: product.id,
       title: `${design.title} - ${product.title}`,
-      price: product.price || 0,
+      price: product.retail_price || 0,
       size: selectedVariant.title || "Default",
       image: design.image_url,
       printifyProductId: product.printify_product_id,
@@ -196,7 +197,7 @@ const DesignDetail = () => {
                       {product.title.replace("– Placeholder Design", "").trim()}
                     </h3>
                     <p className="text-lg font-bold">
-                      ${(product.price || 0).toFixed(2)}
+                      ${(product.retail_price || 0).toFixed(2)}
                     </p>
                   </CardContent>
                 </Card>
