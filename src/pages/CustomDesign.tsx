@@ -154,7 +154,13 @@ export default function CustomDesign() {
       if (data?.image) {
         setGeneratedDesign(data.image);
         toast.success("Design generated! Review and approve to continue.");
-        // Don't auto-advance to step 2 - let user review and approve first
+        // Scroll to approval section after a brief delay
+        setTimeout(() => {
+          const approvalSection = document.getElementById('design-approval');
+          if (approvalSection) {
+            approvalSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 300);
       } else {
         throw new Error("No design image returned");
       }
@@ -462,9 +468,9 @@ export default function CustomDesign() {
 
                 {/* Generated Design Preview & Approval */}
                 {generatedDesign && (
-                  <div className="mt-8">
+                  <div id="design-approval" className="mt-8 scroll-mt-20">
                     <h3 className="text-xl font-bold mb-4">Your Generated Design</h3>
-                    <Card className="max-w-2xl mx-auto p-6">
+                    <Card className="max-w-2xl mx-auto p-6 ring-4 ring-primary/20 shadow-lg">
                       <div className="space-y-6">
                         <img
                           src={generatedDesign}
