@@ -36,6 +36,8 @@ const DesignDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -75,7 +77,7 @@ const DesignDetail = () => {
 
   const handleAddToCart = () => {
     if (!selectedProduct || !selectedVariant || !design) {
-      toast.error("Please select a product and variant");
+      toast.error("Please select a product, size, and color");
       return;
     }
 
@@ -93,6 +95,57 @@ const DesignDetail = () => {
     });
 
     toast.success("Added to cart!");
+  };
+
+  // Parse variants to extract sizes and colors
+  const getAvailableOptions = (variants: any[]) => {
+    if (!variants) return { sizes: [], colors: [] };
+    
+    // Only use enabled variants
+    const enabledVariants = variants.filter((v: any) => v.is_enabled);
+    
+    const sizes = new Set<string>();
+    const colors = new Set<string>();
+    
+    enabledVariants.forEach((variant: any) => {
+      const [size, color] = variant.title.split(' / ');
+      if (size) sizes.add(size.trim());
+      if (color) colors.add(color.trim());
+    });
+    
+    return {
+      sizes: Array.from(sizes).sort(),
+      colors: Array.from(colors).sort(),
+    };
+  };
+
+  // Find variant based on selected size and color
+  const findMatchingVariant = (productId: string, size: string | null, color: string | null) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product || !size || !color) return null;
+    
+    const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
+    return enabledVariants.find((v: any) => {
+      const [variantSize, variantColor] = v.title.split(' / ');
+      return variantSize?.trim() === size && variantColor?.trim() === color;
+    });
+  };
+
+  // Update variant when size or color changes
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size);
+    if (selectedColor && selectedProduct) {
+      const variant = findMatchingVariant(selectedProduct, size, selectedColor);
+      setSelectedVariant(variant || null);
+    }
+  };
+
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    if (selectedSize && selectedProduct) {
+      const variant = findMatchingVariant(selectedProduct, selectedSize, color);
+      setSelectedVariant(variant || null);
+    }
   };
 
   if (loading) {
@@ -172,9 +225,9 @@ const DesignDetail = () => {
                   }`}
                   onClick={() => {
                     setSelectedProduct(product.id);
-                    if (product.variants && product.variants.length > 0) {
-                      setSelectedVariant(product.variants[0]);
-                    }
+                    setSelectedSize(null);
+                    setSelectedColor(null);
+                    setSelectedVariant(null);
                   }}
                 >
                   <CardContent className="p-4">
@@ -205,30 +258,61 @@ const DesignDetail = () => {
             </div>
           </div>
 
-          {/* Variant Selection */}
-          {selectedProduct && selectedVariant && (
-            <div className="mt-8">
-              <h3 className="text-xl font-bold mb-4">Select Options</h3>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {products
-                  .find((p) => p.id === selectedProduct)
-                  ?.variants?.map((variant: any) => (
-                    <Button
-                      key={variant.id}
-                      variant={
-                        selectedVariant.id === variant.id ? "default" : "outline"
-                      }
-                      onClick={() => setSelectedVariant(variant)}
-                    >
-                      {variant.title}
-                    </Button>
-                  ))}
+          {/* Size and Color Selection */}
+          {selectedProduct && (() => {
+            const product = products.find((p) => p.id === selectedProduct);
+            const { sizes, colors } = getAvailableOptions(product?.variants || []);
+            
+            return (
+              <div className="mt-8 space-y-6">
+                <h3 className="text-xl font-bold">Select Options</h3>
+                
+                {/* Size Selection */}
+                {sizes.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Pick Your Size</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {sizes.map((size) => (
+                        <Button
+                          key={size}
+                          variant={selectedSize === size ? "default" : "outline"}
+                          onClick={() => handleSizeChange(size)}
+                        >
+                          {size}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Color Selection */}
+                {colors.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Pick Your Color</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {colors.map((color) => (
+                        <Button
+                          key={color}
+                          variant={selectedColor === color ? "default" : "outline"}
+                          onClick={() => handleColorChange(color)}
+                        >
+                          {color}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <Button 
+                  size="lg" 
+                  onClick={handleAddToCart}
+                  disabled={!selectedSize || !selectedColor || !selectedVariant}
+                >
+                  Add to Cart
+                </Button>
               </div>
-              <Button size="lg" onClick={handleAddToCart}>
-                Add to Cart
-              </Button>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </main>
       <Footer />
