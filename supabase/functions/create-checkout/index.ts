@@ -65,6 +65,50 @@ serve(async (req) => {
 
     console.log("Cart items:", cartItems);
 
+    // Calculate total
+    const totalAmount = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+
+    // Create order in database FIRST to avoid Stripe metadata size limits
+    const { data: orderData, error: orderError } = await supabaseClient
+      .from("orders")
+      .insert({
+        user_id: userId,
+        email: userEmail,
+        total_amount: totalAmount,
+        shipping_address: shippingAddress,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (orderError || !orderData) {
+      console.error("Failed to create order:", orderError);
+      throw new Error("Failed to create order in database");
+    }
+
+    console.log("Order created:", orderData.id);
+
+    // Create order items
+    const orderItems = cartItems.map((item: any) => ({
+      order_id: orderData.id,
+      product_id: item.productId,
+      printify_product_id: item.printifyProductId || "placeholder",
+      variant_id: item.variantId || "placeholder",
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    const { error: itemsError } = await supabaseClient
+      .from("order_items")
+      .insert(orderItems);
+
+    if (itemsError) {
+      console.error("Failed to create order items:", itemsError);
+      throw new Error("Failed to create order items");
+    }
+
+    console.log("Order items created");
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -94,12 +138,9 @@ serve(async (req) => {
 
     console.log("Line items:", lineItems);
 
-    // Store order data in metadata to retrieve after payment
+    // Only store order ID in metadata (stays well under 500 char limit)
     const metadata = {
-      user_id: userId || "",
-      user_email: userEmail,
-      cart_items: JSON.stringify(cartItems),
-      shipping_address: JSON.stringify(shippingAddress),
+      order_id: orderData.id,
     };
 
     // Create checkout session
