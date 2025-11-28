@@ -24,8 +24,19 @@ serve(async (req) => {
 
     console.log(`Generating mockup for ${productTitle}`);
 
-    // Use Lovable AI to create a composite image showing the product on/with the user
-    const prompt = `Create a realistic mockup showing this person wearing or holding this product: ${productTitle}. Make it look natural and professional, as if they're using or modeling the product. Blend the images seamlessly.`;
+    // Use Lovable AI to place the design onto the product template
+    const prompt = `You are a professional product mockup designer. Your task is to accurately place the FIRST image (the design/artwork) onto the SECOND image (the ${productTitle} template).
+
+CRITICAL REQUIREMENTS:
+- Use the EXACT design from the first image - do NOT modify, regenerate, or change it in any way
+- Place the design in the correct print area on the product (centered on chest for shirts, front center for hoodies, wrap around for mugs)
+- Maintain the design's original colors, details, and quality
+- Ensure the design looks professionally printed/applied to the product
+- The design should appear realistic on the product with appropriate perspective, shadows, and texture
+- Keep the product background clean and professional
+- Do NOT add any text, logos, or elements that aren't in the original design
+
+Output a high-quality mockup image showing the product with the design applied exactly as provided.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
