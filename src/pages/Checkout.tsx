@@ -147,17 +147,25 @@ const Checkout = () => {
         }
       );
 
-      if (checkoutError) throw checkoutError;
+      console.log('create-checkout response', { checkoutData, checkoutError });
+
+      if (checkoutError) {
+        console.error('create-checkout error:', checkoutError);
+        toast.error(`Checkout error: ${checkoutError.message || 'Unknown error'}`);
+        throw checkoutError;
+      }
 
       // Redirect to Stripe checkout in the same tab to avoid popup blockers
       if (checkoutData?.url) {
         window.location.href = checkoutData.url;
       } else {
-        throw new Error('No checkout URL returned');
+        console.error('create-checkout missing URL:', checkoutData);
+        throw new Error('No checkout URL returned from backend');
       }
     } catch (error) {
       console.error('Error creating checkout:', error);
-      toast.error('Failed to create checkout. Please try again.');
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to create checkout: ${message}`);
       setLoading(false);
     }
   };
