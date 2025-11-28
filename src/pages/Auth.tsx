@@ -171,7 +171,7 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-black">
-            <span className="text-primary">SNARKY</span> HUMANS
+            <span className="text-primary">SNARKY A$$</span> HUMANS
           </CardTitle>
           <CardDescription>Sign in to manage your orders and checkout</CardDescription>
         </CardHeader>

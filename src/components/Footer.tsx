@@ -7,7 +7,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <h3 className="text-xl font-black tracking-tighter">
-              SNARKY A$$ <span className="text-primary">THREADS</span>
+              SNARKY A$$ <span className="text-primary">APPAREL</span>
             </h3>
             <p className="text-sm text-muted-foreground">
               Attitude-packed apparel for people who speak their mind.
@@ -90,7 +90,7 @@ export const Footer = () => {
         </div>
 
         <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Snarky A$$ Threads. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Snarky A$$ Apparel. All rights reserved.</p>
         </div>
       </div>
     </footer>

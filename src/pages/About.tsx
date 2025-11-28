@@ -12,7 +12,7 @@ const About = () => {
           <div className="container px-4 max-w-4xl mx-auto">
             <div className="text-center mb-16">
               <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6">
-                THE SNARKY HUMANS <span className="text-primary">ORIGIN STORY</span>
+                THE SNARKY A$$ HUMANS <span className="text-primary">ORIGIN STORY</span>
               </h1>
               <p className="text-xl text-muted-foreground font-medium">
                 How a Veteran, a Near Miss, and a Badass Sense of Humor Built a Brand
@@ -41,7 +41,7 @@ const About = () => {
               </p>
 
               <p className="text-2xl font-black text-primary my-8">
-                Snarky Humans was born.
+                Snarky A$$ Humans was born.
               </p>
 
               <p className="leading-relaxed">
@@ -92,7 +92,7 @@ const About = () => {
               </h2>
 
               <p className="leading-relaxed">
-                Snarky Humans is a veteran-owned label that supports veteran life by keeping it real. If you want to support veterans, start by supporting the people building things after the dust settles. Wear the shirt. Sip from the mug that says exactly what you mean. Give the dog a better treat and the cat a better target than your ottoman. It is small habit after small habit until a hard day feels a little lighter.
+                Snarky A$$ Humans is a veteran-owned label that supports veteran life by keeping it real. If you want to support veterans, start by supporting the people building things after the dust settles. Wear the shirt. Sip from the mug that says exactly what you mean. Give the dog a better treat and the cat a better target than your ottoman. It is small habit after small habit until a hard day feels a little lighter.
               </p>
 
               <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">

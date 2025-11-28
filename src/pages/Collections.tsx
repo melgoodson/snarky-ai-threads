@@ -11,7 +11,7 @@ const COLLECTIONS = [
   { name: "ADULT HUMOR", count: 1, description: "Not for the easily offended" },
   { name: "FATHERS", count: 1, description: "Dad jokes with attitude" },
   { name: "DARK", count: 1, description: "For the bold and brave" },
-  { name: "SNARKY HUMANS", count: 1, description: "Our signature collection" },
+  { name: "SNARKY A$$ HUMANS", count: 1, description: "Our signature collection" },
 ];
 
 const Collections = () => {
