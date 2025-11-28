@@ -149,11 +149,9 @@ const Checkout = () => {
 
       if (checkoutError) throw checkoutError;
 
-      // Open Stripe checkout in new tab
+      // Redirect to Stripe checkout in the same tab to avoid popup blockers
       if (checkoutData?.url) {
-        window.open(checkoutData.url, '_blank');
-        toast.success('Checkout opened in new tab!');
-        setLoading(false);
+        window.location.href = checkoutData.url;
       } else {
         throw new Error('No checkout URL returned');
       }
