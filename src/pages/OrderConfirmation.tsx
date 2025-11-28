@@ -114,9 +114,13 @@ const OrderConfirmation = () => {
             </div>
 
             <div>
-              <h1 className="text-3xl font-black mb-2">ORDER CONFIRMED!</h1>
+              <h1 className="text-3xl font-black mb-2">
+                {order.status === 'paid' ? 'ORDER CONFIRMED!' : 'ORDER RECEIVED - PAYMENT PENDING'}
+              </h1>
               <p className="text-muted-foreground">
-                Thanks for your order. We've sent a confirmation to {order.email}
+                {order.status === 'paid'
+                  ? `Thanks for your order. We've sent a confirmation to ${order.email}`
+                  : `We created an order record for ${order.email}, but no successful payment was detected yet. You won't be charged and nothing will be sent to Printify until payment completes.`}
               </p>
             </div>
 
@@ -143,8 +147,9 @@ const OrderConfirmation = () => {
                 <div className="text-left">
                   <h3 className="font-bold mb-1">What's Next?</h3>
                   <p className="text-sm text-muted-foreground">
-                    Your order is being processed and will be sent to Printify for
-                    fulfillment. You'll receive tracking information once your items ship.
+                    {order.status === 'paid'
+                      ? "Your order is being processed and will be sent to Printify for fulfillment. You'll receive tracking information once your items ship."
+                      : "No successful payment was found for this order yet. If you believe this is a mistake, please try checking out again or contact support."}
                   </p>
                 </div>
               </div>
