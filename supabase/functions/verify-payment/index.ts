@@ -48,11 +48,11 @@ serve(async (req) => {
 
     console.log("Creating order for user:", userEmail);
 
-    // Create order
+    // Create order (userId can be null for guest orders)
     const { data: order, error: orderError } = await supabaseClient
       .from("orders")
       .insert({
-        user_id: userId,
+        user_id: userId || null,
         email: userEmail,
         total_amount: session.amount_total! / 100, // Convert from cents
         shipping_address: shippingAddress,
