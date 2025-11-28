@@ -135,7 +135,7 @@ const Auth = () => {
           <CardTitle className="text-3xl font-black">
             <span className="text-primary">SNARKY</span> HUMANS
           </CardTitle>
-          <CardDescription>Sign in to manage your orders</CardDescription>
+          <CardDescription>Sign in to manage your orders and checkout</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
@@ -280,16 +280,6 @@ const Auth = () => {
               </form>
             </TabsContent>
           </Tabs>
-
-          <div className="mt-4 text-center">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="text-sm"
-            >
-              Continue as Guest
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

@@ -393,34 +393,61 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address1: string | null
+          address2: string | null
           cart_state: Json | null
+          city: string | null
+          country: string | null
           created_at: string | null
+          first_name: string | null
           id: string
           last_design_step: string | null
+          last_name: string | null
           last_visited_page: string | null
+          phone: string | null
           preferences: Json | null
+          state: string | null
           updated_at: string | null
           username: string
+          zip: string | null
         }
         Insert: {
+          address1?: string | null
+          address2?: string | null
           cart_state?: Json | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
+          first_name?: string | null
           id: string
           last_design_step?: string | null
+          last_name?: string | null
           last_visited_page?: string | null
+          phone?: string | null
           preferences?: Json | null
+          state?: string | null
           updated_at?: string | null
           username: string
+          zip?: string | null
         }
         Update: {
+          address1?: string | null
+          address2?: string | null
           cart_state?: Json | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
+          first_name?: string | null
           id?: string
           last_design_step?: string | null
+          last_name?: string | null
           last_visited_page?: string | null
+          phone?: string | null
           preferences?: Json | null
+          state?: string | null
           updated_at?: string | null
           username?: string
+          zip?: string | null
         }
         Relationships: []
       }

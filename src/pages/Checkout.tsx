@@ -50,8 +50,47 @@ const Checkout = () => {
     phone: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutForm, string>>>({});
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    checkAuthAndLoadData();
+  }, [items.length, navigate]);
+
+  const checkAuthAndLoadData = async () => {
+    // Check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error('Please sign in to checkout');
+      navigate('/auth');
+      return;
+    }
+
+    setUserId(user.id);
+
+    // Load profile data for auto-fill
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (profile) {
+      setFormData(prev => ({
+        email: user.email || prev.email,
+        firstName: profile.first_name || prev.firstName,
+        lastName: profile.last_name || prev.lastName,
+        address1: profile.address1 || prev.address1,
+        address2: profile.address2 || prev.address2 || '',
+        city: profile.city || prev.city,
+        state: profile.state || prev.state,
+        zip: profile.zip || prev.zip,
+        country: profile.country || prev.country,
+        phone: profile.phone || prev.phone,
+      }));
+    }
+
+    // Load custom design if exists
     const stored = localStorage.getItem("customDesign");
     if (stored) {
       const parsed = JSON.parse(stored);
@@ -61,7 +100,7 @@ const Checkout = () => {
     } else if (items.length === 0) {
       navigate('/');
     }
-  }, [items.length, navigate]);
+  };
 
   const getPriceFromDesign = (design: any): number => {
     const title = (design?.title || '').toLowerCase();
@@ -136,6 +175,33 @@ const Checkout = () => {
     setLoading(true);
 
     try {
+      // Save shipping info to profile if not already saved
+      if (userId) {
+        await supabase
+          .from('profiles')
+          .update({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            address1: formData.address1,
+            address2: formData.address2,
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip,
+            country: formData.country,
+            phone: formData.phone,
+          })
+          .eq('id', userId);
+      }
+
+      // Get auth session for authenticated request
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Please sign in to checkout');
+        navigate('/auth');
+        return;
+      }
+
       // Create Stripe checkout session via direct functions URL to avoid client misconfiguration issues
       const response = await fetch(
         `https://waldggnsstpxasmauwda.functions.supabase.co/create-checkout`,
@@ -144,6 +210,7 @@ const Checkout = () => {
           headers: {
             'Content-Type': 'application/json',
             'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             cartItems: checkoutItems,
