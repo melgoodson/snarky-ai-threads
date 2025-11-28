@@ -295,6 +295,38 @@ export default function CustomDesign() {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto space-y-12">
+          {/* How It Works Guide */}
+          <Card className="max-w-4xl mx-auto p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl font-black text-foreground">Create Your Custom Product</h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Follow these 4 simple steps to bring your unique design to life. Whether you're a beginner or a pro, we'll guide you through the entire process!
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8 text-sm">
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mx-auto">1</div>
+                  <h4 className="font-bold">Create Design</h4>
+                  <p className="text-muted-foreground text-xs">Choose preset or describe your own</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold mx-auto">2</div>
+                  <h4 className="font-bold">Pick Product</h4>
+                  <p className="text-muted-foreground text-xs">Select what to print on</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold mx-auto">3</div>
+                  <h4 className="font-bold">Upload Photo</h4>
+                  <p className="text-muted-foreground text-xs">See it on yourself</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold mx-auto">4</div>
+                  <h4 className="font-bold">Review & Buy</h4>
+                  <p className="text-muted-foreground text-xs">Finalize and checkout</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* Progress indicator */}
           <div className="flex justify-center items-center gap-4">
             {[1, 2, 3, 4].map((step) => (
@@ -325,14 +357,27 @@ export default function CustomDesign() {
               <h2 className="text-3xl font-black text-foreground mb-2">
                 Step 1: Create Your Design
               </h2>
-              <p className="text-muted-foreground mb-8">
-                Choose a preset design or create your own custom artwork
-              </p>
+              <Card className="p-6 mb-8 bg-muted/30 border-primary/20">
+                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  How This Works
+                </h3>
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <p className="font-semibold text-foreground">You have 3 options to create your design:</p>
+                  <ul className="space-y-2 list-disc list-inside ml-2">
+                    <li><strong className="text-foreground">Use a Preset:</strong> Click any preset below for instant inspiration</li>
+                    <li><strong className="text-foreground">Write Your Own:</strong> Describe your custom design idea in detail</li>
+                    <li><strong className="text-foreground">Add a Reference (Optional):</strong> Upload an image to guide the AI</li>
+                  </ul>
+                  <p className="italic">💡 Tip: You can use presets OR custom descriptions, and optionally add a reference image with either option!</p>
+                </div>
+              </Card>
 
               <div className="space-y-8">
                 {/* Preset Designs */}
                 <div>
-                  <h3 className="text-xl font-bold mb-4">Choose a Preset Design</h3>
+                  <h3 className="text-xl font-bold mb-2">Option 1: Choose a Preset Design</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Click any preset below to use a pre-made design concept</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {PRESET_DESIGNS.map((preset) => (
                       <Card
@@ -367,9 +412,27 @@ export default function CustomDesign() {
 
                 {/* Custom Prompt */}
                 <div>
-                  <h3 className="text-xl font-bold mb-4">Or Describe Your Custom Design</h3>
+                  <h3 className="text-xl font-bold mb-2">Option 2: Or Describe Your Custom Design</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Write a detailed description of what you want to create</p>
+                  
+                  <Card className="p-6 mb-4 bg-primary/5 border-primary/20 max-w-2xl">
+                    <h4 className="font-bold text-sm mb-3">📝 How to Write a Great Prompt (4 Key Elements)</h4>
+                    <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
+                      <li><strong className="text-foreground">Subject:</strong> What's the main focus? (person, object, animal, etc.)</li>
+                      <li><strong className="text-foreground">Style:</strong> What's the artistic style? (cartoon, realistic, abstract, vintage, etc.)</li>
+                      <li><strong className="text-foreground">Colors:</strong> What colors dominate? (vibrant, pastel, monochrome, neon, etc.)</li>
+                      <li><strong className="text-foreground">Mood/Details:</strong> What feeling or extra details? (playful, serious, minimalist, detailed, etc.)</li>
+                    </ol>
+                    <div className="mt-4 p-4 bg-background rounded-lg border border-border">
+                      <p className="text-xs font-semibold text-primary mb-1">✨ Example of a Great Prompt:</p>
+                      <p className="text-xs italic text-foreground">
+                        "A playful cartoon cat wearing sunglasses and a leather jacket, retro 80s style with vibrant neon pink and purple colors, bold outlines, fun and energetic vibe, perfect for a t-shirt design"
+                      </p>
+                    </div>
+                  </Card>
+
                   <Textarea
-                    placeholder="Describe the design you want to create..."
+                    placeholder="Example: A majestic lion in watercolor style with golden and orange tones, serene and powerful mood..."
                     value={customPrompt}
                     onChange={(e) => {
                       setCustomPrompt(e.target.value);
@@ -382,9 +445,12 @@ export default function CustomDesign() {
 
                 {/* Reference Image Upload */}
                 <div>
-                  <h3 className="text-xl font-bold mb-4">
-                    Add Reference Image (Optional)
+                  <h3 className="text-xl font-bold mb-2">
+                    Option 3: Add Reference Image (Optional)
                   </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload an image to help guide the AI. This works with presets OR custom descriptions!
+                  </p>
                   <Card className="max-w-2xl p-6">
                     {!referenceImage ? (
                       <label className="flex flex-col items-center justify-center min-h-[200px] cursor-pointer hover:bg-secondary/50 transition-colors border-2 border-dashed border-border rounded-lg">
@@ -489,9 +555,15 @@ export default function CustomDesign() {
               <h2 className="text-3xl font-black text-foreground mb-2">
                 Step 2: Choose Your Product
               </h2>
-              <p className="text-muted-foreground mb-8">
-                Select the product you want to print your design on
-              </p>
+              <Card className="p-6 mb-8 bg-muted/30 border-primary/20 max-w-3xl mx-auto">
+                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-primary" />
+                  What to Do Now
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Your design is ready! Now pick which product you want it printed on. Click any product below to select it, then hit "Continue" to move to the next step.
+                </p>
+              </Card>
 
               {generatedDesign && (
                 <div className="mb-8">
@@ -576,9 +648,25 @@ export default function CustomDesign() {
               <h2 className="text-3xl font-black text-foreground mb-2">
                 Step 3: Upload Your Photo
               </h2>
-              <p className="text-muted-foreground mb-8">
-                Upload a photo of yourself to see the product on you
-              </p>
+              <Card className="p-6 mb-8 bg-muted/30 border-primary/20 max-w-3xl mx-auto">
+                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-primary" />
+                  See It On You!
+                </h3>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p>
+                    Upload a photo of yourself (or someone else) to generate a realistic mockup showing how your custom product will look when worn or used.
+                  </p>
+                  <p className="font-semibold text-foreground">
+                    💡 Tips for best results:
+                  </p>
+                  <ul className="list-disc list-inside ml-2 space-y-1">
+                    <li>Use a clear, well-lit photo</li>
+                    <li>Face the camera directly</li>
+                    <li>Make sure your upper body is visible (for apparel)</li>
+                  </ul>
+                </div>
+              </Card>
 
               <div className="max-w-2xl mx-auto">
                 <Card className="p-8">
@@ -632,11 +720,17 @@ export default function CustomDesign() {
           {currentStep === 4 && (
             <section>
               <h2 className="text-3xl font-black text-foreground mb-2">
-                Step 4: See Your Design Come to Life
+                Step 4: Review Your Mockup
               </h2>
-              <p className="text-muted-foreground mb-8">
-                Generate a realistic mockup showing the product on you!
-              </p>
+              <Card className="p-6 mb-8 bg-muted/30 border-primary/20 max-w-3xl mx-auto">
+                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                  <Check className="h-5 w-5 text-primary" />
+                  Almost Done!
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Click "Generate Final Mockup" below to create a realistic preview of your custom product. Once you're happy with how it looks, proceed to checkout to complete your order!
+                </p>
+              </Card>
 
               <div className="max-w-3xl mx-auto space-y-8">
                 {!finalMockup ? (
