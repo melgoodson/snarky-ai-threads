@@ -39,64 +39,33 @@ serve(async (req) => {
       throw new Error("Payment not completed");
     }
 
-    // Get metadata
+    // Get order ID from metadata (order was created before checkout)
     const metadata = session.metadata;
-    const cartItems = JSON.parse(metadata?.cart_items || "[]");
-    const shippingAddress = JSON.parse(metadata?.shipping_address || "{}");
-    const userEmail = metadata?.user_email;
-    const userId = metadata?.user_id;
+    const orderId = metadata?.order_id;
 
-    console.log("Creating order for user:", userEmail);
+    if (!orderId) {
+      throw new Error("Order ID not found in session metadata");
+    }
 
-    // Create order (userId can be null for guest orders)
-    const { data: order, error: orderError } = await supabaseClient
+    console.log("Updating order status to paid:", orderId);
+
+    // Update order status from pending to paid
+    const { data: order, error: updateError } = await supabaseClient
       .from("orders")
-      .insert({
-        user_id: userId || null,
-        email: userEmail,
-        total_amount: session.amount_total! / 100, // Convert from cents
-        shipping_address: shippingAddress,
+      .update({ 
         status: "paid",
-        fulfillment_status: "pending",
+        fulfillment_status: "pending"
       })
+      .eq("id", orderId)
       .select()
       .single();
 
-    if (orderError) {
-      console.error("Error creating order:", orderError);
-      throw orderError;
+    if (updateError || !order) {
+      console.error("Error updating order:", updateError);
+      throw updateError || new Error("Order not found");
     }
 
-    console.log("Order created:", order.id);
-
-    // Create order items
-    console.log("Processing cart items:", JSON.stringify(cartItems, null, 2));
-    
-    const orderItems = cartItems.map((item: any) => {
-      const orderItem = {
-        order_id: order.id,
-        product_id: item.productId,
-        printify_product_id: item.printifyProductId || String(item.printifyProductId),
-        variant_id: item.variantId || item.variant_id || null,
-        quantity: item.quantity || 1,
-        price: item.price,
-      };
-      
-      console.log("Created order item:", JSON.stringify(orderItem, null, 2));
-      return orderItem;
-    });
-
-    const { error: itemsError } = await supabaseClient
-      .from("order_items")
-      .insert(orderItems);
-
-    if (itemsError) {
-      console.error("Error creating order items:", itemsError);
-      console.error("Order items that failed:", JSON.stringify(orderItems, null, 2));
-      throw itemsError;
-    }
-
-    console.log("Order items created successfully");
+    console.log("Order status updated to paid");
 
     // Trigger Printify order creation
     try {
@@ -123,7 +92,8 @@ serve(async (req) => {
       await supabaseClient.functions.invoke("send-order-confirmation", {
         body: {
           orderId: order.id,
-          email: userEmail,
+          email: order.email,
+          totalAmount: order.total_amount,
         },
       });
     } catch (emailError) {
