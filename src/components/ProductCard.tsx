@@ -17,7 +17,7 @@ export const ProductCard = ({ id, title, price, image, category }: ProductCardPr
   return (
     <Card 
       className="group overflow-hidden border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)] cursor-pointer"
-      onClick={() => navigate(`/product/${id}`)}
+      onClick={() => navigate(`/designs/${id}`)}
     >
       <div className="relative aspect-square overflow-hidden bg-secondary">
         <img
@@ -43,7 +43,9 @@ export const ProductCard = ({ id, title, price, image, category }: ProductCardPr
         <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
           {title}
         </h3>
-        <p className="text-2xl font-black text-foreground">${price.toFixed(2)}</p>
+        {price > 0 && (
+          <p className="text-2xl font-black text-foreground">${price.toFixed(2)}</p>
+        )}
       </div>
     </Card>
   );
