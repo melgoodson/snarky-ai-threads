@@ -153,8 +153,8 @@ export default function CustomDesign() {
 
       if (data?.image) {
         setGeneratedDesign(data.image);
-        toast.success("Design generated successfully!");
-        setCurrentStep(2);
+        toast.success("Design generated! Review and approve to continue.");
+        // Don't auto-advance to step 2 - let user review and approve first
       } else {
         throw new Error("No design image returned");
       }
@@ -460,27 +460,65 @@ export default function CustomDesign() {
                   </Card>
                 </div>
 
+                {/* Generated Design Preview & Approval */}
+                {generatedDesign && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-bold mb-4">Your Generated Design</h3>
+                    <Card className="max-w-2xl mx-auto p-6">
+                      <div className="space-y-6">
+                        <img
+                          src={generatedDesign}
+                          alt="Generated design"
+                          className="w-full rounded-lg border border-border"
+                        />
+                        <div className="flex gap-4 justify-center">
+                          <Button
+                            size="lg"
+                            onClick={() => setCurrentStep(2)}
+                            className="min-w-[200px]"
+                          >
+                            <Check className="mr-2 h-5 w-5" />
+                            Approve & Continue
+                          </Button>
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            onClick={() => {
+                              setGeneratedDesign(null);
+                              toast.info("Create a new design");
+                            }}
+                          >
+                            Regenerate
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
                 {/* Generate Button */}
-                <div className="flex justify-center">
-                  <Button
-                    size="lg"
-                    onClick={generateDesign}
-                    disabled={generatingDesign || (!selectedPreset && !customPrompt.trim())}
-                    className="min-w-[200px]"
-                  >
-                    {generatingDesign ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Generating Design...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-5 w-5" />
-                        Generate Design
-                      </>
-                    )}
-                  </Button>
-                </div>
+                {!generatedDesign && (
+                  <div className="flex justify-center">
+                    <Button
+                      size="lg"
+                      onClick={generateDesign}
+                      disabled={generatingDesign || (!selectedPreset && !customPrompt.trim())}
+                      className="min-w-[200px]"
+                    >
+                      {generatingDesign ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Generating Design...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-5 w-5" />
+                          Generate Design
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </section>
           )}
