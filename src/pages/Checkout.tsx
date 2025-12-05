@@ -134,6 +134,7 @@ const Checkout = () => {
           quantity: 1,
           printifyProductId: designData.printifyProductId,
           variantId: undefined,
+          designImageUrl: designData.designImageUrl || designData.image || designData.mockupUrl, // Pass design artwork
         }]
       : [];
 

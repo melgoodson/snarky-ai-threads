@@ -88,6 +88,7 @@ serve(async (req) => {
       variant_id: item.variantId || "placeholder",
       quantity: item.quantity,
       price: item.price,
+      design_image_url: item.designImageUrl || item.image || null, // Store design artwork URL
     }));
 
     const { error: itemsError } = await supabaseClient

@@ -92,6 +92,7 @@ const DesignDetail = () => {
       image: design.image_url,
       printifyProductId: product.printify_product_id,
       variantId: selectedVariant.id,
+      designImageUrl: design.image_url, // Pass design artwork for Printify printing
     });
 
     toast.success("Added to cart!");

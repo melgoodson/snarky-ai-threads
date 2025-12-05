@@ -58,7 +58,7 @@ serve(async (req) => {
       throw new Error('No Printify shop found');
     }
 
-    // Build line items with valid variant IDs
+    // Build line items with valid variant IDs and print areas
     const lineItems = [];
     
     for (const item of order.order_items) {
@@ -99,11 +99,24 @@ serve(async (req) => {
           .eq('id', item.id);
       }
       
-      lineItems.push({
+      // Build line item with print_areas if design image is available
+      const lineItem: any = {
         product_id: item.printify_product_id,
-        variant_id: Number(variantId), // Printify expects numeric variant ID
+        variant_id: Number(variantId),
         quantity: item.quantity,
-      });
+      };
+      
+      // Add print_areas with the design image URL for custom prints
+      if (item.design_image_url) {
+        console.log(`Adding print_areas with design image: ${item.design_image_url}`);
+        lineItem.print_areas = {
+          front: item.design_image_url,
+        };
+      } else {
+        console.log(`No design_image_url for item ${item.id}, order will use product's default print`);
+      }
+      
+      lineItems.push(lineItem);
     }
 
     const shippingAddress = order.shipping_address;
