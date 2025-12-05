@@ -11,6 +11,7 @@ export interface CartItem {
   quantity: number;
   printifyProductId?: string;
   variantId?: string;
+  designImageUrl?: string; // The actual design artwork URL for printing
 }
 
 interface CartContextType {
