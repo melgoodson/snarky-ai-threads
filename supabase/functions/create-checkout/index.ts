@@ -81,15 +81,32 @@ serve(async (req) => {
     console.log("Order created:", orderData.id);
 
     // Create order items
-    const orderItems = cartItems.map((item: any) => ({
-      order_id: orderData.id,
-      product_id: item.productId,
-      printify_product_id: item.printifyProductId || "placeholder",
-      variant_id: item.variantId || "placeholder",
-      quantity: item.quantity,
-      price: item.price,
-      design_image_url: item.designImageUrl || item.image || null, // Store design artwork URL
-    }));
+    const orderItems = cartItems.map((item: any) => {
+      // Extract design image URL - ensure it's a string, not an object
+      let designUrl = item.designImageUrl || item.artworkUrl || null;
+      
+      // If designUrl is an object (has src property), extract the string
+      if (designUrl && typeof designUrl === 'object' && designUrl.src) {
+        designUrl = designUrl.src;
+      }
+      
+      // Fallback to image if it's a string URL
+      if (!designUrl && typeof item.image === 'string') {
+        designUrl = item.image;
+      }
+      
+      console.log(`Order item design URL: ${designUrl}`);
+      
+      return {
+        order_id: orderData.id,
+        product_id: item.productId,
+        printify_product_id: item.printifyProductId || "placeholder",
+        variant_id: item.variantId || "placeholder",
+        quantity: item.quantity,
+        price: item.price,
+        design_image_url: designUrl,
+      };
+    });
 
     const { error: itemsError } = await supabaseClient
       .from("order_items")
