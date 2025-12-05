@@ -270,6 +270,7 @@ export default function CustomDesign() {
       image: productImage,
       mockupUrl: finalMockup,
       artworkUrl: generatedDesign,
+      designImageUrl: generatedDesign, // The original AI-generated design for Printify printing
       printifyProductId: selectedProduct.printify_product_id,
     };
     
@@ -283,6 +284,7 @@ export default function CustomDesign() {
       size: "M", // Default size, can be made configurable
       image: productImage,
       printifyProductId: selectedProduct.printify_product_id,
+      designImageUrl: generatedDesign, // The original AI-generated design for Printify printing
     });
     
     console.log("Added to cart with price:", basePrice);
