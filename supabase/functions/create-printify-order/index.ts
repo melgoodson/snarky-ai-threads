@@ -58,12 +58,53 @@ serve(async (req) => {
       throw new Error('No Printify shop found');
     }
 
-    // Format line items for Printify
-    const lineItems = order.order_items.map((item: any) => ({
-      product_id: item.printify_product_id,
-      variant_id: item.variant_id,
-      quantity: item.quantity,
-    }));
+    // Build line items with valid variant IDs
+    const lineItems = [];
+    
+    for (const item of order.order_items) {
+      let variantId = item.variant_id;
+      
+      // If variant_id is missing or "placeholder", look up a valid enabled variant
+      if (!variantId || variantId === 'placeholder' || variantId === 'undefined') {
+        console.log(`Item ${item.id} has invalid variant_id: ${variantId}, looking up default variant...`);
+        
+        // Fetch the product to get its variants
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('variants')
+          .eq('id', item.product_id)
+          .single();
+        
+        if (productError || !product) {
+          console.error(`Could not find product ${item.product_id}:`, productError);
+          throw new Error(`Product not found for item: ${item.product_id}`);
+        }
+        
+        // Find the first enabled variant
+        const variants = product.variants || [];
+        const enabledVariant = variants.find((v: any) => v.is_enabled === true);
+        
+        if (!enabledVariant) {
+          console.error(`No enabled variants found for product ${item.product_id}`);
+          throw new Error(`No enabled variants available for product. Please configure variants in Printify.`);
+        }
+        
+        variantId = enabledVariant.id;
+        console.log(`Using default enabled variant: ${variantId} (${enabledVariant.title})`);
+        
+        // Update the order item with the correct variant ID for future reference
+        await supabase
+          .from('order_items')
+          .update({ variant_id: String(variantId) })
+          .eq('id', item.id);
+      }
+      
+      lineItems.push({
+        product_id: item.printify_product_id,
+        variant_id: Number(variantId), // Printify expects numeric variant ID
+        quantity: item.quantity,
+      });
+    }
 
     const shippingAddress = order.shipping_address;
 
