@@ -418,10 +418,16 @@ const Checkout = () => {
             <Card className="p-6 sticky top-24">
               <h2 className="text-xl font-black mb-4">ORDER SUMMARY</h2>
               <div className="space-y-4">
-                {checkoutItems.map(item => (
+                {checkoutItems.map(item => {
+                  // Handle image being either a string or object with src property
+                  const imageUrl = typeof item.image === 'string' 
+                    ? item.image 
+                    : (item.image as any)?.src || '/placeholder.svg';
+                  
+                  return (
                   <div key={item.id} className="flex gap-4">
                     <img
-                      src={item.image}
+                      src={imageUrl}
                       alt={item.title}
                       className="w-16 h-16 object-cover rounded"
                     />
@@ -435,7 +441,8 @@ const Checkout = () => {
                       </p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
