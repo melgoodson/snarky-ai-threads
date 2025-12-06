@@ -35,8 +35,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    console.log('Saving cart to localStorage:', items);
-    localStorage.setItem('cart', JSON.stringify(items));
+    try {
+      // Strip large data URLs before saving to prevent quota exceeded errors
+      const itemsToStore = items.map(item => ({
+        ...item,
+        image: item.image?.startsWith('data:') ? '' : item.image,
+        designImageUrl: item.designImageUrl?.startsWith('data:') ? '' : item.designImageUrl,
+      }));
+      localStorage.setItem('cart', JSON.stringify(itemsToStore));
+    } catch (e) {
+      console.warn('Failed to save cart to localStorage:', e);
+      // Clear cart from localStorage if quota exceeded
+      localStorage.removeItem('cart');
+    }
   }, [items]);
 
   const addItem = (newItem: Omit<CartItem, 'id' | 'quantity'>) => {
