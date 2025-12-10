@@ -72,11 +72,11 @@ interface TrafficAnalytics {
   uniqueVisitors: number;
   totalSessions: number;
   averageSessionDuration: number;
+  bounceRate: number;
   topPages: Array<{ page: string; views: number }>;
   deviceBreakdown: Array<{ name: string; value: number }>;
   browserBreakdown: Array<{ name: string; value: number }>;
   avgScrollDepth: number;
-  clickEvents: number;
 }
 
 export default function AdminDashboard() {
@@ -123,14 +123,6 @@ export default function AdminDashboard() {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
 
-      // Fetch analytics events
-      const { data: events, error: eventsError } = await supabase
-        .from('analytics_events')
-        .select('*')
-        .gte('created_at', cutoffDate.toISOString());
-
-      if (eventsError) throw eventsError;
-
       // Fetch sessions
       const { data: sessions, error: sessionsError } = await supabase
         .from('analytics_sessions')
@@ -139,57 +131,78 @@ export default function AdminDashboard() {
 
       if (sessionsError) throw sessionsError;
 
+      // Fetch page views
+      const { data: pageViews, error: pageViewsError } = await supabase
+        .from('analytics_page_views')
+        .select('*')
+        .gte('viewed_at', cutoffDate.toISOString());
+
+      if (pageViewsError) throw pageViewsError;
+
       // Calculate metrics
-      const pageViews = events?.filter(e => e.event_type === 'page_view') || [];
-      const uniqueVisitors = new Set(pageViews.map(e => e.session_id)).size;
       const totalSessions = sessions?.length || 0;
-      const avgDuration = sessions?.reduce((acc, s) => acc + (s.duration || 0), 0) / totalSessions || 0;
+      const uniqueVisitors = new Set(sessions?.map(s => s.visitor_id)).size;
+      const bounces = sessions?.filter(s => s.is_bounce).length || 0;
+      const bounceRate = totalSessions > 0 ? Math.round((bounces / totalSessions) * 100) : 0;
+
+      // Average session duration
+      let totalDuration = 0;
+      let sessionsWithDuration = 0;
+      sessions?.forEach(session => {
+        if (session.started_at && session.ended_at) {
+          const duration = new Date(session.ended_at).getTime() - new Date(session.started_at).getTime();
+          if (duration > 0) {
+            totalDuration += duration;
+            sessionsWithDuration++;
+          }
+        }
+      });
+      const avgDuration = sessionsWithDuration > 0 ? Math.round(totalDuration / sessionsWithDuration / 1000) : 0;
 
       // Top pages
       const pageViewCounts: Record<string, number> = {};
-      pageViews.forEach(e => {
-        pageViewCounts[e.page_url] = (pageViewCounts[e.page_url] || 0) + 1;
+      pageViews?.forEach(pv => {
+        pageViewCounts[pv.path] = (pageViewCounts[pv.path] || 0) + 1;
       });
       const topPages = Object.entries(pageViewCounts)
         .map(([page, views]) => ({ page, views }))
         .sort((a, b) => b.views - a.views)
         .slice(0, 10);
 
-      // Device breakdown
+      // Device breakdown from sessions
       const deviceCounts: Record<string, number> = {};
-      events?.forEach(e => {
-        if (e.device_type) {
-          deviceCounts[e.device_type] = (deviceCounts[e.device_type] || 0) + 1;
+      sessions?.forEach(s => {
+        if (s.device_type) {
+          deviceCounts[s.device_type] = (deviceCounts[s.device_type] || 0) + 1;
         }
       });
       const deviceBreakdown = Object.entries(deviceCounts).map(([name, value]) => ({ name, value }));
 
-      // Browser breakdown
+      // Browser breakdown from sessions
       const browserCounts: Record<string, number> = {};
-      events?.forEach(e => {
-        if (e.browser) {
-          browserCounts[e.browser] = (browserCounts[e.browser] || 0) + 1;
+      sessions?.forEach(s => {
+        if (s.browser) {
+          browserCounts[s.browser] = (browserCounts[s.browser] || 0) + 1;
         }
       });
       const browserBreakdown = Object.entries(browserCounts).map(([name, value]) => ({ name, value }));
 
-      // Average scroll depth
-      const scrollEvents = events?.filter(e => e.scroll_depth && e.scroll_depth > 0) || [];
-      const avgScrollDepth = scrollEvents.reduce((acc, e) => acc + (e.scroll_depth || 0), 0) / scrollEvents.length || 0;
-
-      // Click events
-      const clickEvents = events?.filter(e => e.event_type === 'click').length || 0;
+      // Average scroll depth from page views
+      const scrollViews = pageViews?.filter(pv => pv.scroll_depth && pv.scroll_depth > 0) || [];
+      const avgScrollDepth = scrollViews.length > 0 
+        ? Math.round(scrollViews.reduce((acc, pv) => acc + (pv.scroll_depth || 0), 0) / scrollViews.length)
+        : 0;
 
       setTrafficAnalytics({
-        totalPageViews: pageViews.length,
+        totalPageViews: pageViews?.length || 0,
         uniqueVisitors,
         totalSessions,
-        averageSessionDuration: Math.round(avgDuration),
+        averageSessionDuration: avgDuration,
+        bounceRate,
         topPages,
         deviceBreakdown,
         browserBreakdown,
-        avgScrollDepth: Math.round(avgScrollDepth),
-        clickEvents,
+        avgScrollDepth,
       });
     } catch (error) {
       console.error('Error fetching traffic analytics:', error);
@@ -768,14 +781,14 @@ export default function AdminDashboard() {
                       <Badge variant="secondary">{trafficAnalytics?.avgScrollDepth || 0}%</Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Total Click Events</span>
-                      <Badge variant="secondary">{trafficAnalytics?.clickEvents || 0}</Badge>
+                      <span className="text-sm font-medium">Bounce Rate</span>
+                      <Badge variant="secondary">{trafficAnalytics?.bounceRate || 0}%</Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Clicks per Session</span>
+                      <span className="text-sm font-medium">Pages per Session</span>
                       <Badge variant="secondary">
                         {trafficAnalytics && trafficAnalytics.totalSessions > 0
-                          ? (trafficAnalytics.clickEvents / trafficAnalytics.totalSessions).toFixed(1)
+                          ? (trafficAnalytics.totalPageViews / trafficAnalytics.totalSessions).toFixed(1)
                           : '0'}
                       </Badge>
                     </div>
