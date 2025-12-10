@@ -106,14 +106,21 @@ serve(async (req) => {
         quantity: item.quantity,
       };
       
-      // Add print_areas with the design image URL for custom prints
-      if (item.design_image_url) {
-        console.log(`Adding print_areas with design image: ${item.design_image_url}`);
+      // Only add print_areas if we have a valid HTTPS URL for the design image
+      // Skip if: null, empty string, "[object Object]", or not starting with http
+      const designUrl = item.design_image_url;
+      const isValidUrl = designUrl && 
+        typeof designUrl === 'string' && 
+        designUrl.startsWith('http') && 
+        !designUrl.includes('[object');
+      
+      if (isValidUrl) {
+        console.log(`Adding print_areas with design image: ${designUrl}`);
         lineItem.print_areas = {
-          front: item.design_image_url,
+          front: designUrl,
         };
       } else {
-        console.log(`No design_image_url for item ${item.id}, order will use product's default print`);
+        console.log(`No valid design_image_url for item ${item.id} (value: ${designUrl}), order will use product's default print`);
       }
       
       lineItems.push(lineItem);
