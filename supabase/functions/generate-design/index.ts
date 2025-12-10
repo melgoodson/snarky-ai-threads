@@ -24,25 +24,35 @@ serve(async (req) => {
       );
     }
 
+    console.log("Generate design request received:", {
+      prompt: prompt.slice(0, 50),
+      hasReference: !!referenceImage,
+    });
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    // Enhanced prompt for better design generation
+    const enhancedPrompt = `Create a high-quality design artwork for print-on-demand products. ${prompt}. The design should be suitable for printing on apparel and merchandise, with clear details and vibrant colors.`;
 
     const messages: any[] = [
       {
         role: "user",
         content: referenceImage
           ? [
-              { type: "text", text: prompt },
+              { type: "text", text: enhancedPrompt },
               {
                 type: "image_url",
                 image_url: { url: referenceImage },
               },
             ]
-          : prompt,
+          : enhancedPrompt,
       },
     ];
+
+    console.log("Calling Lovable AI Gateway...");
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -59,6 +69,8 @@ serve(async (req) => {
         }),
       }
     );
+
+    console.log("AI Gateway responded in", response.status);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -85,11 +97,33 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    
+    // Log the full response structure for debugging
+    console.log("AI Response structure:", JSON.stringify({
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length,
+      hasMessage: !!data.choices?.[0]?.message,
+      hasImages: !!data.choices?.[0]?.message?.images,
+      imagesLength: data.choices?.[0]?.message?.images?.length,
+      finishReason: data.choices?.[0]?.finish_reason,
+    }));
+
     const generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!generatedImageUrl) {
-      throw new Error("No image URL in response");
+      // Log what we received to debug
+      console.error("No image URL in response. Full response:", JSON.stringify(data).slice(0, 500));
+      
+      // Check if there's a content issue
+      const finishReason = data.choices?.[0]?.finish_reason;
+      if (finishReason === "stop" || finishReason === "content_filter") {
+        throw new Error("The AI could not generate this image. Please try a different prompt.");
+      }
+      
+      throw new Error("No image was generated. Please try again with a different prompt.");
     }
+
+    console.log("Design generated successfully, image URL length:", generatedImageUrl.length);
 
     return new Response(
       JSON.stringify({ image: generatedImageUrl }),
@@ -98,7 +132,7 @@ serve(async (req) => {
       }
     );
   } catch (error: any) {
-    console.error("Error in generate-design function:", error);
+    console.error("Error in generate-design function:", error.message);
     return new Response(
       JSON.stringify({ error: error.message || "Failed to generate design" }),
       {
