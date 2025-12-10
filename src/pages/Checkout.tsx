@@ -230,11 +230,12 @@ const Checkout = () => {
         throw new Error(message);
       }
 
-      // Redirect to Stripe checkout
+      // Redirect to Stripe checkout - use window.open for iframe compatibility
       if (checkoutData?.url) {
-        toast.success('Redirecting to payment...');
-        // Direct redirect - more reliable than popup
-        window.location.href = checkoutData.url;
+        toast.success('Opening payment page...');
+        // Open in new tab - works better in iframe environments
+        window.open(checkoutData.url, '_blank');
+        setLoading(false);
       } else {
         console.error('create-checkout missing URL:', checkoutData);
         throw new Error('No checkout URL returned from backend');
