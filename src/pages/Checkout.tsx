@@ -230,11 +230,18 @@ const Checkout = () => {
         throw new Error(message);
       }
 
-      // Open Stripe checkout in new tab - required because Stripe cannot run in iframes
+      // Open Stripe checkout - try new tab first, fallback to redirect if blocked
       if (checkoutData?.url) {
-        window.open(checkoutData.url, '_blank');
-        toast.success('Stripe checkout opened in new tab');
-        setLoading(false);
+        const newWindow = window.open(checkoutData.url, '_blank');
+        
+        // If popup was blocked, redirect in current window
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          toast.info('Redirecting to payment...');
+          window.location.href = checkoutData.url;
+        } else {
+          toast.success('Stripe checkout opened in new tab');
+          setLoading(false);
+        }
       } else {
         console.error('create-checkout missing URL:', checkoutData);
         throw new Error('No checkout URL returned from backend');
