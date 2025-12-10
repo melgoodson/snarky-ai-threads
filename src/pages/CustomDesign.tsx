@@ -68,61 +68,9 @@ export default function CustomDesign() {
   // Step 3: User Photo
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   
-  // Step 4: Mockups
+  // Step 4: Final Mockup
   const [generatingMockup, setGeneratingMockup] = useState(false);
-  const [productMockup, setProductMockup] = useState<string | null>(null); // Design on product (for cart) - stored as HTTPS URL
-  const [finalMockup, setFinalMockup] = useState<string | null>(null); // Virtual try-on (optional)
-
-  // Helper function to upload base64 image to storage and return public URL
-  const uploadImageToStorage = async (base64Data: string, fileName: string): Promise<string | null> => {
-    try {
-      // Extract the base64 content (remove data:image/xxx;base64, prefix)
-      const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
-      if (!matches) {
-        console.error('Invalid base64 image format');
-        return null;
-      }
-      
-      const imageType = matches[1];
-      const base64Content = matches[2];
-      
-      // Convert base64 to Uint8Array
-      const binaryString = atob(base64Content);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      // Generate unique filename
-      const uniqueFileName = `${Date.now()}-${fileName}.${imageType}`;
-      
-      console.log(`Uploading image to storage: ${uniqueFileName}`);
-      
-      // Upload to storage
-      const { data, error } = await supabase.storage
-        .from('design-images')
-        .upload(uniqueFileName, bytes, {
-          contentType: `image/${imageType}`,
-          upsert: true,
-        });
-      
-      if (error) {
-        console.error('Error uploading to storage:', error);
-        return null;
-      }
-      
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('design-images')
-        .getPublicUrl(uniqueFileName);
-      
-      console.log(`Image uploaded successfully: ${publicUrlData.publicUrl}`);
-      return publicUrlData.publicUrl;
-    } catch (err) {
-      console.error('Error in uploadImageToStorage:', err);
-      return null;
-    }
-  };
+  const [finalMockup, setFinalMockup] = useState<string | null>(null);
 
   useEffect(() => {
     if (currentStep === 2) {
@@ -149,10 +97,7 @@ export default function CustomDesign() {
         model: p.model || "",
         category: p.category || "",
         description: p.description || "",
-        // Extract src URLs from image objects stored in JSON
-        images: Array.isArray(p.images) 
-          ? p.images.map((img: any) => (typeof img === 'string' ? img : img?.src || ''))
-          : [],
+        images: Array.isArray(p.images) ? p.images.map(String) : [],
         template_image_url: p.template_image_url || "",
         price: Number(p.price) || 0,
         retail_price: Number(p.retail_price) || 0,
@@ -244,22 +189,21 @@ export default function CustomDesign() {
     reader.readAsDataURL(file);
   };
 
-  // Generate product mockup (design on product) - required for cart
-  const generateProductMockup = async () => {
-    if (!generatedDesign || !selectedProduct) {
-      toast.error("Please select a product first");
+  const generateFinalMockup = async () => {
+    if (!generatedDesign || !selectedProduct || !userPhoto) {
+      toast.error("Missing required data for mockup generation");
       return;
     }
 
     setGeneratingMockup(true);
     try {
-      console.log("Generating product mockup with design on product...");
+      // First, composite the design onto the product
       const { data: productMockupData, error: productError } = await supabase.functions.invoke(
         "generate-user-mockup",
         {
           body: {
             userImage: generatedDesign,
-            productImage: selectedProduct.template_image_url || selectedProduct.images?.[0] || '',
+            productImage: selectedProduct.template_image_url,
             productTitle: selectedProduct.title,
           },
         }
@@ -267,50 +211,19 @@ export default function CustomDesign() {
 
       if (productError) throw productError;
 
-      const mockupUrl = productMockupData?.mockupUrl;
+      const productWithDesign = productMockupData?.mockupUrl;
 
-      if (!mockupUrl) {
+      if (!productWithDesign) {
         throw new Error("Failed to generate product mockup");
       }
 
-      console.log("Product mockup generated, uploading to storage...");
-      
-      // Upload mockup to storage to get permanent HTTPS URL
-      const uploadedUrl = await uploadImageToStorage(mockupUrl, `mockup-${selectedProduct.id}`);
-      
-      if (uploadedUrl) {
-        console.log("Mockup uploaded to storage:", uploadedUrl);
-        setProductMockup(uploadedUrl);
-        toast.success("Product mockup generated! You can now proceed to checkout or try it on.");
-      } else {
-        console.warn("Failed to upload mockup, using base64 URL as fallback");
-        setProductMockup(mockupUrl);
-        toast.success("Product mockup generated! You can now proceed to checkout or try it on.");
-      }
-    } catch (error: any) {
-      console.error("Product mockup generation error:", error);
-      toast.error(error.message || "Failed to generate product mockup");
-    } finally {
-      setGeneratingMockup(false);
-    }
-  };
-
-  // Generate virtual try-on mockup (optional) - shows product on user photo
-  const generateVirtualTryOn = async () => {
-    if (!productMockup || !userPhoto) {
-      toast.error("Please upload a photo first");
-      return;
-    }
-
-    setGeneratingMockup(true);
-    try {
-      console.log("Generating virtual try-on mockup...");
+      // Then, show the product on the user
       const { data: finalData, error: finalError } = await supabase.functions.invoke(
         "generate-mockup",
         {
           body: {
             userImage: userPhoto,
-            productImage: productMockup,
+            productImage: productWithDesign,
           },
         }
       );
@@ -319,13 +232,13 @@ export default function CustomDesign() {
 
       if (finalData?.image) {
         setFinalMockup(finalData.image);
-        toast.success("Virtual try-on generated! See how it looks on you!");
+        toast.success("Mockup generated! See how it looks on you!");
       } else {
-        throw new Error("No try-on image returned");
+        throw new Error("No mockup image returned");
       }
     } catch (error: any) {
-      console.error("Virtual try-on generation error:", error);
-      toast.error(error.message || "Failed to generate virtual try-on");
+      console.error("Mockup generation error:", error);
+      toast.error(error.message || "Failed to generate mockup");
     } finally {
       setGeneratingMockup(false);
     }
@@ -335,37 +248,17 @@ export default function CustomDesign() {
     console.log("Proceed to checkout clicked");
     console.log("Selected Product:", selectedProduct);
     console.log("Generated Design:", generatedDesign);
-    console.log("Product Mockup:", productMockup);
+    console.log("Final Mockup:", finalMockup);
     
-    if (!selectedProduct || !generatedDesign || !productMockup) {
+    if (!selectedProduct || !generatedDesign || !finalMockup) {
       console.error("Missing required data for checkout");
-      toast.error("Please generate a product mockup before checkout");
+      toast.error("Please complete all steps before checkout");
       return;
     }
 
-    // Helper to extract URL string from various formats
-    const extractUrl = (value: any): string => {
-      if (!value) return '';
-      if (typeof value === 'string') {
-        // Keep data URLs for cart display - they work fine in memory
-        return value;
-      }
-      if (typeof value === 'object') {
-        return value.src || value.url || value.image_url || '';
-      }
-      return '';
-    };
-
-    // Get the product's first image URL for fallback
-    const productImageRaw = selectedProduct.images && selectedProduct.images.length > 0 
+    const productImage = selectedProduct.images && selectedProduct.images.length > 0 
       ? selectedProduct.images[0] 
-      : '';
-    
-    const productImageUrl = extractUrl(productImageRaw);
-    const productMockupUrl = extractUrl(productMockup); // Design on product mockup - use for BOTH cart AND Printify
-    
-    // For cart display AND Printify, use the product mockup (design on product)
-    const cartDisplayImage = productMockupUrl || productImageUrl;
+      : finalMockup;
 
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
@@ -374,33 +267,27 @@ export default function CustomDesign() {
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
-      image: cartDisplayImage, // Show design on product in cart
-      mockupUrl: productMockupUrl,
-      designImageUrl: productMockupUrl, // The mockup (design on product) for Printify printing
+      image: productImage,
+      mockupUrl: finalMockup,
+      artworkUrl: generatedDesign,
+      designImageUrl: generatedDesign, // The original AI-generated design for Printify printing
       printifyProductId: selectedProduct.printify_product_id,
     };
     
     console.log("Storing custom design data:", customDesignData);
-    console.log("Cart display image:", cartDisplayImage);
-    console.log("Mockup URL for Printify:", productMockupUrl);
-    
-    try {
-      localStorage.setItem("customDesign", JSON.stringify(customDesignData));
-    } catch (e) {
-      console.warn('Failed to save customDesign to localStorage:', e);
-    }
+    localStorage.setItem("customDesign", JSON.stringify(customDesignData));
     
     addItem({
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
-      size: "M",
-      image: cartDisplayImage, // Show design on product in cart
+      size: "M", // Default size, can be made configurable
+      image: productImage,
       printifyProductId: selectedProduct.printify_product_id,
-      designImageUrl: productMockupUrl, // The mockup (design on product) for Printify printing
+      designImageUrl: generatedDesign, // The original AI-generated design for Printify printing
     });
     
-    console.log("Added to cart with price:", basePrice, "designImageUrl:", productMockupUrl);
+    console.log("Added to cart with price:", basePrice);
     console.log("Navigating to checkout...");
     navigate("/checkout");
   };
@@ -831,11 +718,11 @@ export default function CustomDesign() {
             </section>
           )}
 
-          {/* Step 4: Product Mockup & Checkout */}
+          {/* Step 4: Final Mockup */}
           {currentStep === 4 && (
             <section>
               <h2 className="text-3xl font-black text-foreground mb-2">
-                Step 4: Review Your Product
+                Step 4: Review Your Mockup
               </h2>
               <Card className="p-6 mb-8 bg-muted/30 border-primary/20 max-w-3xl mx-auto">
                 <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
@@ -843,119 +730,57 @@ export default function CustomDesign() {
                   Almost Done!
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {!productMockup 
-                    ? "Generate a preview of your design on the product, then proceed to checkout!"
-                    : "Your product mockup is ready! You can proceed to checkout or try a virtual try-on."
-                  }
+                  Click "Generate Final Mockup" below to create a realistic preview of your custom product. Once you're happy with how it looks, proceed to checkout to complete your order!
                 </p>
               </Card>
 
-              <div className="max-w-4xl mx-auto space-y-8">
-                {/* Product Mockup Section - Required */}
-                {!productMockup ? (
+              <div className="max-w-3xl mx-auto space-y-8">
+                {!finalMockup ? (
                   <Card className="p-8">
                     <div className="text-center space-y-6">
                       <p className="text-lg text-foreground">
-                        Generate a preview of your design on the {selectedProduct?.title}
+                        Ready to see how your custom design looks on you?
                       </p>
                       <Button
                         size="lg"
-                        onClick={generateProductMockup}
+                        onClick={generateFinalMockup}
                         disabled={generatingMockup}
                         className="min-w-[200px]"
                       >
                         {generatingMockup ? (
                           <>
                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            Generating Preview...
+                            Generating Mockup...
                           </>
                         ) : (
                           <>
                             <Sparkles className="mr-2 h-5 w-5" />
-                            Generate Product Preview
+                            Generate Final Mockup
                           </>
                         )}
                       </Button>
                     </div>
                   </Card>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Product Mockup */}
-                    <Card className="p-6">
-                      <h3 className="font-bold text-lg mb-4">Your Custom Product</h3>
-                      <img
-                        src={productMockup}
-                        alt="Product with your design"
-                        className="w-full rounded-lg mb-4 aspect-square object-contain bg-muted"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setProductMockup(null)}
-                        >
-                          Regenerate
-                        </Button>
-                        <Button onClick={proceedToCheckout} className="flex-1">
-                          Add to Cart & Checkout →
-                        </Button>
-                      </div>
-                    </Card>
-
-                    {/* Virtual Try-On (Optional) */}
-                    <Card className="p-6">
-                      <h3 className="font-bold text-lg mb-4">Virtual Try-On (Optional)</h3>
-                      {!finalMockup ? (
-                        <div className="space-y-4">
-                          {userPhoto ? (
-                            <>
-                              <img
-                                src={userPhoto}
-                                alt="Your photo"
-                                className="w-full rounded-lg aspect-square object-cover"
-                              />
-                              <Button
-                                onClick={generateVirtualTryOn}
-                                disabled={generatingMockup}
-                                className="w-full"
-                              >
-                                {generatingMockup ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Generating...
-                                  </>
-                                ) : (
-                                  "See It On You"
-                                )}
-                              </Button>
-                            </>
-                          ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <p className="mb-4">Upload a photo to see yourself wearing this product</p>
-                              <Button variant="outline" onClick={() => setCurrentStep(3)}>
-                                Upload Photo
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <img
-                            src={finalMockup}
-                            alt="Virtual try-on"
-                            className="w-full rounded-lg"
-                          />
-                          <Button
-                            variant="outline"
-                            onClick={() => setFinalMockup(null)}
-                            className="w-full"
-                          >
-                            Try Different Photo
-                          </Button>
-                        </div>
-                      )}
-                    </Card>
-                  </div>
+                  <Card className="p-8">
+                    <img
+                      src={finalMockup}
+                      alt="Final mockup"
+                      className="w-full rounded-lg mb-6"
+                    />
+                    <div className="flex gap-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setFinalMockup(null)}
+                        className="flex-1"
+                      >
+                        Regenerate Mockup
+                      </Button>
+                      <Button onClick={proceedToCheckout} className="flex-1">
+                        Proceed to Checkout →
+                      </Button>
+                    </div>
+                  </Card>
                 )}
 
                 <div className="flex justify-center">

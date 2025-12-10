@@ -25,9 +25,6 @@ const OrderConfirmation = () => {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      // Wait for auth session to be ready
-      const { data: { session } } = await supabase.auth.getSession();
-      
       // Extract session ID from URL if it's a Stripe session ID
       let orderIdToFetch = orderId;
       
@@ -73,42 +70,11 @@ const OrderConfirmation = () => {
         return;
       }
 
-      console.log('Fetching order:', orderIdToFetch, 'User authenticated:', !!session);
-
-      // Use service role via edge function if user not authenticated (coming from Stripe redirect)
-      if (!session) {
-        // Fetch order via verify-payment which already has the order data
-        // Or call a public order lookup function
-        try {
-          const response = await fetch(
-            `https://waldggnsstpxasmauwda.functions.supabase.co/verify-payment`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              },
-              body: JSON.stringify({ sessionId: orderId, getOrder: true }),
-            }
-          );
-          const data = await response.json();
-          if (data?.order) {
-            setOrder(data.order);
-          }
-        } catch (error) {
-          console.error('Error fetching order without auth:', error);
-        }
-        setLoading(false);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('orders')
         .select('*')
         .eq('id', orderIdToFetch)
         .maybeSingle();
-
-      console.log('Order fetch result:', { data, error });
 
       if (error) {
         console.error('Error fetching order:', error);

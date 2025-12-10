@@ -80,33 +80,22 @@ serve(async (req) => {
 
     console.log("Order created:", orderData.id);
 
-    // Helper to extract URL string from various formats
-    const extractUrl = (value: any): string | null => {
-      if (!value) return null;
-      if (typeof value === 'string') {
-        if (value === '[object Object]') return null; // Already stringified object
-        return value;
-      }
-      if (typeof value === 'object') {
-        return value.src || value.url || value.image_url || null;
-      }
-      return null;
-    };
-
     // Create order items
     const orderItems = cartItems.map((item: any) => {
       // Extract design image URL - ensure it's a string, not an object
-      let designUrl = extractUrl(item.designImageUrl) || extractUrl(item.artworkUrl);
+      let designUrl = item.designImageUrl || item.artworkUrl || null;
       
-      // Fallback to image if it's a valid string URL
-      if (!designUrl) {
-        const imageUrl = extractUrl(item.image);
-        if (imageUrl && !imageUrl.startsWith('data:')) {
-          designUrl = imageUrl;
-        }
+      // If designUrl is an object (has src property), extract the string
+      if (designUrl && typeof designUrl === 'object' && designUrl.src) {
+        designUrl = designUrl.src;
       }
       
-      console.log(`Order item design URL: ${designUrl} (type: ${typeof designUrl})`);
+      // Fallback to image if it's a string URL
+      if (!designUrl && typeof item.image === 'string') {
+        designUrl = item.image;
+      }
+      
+      console.log(`Order item design URL: ${designUrl}`);
       
       return {
         order_id: orderData.id,

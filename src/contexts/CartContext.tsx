@@ -36,17 +36,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
-      // For localStorage, we need to handle large data URLs carefully
-      // Keep URLs that start with http/https, truncate or skip very large data URLs
-      const itemsToStore = items.map(item => {
-        const isLargeDataUrl = (url: string) => url?.startsWith('data:') && url.length > 50000;
-        return {
-          ...item,
-          // Keep normal URLs and small data URLs, skip very large ones to prevent quota exceeded
-          image: isLargeDataUrl(item.image) ? '' : item.image,
-          designImageUrl: isLargeDataUrl(item.designImageUrl || '') ? '' : item.designImageUrl,
-        };
-      });
+      // Strip large data URLs before saving to prevent quota exceeded errors
+      const itemsToStore = items.map(item => ({
+        ...item,
+        image: item.image?.startsWith('data:') ? '' : item.image,
+        designImageUrl: item.designImageUrl?.startsWith('data:') ? '' : item.designImageUrl,
+      }));
       localStorage.setItem('cart', JSON.stringify(itemsToStore));
     } catch (e) {
       console.warn('Failed to save cart to localStorage:', e);

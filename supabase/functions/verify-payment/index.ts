@@ -20,7 +20,7 @@ serve(async (req) => {
   try {
     console.log("Verifying payment...");
     
-    const { sessionId, getOrder } = await req.json();
+    const { sessionId } = await req.json();
     
     if (!sessionId) {
       throw new Error("Session ID is required");
@@ -45,28 +45,6 @@ serve(async (req) => {
 
     if (!orderId) {
       throw new Error("Order ID not found in session metadata");
-    }
-
-    // Check if order is already paid (avoid duplicate processing)
-    const { data: existingOrder } = await supabaseClient
-      .from("orders")
-      .select("*")
-      .eq("id", orderId)
-      .single();
-
-    if (existingOrder?.status === "paid") {
-      console.log("Order already paid, returning existing order");
-      return new Response(
-        JSON.stringify({
-          success: true,
-          orderId: existingOrder.id,
-          order: getOrder ? existingOrder : undefined,
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
-      );
     }
 
     console.log("Updating order status to paid:", orderId);
@@ -127,7 +105,6 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         orderId: order.id,
-        order: getOrder ? order : undefined,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
