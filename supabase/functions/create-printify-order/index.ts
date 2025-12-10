@@ -59,6 +59,42 @@ async function uploadBase64ToStorage(
   }
 }
 
+// Helper function to upload image to Printify and get image ID
+async function uploadImageToPrintify(
+  imageUrl: string,
+  printifyApiToken: string,
+  fileName: string
+): Promise<string | null> {
+  try {
+    console.log(`Uploading image to Printify: ${imageUrl}`);
+    
+    const response = await fetch('https://api.printify.com/v1/uploads/images.json', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${printifyApiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        file_name: fileName,
+        url: imageUrl,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Printify image upload failed:', errorText);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log('Printify image uploaded successfully:', data);
+    return data.id;
+  } catch (err) {
+    console.error('Error uploading image to Printify:', err);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -179,15 +215,34 @@ serve(async (req) => {
         }
       }
       
-      // Add print_areas with the design image URL for custom prints
-      // Skip invalid values like "[object Object]" or empty strings
+      // Add print_areas with the design image - upload to Printify first to get image ID
       if (designUrl && typeof designUrl === 'string' && 
           !designUrl.includes('[object') && 
           designUrl.startsWith('http')) {
-        console.log(`Adding print_areas with design image: ${designUrl}`);
-        lineItem.print_areas = {
-          front: designUrl,
-        };
+        
+        // Upload image to Printify to get image ID
+        const printifyImageId = await uploadImageToPrintify(
+          designUrl, 
+          printifyApiToken,
+          `order-${orderId}-item-${item.id}.png`
+        );
+        
+        if (printifyImageId) {
+          console.log(`Adding print_areas with Printify image ID: ${printifyImageId}`);
+          lineItem.print_areas = {
+            front: [
+              {
+                src: printifyImageId,
+                scale: 1,
+                x: 0.5,
+                y: 0.5,
+                angle: 0,
+              }
+            ],
+          };
+        } else {
+          console.log(`Failed to upload design to Printify for item ${item.id}, order will use product's default print`);
+        }
       } else {
         console.log(`Invalid or missing design_image_url for item ${item.id}: "${designUrl}", order will use product's default print`);
       }
