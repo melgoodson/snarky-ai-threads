@@ -97,7 +97,10 @@ export default function CustomDesign() {
         model: p.model || "",
         category: p.category || "",
         description: p.description || "",
-        images: Array.isArray(p.images) ? p.images.map(String) : [],
+        // Extract src URLs from image objects stored in JSON
+        images: Array.isArray(p.images) 
+          ? p.images.map((img: any) => (typeof img === 'string' ? img : img?.src || ''))
+          : [],
         template_image_url: p.template_image_url || "",
         price: Number(p.price) || 0,
         retail_price: Number(p.retail_price) || 0,
@@ -269,13 +272,17 @@ export default function CustomDesign() {
       return '';
     };
 
+    // Get the product's first image URL for fallback
     const productImageRaw = selectedProduct.images && selectedProduct.images.length > 0 
       ? selectedProduct.images[0] 
-      : finalMockup;
+      : '';
     
     const productImageUrl = extractUrl(productImageRaw);
-    const generatedDesignUrl = extractUrl(generatedDesign);
-    const finalMockupUrl = extractUrl(finalMockup);
+    const generatedDesignUrl = extractUrl(generatedDesign); // Original AI design for Printify
+    const finalMockupUrl = extractUrl(finalMockup); // Design on product mockup for display
+    
+    // For cart display, prefer the mockup showing design on product, fallback to product image
+    const cartDisplayImage = finalMockupUrl || productImageUrl;
 
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
@@ -284,7 +291,7 @@ export default function CustomDesign() {
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
-      image: productImageUrl,
+      image: cartDisplayImage, // Show design on product in cart
       mockupUrl: finalMockupUrl,
       artworkUrl: generatedDesignUrl,
       designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
@@ -292,6 +299,9 @@ export default function CustomDesign() {
     };
     
     console.log("Storing custom design data:", customDesignData);
+    console.log("Cart display image:", cartDisplayImage);
+    console.log("Design URL for Printify:", generatedDesignUrl);
+    
     try {
       localStorage.setItem("customDesign", JSON.stringify(customDesignData));
     } catch (e) {
@@ -303,7 +313,7 @@ export default function CustomDesign() {
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
-      image: productImageUrl,
+      image: cartDisplayImage, // Show design on product in cart
       printifyProductId: selectedProduct.printify_product_id,
       designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
     });
