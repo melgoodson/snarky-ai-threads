@@ -106,27 +106,58 @@ serve(async (req) => {
         quantity: item.quantity,
       };
       
-      // Only add print_areas if we have a valid HTTPS URL for the design image
-      // Skip if: null, empty string, "[object Object]", or not starting with http
-      const designUrl = item.design_image_url;
-      const isValidUrl = designUrl && 
-        typeof designUrl === 'string' && 
-        designUrl.startsWith('http') && 
-        !designUrl.includes('[object');
-      
-      if (isValidUrl) {
+      // Add print_areas with the design image URL for custom prints
+      // Skip invalid values like "[object Object]" or empty strings
+      let designUrl = item.design_image_url;
+      if (designUrl && typeof designUrl === 'string' && 
+          !designUrl.includes('[object') && 
+          designUrl.startsWith('http')) {
         console.log(`Adding print_areas with design image: ${designUrl}`);
         lineItem.print_areas = {
           front: designUrl,
         };
       } else {
-        console.log(`No valid design_image_url for item ${item.id} (value: ${designUrl}), order will use product's default print`);
+        console.log(`Invalid or missing design_image_url for item ${item.id}: "${designUrl}", order will use product's default print`);
       }
       
       lineItems.push(lineItem);
     }
 
     const shippingAddress = order.shipping_address;
+
+    // Country name to ISO code mapping
+    const countryCodeMap: Record<string, string> = {
+      'philippines': 'PH',
+      'united states': 'US',
+      'usa': 'US',
+      'united kingdom': 'GB',
+      'uk': 'GB',
+      'canada': 'CA',
+      'australia': 'AU',
+      'germany': 'DE',
+      'france': 'FR',
+      'japan': 'JP',
+      'china': 'CN',
+      'india': 'IN',
+      'brazil': 'BR',
+      'mexico': 'MX',
+      'spain': 'ES',
+      'italy': 'IT',
+      'netherlands': 'NL',
+      'singapore': 'SG',
+      'south korea': 'KR',
+      'new zealand': 'NZ',
+    };
+
+    // Convert country name to ISO code if needed
+    let countryCode = shippingAddress.country;
+    const countryLower = countryCode?.toLowerCase();
+    if (countryLower && countryCodeMap[countryLower]) {
+      countryCode = countryCodeMap[countryLower];
+    } else if (countryCode && countryCode.length > 2) {
+      // If it's still a full country name and not in our map, log warning
+      console.warn(`Unknown country name: ${countryCode}, attempting to use as-is`);
+    }
 
     // Create order in Printify
     const printifyOrderData = {
@@ -140,7 +171,7 @@ serve(async (req) => {
         last_name: shippingAddress.lastName,
         email: order.email,
         phone: shippingAddress.phone,
-        country: shippingAddress.country,
+        country: countryCode,
         region: shippingAddress.state,
         address1: shippingAddress.address1,
         address2: shippingAddress.address2 || '',

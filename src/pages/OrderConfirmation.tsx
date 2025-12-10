@@ -25,30 +25,15 @@ const OrderConfirmation = () => {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      // Wait for auth session to be restored after Stripe redirect
+      // Wait for auth session to be ready
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        console.log('No auth session, waiting...');
-        // Give the session a moment to restore
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const { data: { session: retrySession } } = await supabase.auth.getSession();
-        if (!retrySession) {
-          console.log('Still no session after retry');
-          toast.error('Please sign in to view your order');
-          navigate('/auth');
-          return;
-        }
-      }
-
       // Extract session ID from URL if it's a Stripe session ID
       let orderIdToFetch = orderId;
       
       if (orderId?.startsWith('cs_')) {
         // This is a Stripe session ID, verify payment first
         try {
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          
           const response = await fetch(
             `https://waldggnsstpxasmauwda.functions.supabase.co/verify-payment`,
             {
@@ -56,7 +41,6 @@ const OrderConfirmation = () => {
               headers: {
                 'Content-Type': 'application/json',
                 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-                'Authorization': currentSession ? `Bearer ${currentSession.access_token}` : '',
               },
               body: JSON.stringify({ sessionId: orderId }),
             }
@@ -89,19 +73,47 @@ const OrderConfirmation = () => {
         return;
       }
 
+      console.log('Fetching order:', orderIdToFetch, 'User authenticated:', !!session);
+
+      // Use service role via edge function if user not authenticated (coming from Stripe redirect)
+      if (!session) {
+        // Fetch order via verify-payment which already has the order data
+        // Or call a public order lookup function
+        try {
+          const response = await fetch(
+            `https://waldggnsstpxasmauwda.functions.supabase.co/verify-payment`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              },
+              body: JSON.stringify({ sessionId: orderId, getOrder: true }),
+            }
+          );
+          const data = await response.json();
+          if (data?.order) {
+            setOrder(data.order);
+          }
+        } catch (error) {
+          console.error('Error fetching order without auth:', error);
+        }
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('orders')
         .select('*')
         .eq('id', orderIdToFetch)
         .maybeSingle();
 
+      console.log('Order fetch result:', { data, error });
+
       if (error) {
         console.error('Error fetching order:', error);
       } else if (data) {
         setOrder(data);
-        // Clear cart after successful order confirmation
-        localStorage.removeItem('cart');
-        localStorage.removeItem('customDesign');
       }
       setLoading(false);
     };

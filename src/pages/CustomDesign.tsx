@@ -68,10 +68,7 @@ export default function CustomDesign() {
   // Step 3: User Photo
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   
-  // Product mockup (design applied to product - used for checkout preview)
-  const [productMockupUrl, setProductMockupUrl] = useState<string | null>(null);
-  
-  // Step 4: Final Mockup (virtual try-on)
+  // Step 4: Final Mockup
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [finalMockup, setFinalMockup] = useState<string | null>(null);
 
@@ -219,9 +216,6 @@ export default function CustomDesign() {
       if (!productWithDesign) {
         throw new Error("Failed to generate product mockup");
       }
-      
-      // Store the product mockup URL for checkout
-      setProductMockupUrl(productWithDesign);
 
       // Then, show the product on the user
       const { data: finalData, error: finalError } = await supabase.functions.invoke(
@@ -250,83 +244,72 @@ export default function CustomDesign() {
     }
   };
 
-  const proceedToCheckout = async () => {
-    if (!selectedProduct || !generatedDesign) {
+  const proceedToCheckout = () => {
+    console.log("Proceed to checkout clicked");
+    console.log("Selected Product:", selectedProduct);
+    console.log("Generated Design:", generatedDesign);
+    console.log("Final Mockup:", finalMockup);
+    
+    if (!selectedProduct || !generatedDesign || !finalMockup) {
+      console.error("Missing required data for checkout");
       toast.error("Please complete all steps before checkout");
       return;
     }
 
-    // Ensure productImage is always a string URL, not an object
-    let productImage = '';
-    if (selectedProduct.images && selectedProduct.images.length > 0) {
-      const img = selectedProduct.images[0];
-      productImage = typeof img === 'string' ? img : (img as any)?.src || '';
-    }
-    if (!productImage) {
-      productImage = selectedProduct.template_image_url || '/placeholder.svg';
-    }
-
-    // If we have a product mockup URL (from virtual try-on), use it as the display image
-    // Otherwise, generate one now for the checkout preview
-    let mockupImageUrl = productMockupUrl;
-    
-    if (!mockupImageUrl) {
-      // Generate product mockup for checkout display
-      try {
-        toast.info("Generating product preview...");
-        const { data: mockupData, error } = await supabase.functions.invoke(
-          "generate-user-mockup",
-          {
-            body: {
-              userImage: generatedDesign,
-              productImage: selectedProduct.template_image_url,
-              productTitle: selectedProduct.title,
-            },
-          }
-        );
-        if (!error && mockupData?.mockupUrl) {
-          mockupImageUrl = mockupData.mockupUrl;
-        }
-      } catch (e) {
-        console.warn("Could not generate mockup for preview:", e);
+    // Helper to extract URL string from various formats
+    const extractUrl = (value: any): string => {
+      if (!value) return '';
+      if (typeof value === 'string') {
+        if (value.startsWith('data:')) return ''; // Skip data URLs
+        return value;
       }
-    }
+      if (typeof value === 'object') {
+        return value.src || value.url || value.image_url || '';
+      }
+      return '';
+    };
+
+    const productImageRaw = selectedProduct.images && selectedProduct.images.length > 0 
+      ? selectedProduct.images[0] 
+      : finalMockup;
+    
+    const productImageUrl = extractUrl(productImageRaw);
+    const generatedDesignUrl = extractUrl(generatedDesign);
+    const finalMockupUrl = extractUrl(finalMockup);
 
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
-    // Store metadata including the mockup URL (if available and not base64)
     const customDesignData = {
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
+      image: productImageUrl,
+      mockupUrl: finalMockupUrl,
+      artworkUrl: generatedDesignUrl,
+      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
       printifyProductId: selectedProduct.printify_product_id,
-      image: mockupImageUrl && !mockupImageUrl.startsWith('data:') ? mockupImageUrl : productImage,
-      mockupUrl: mockupImageUrl && !mockupImageUrl.startsWith('data:') ? mockupImageUrl : null,
-      designImageUrl: generatedDesign && !generatedDesign.startsWith('data:') ? generatedDesign : null,
     };
     
+    console.log("Storing custom design data:", customDesignData);
     try {
       localStorage.setItem("customDesign", JSON.stringify(customDesignData));
     } catch (e) {
-      console.warn("Could not save to localStorage:", e);
+      console.warn('Failed to save customDesign to localStorage:', e);
     }
-    
-    // Use mockup as display image, fallback to product image
-    const displayImage = mockupImageUrl && !mockupImageUrl.startsWith('data:') 
-      ? mockupImageUrl 
-      : productImage;
     
     addItem({
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
-      image: displayImage,
+      image: productImageUrl,
       printifyProductId: selectedProduct.printify_product_id,
-      designImageUrl: generatedDesign,
+      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
     });
     
+    console.log("Added to cart with price:", basePrice, "designImageUrl:", generatedDesignUrl);
+    console.log("Navigating to checkout...");
     navigate("/checkout");
   };
 

@@ -80,39 +80,33 @@ serve(async (req) => {
 
     console.log("Order created:", orderData.id);
 
+    // Helper to extract URL string from various formats
+    const extractUrl = (value: any): string | null => {
+      if (!value) return null;
+      if (typeof value === 'string') {
+        if (value === '[object Object]') return null; // Already stringified object
+        return value;
+      }
+      if (typeof value === 'object') {
+        return value.src || value.url || value.image_url || null;
+      }
+      return null;
+    };
+
     // Create order items
     const orderItems = cartItems.map((item: any) => {
       // Extract design image URL - ensure it's a string, not an object
-      let designUrl: string | null = null;
+      let designUrl = extractUrl(item.designImageUrl) || extractUrl(item.artworkUrl);
       
-      // Try designImageUrl first
-      if (item.designImageUrl) {
-        if (typeof item.designImageUrl === 'string' && item.designImageUrl.startsWith('http')) {
-          designUrl = item.designImageUrl;
-        } else if (typeof item.designImageUrl === 'object' && item.designImageUrl.src) {
-          designUrl = item.designImageUrl.src;
+      // Fallback to image if it's a valid string URL
+      if (!designUrl) {
+        const imageUrl = extractUrl(item.image);
+        if (imageUrl && !imageUrl.startsWith('data:')) {
+          designUrl = imageUrl;
         }
       }
       
-      // Try artworkUrl 
-      if (!designUrl && item.artworkUrl) {
-        if (typeof item.artworkUrl === 'string' && item.artworkUrl.startsWith('http')) {
-          designUrl = item.artworkUrl;
-        } else if (typeof item.artworkUrl === 'object' && item.artworkUrl.src) {
-          designUrl = item.artworkUrl.src;
-        }
-      }
-      
-      // Try image field (could be string URL or object with src)
-      if (!designUrl && item.image) {
-        if (typeof item.image === 'string' && item.image.startsWith('http')) {
-          designUrl = item.image;
-        } else if (typeof item.image === 'object' && item.image.src && typeof item.image.src === 'string') {
-          designUrl = item.image.src;
-        }
-      }
-      
-      console.log(`Order item design URL extracted: ${designUrl}`);
+      console.log(`Order item design URL: ${designUrl} (type: ${typeof designUrl})`);
       
       return {
         order_id: orderData.id,
