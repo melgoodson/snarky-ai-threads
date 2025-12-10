@@ -41,126 +41,96 @@ export type Database = {
         }
         Relationships: []
       }
-      analytics_events: {
+      analytics_page_views: {
         Row: {
-          browser: string | null
-          created_at: string | null
-          device_type: string | null
-          element_class: string | null
-          element_id: string | null
-          element_text: string | null
-          entry_page: boolean | null
-          event_data: Json | null
-          event_type: string
-          exit_page: boolean | null
           id: string
-          os: string | null
-          page_url: string
-          referrer: string | null
-          screen_resolution: string | null
+          load_time_ms: number | null
+          path: string
           scroll_depth: number | null
           session_id: string
-          time_on_page: number | null
-          timestamp: string | null
-          user_id: string | null
+          time_on_page_ms: number | null
+          title: string | null
+          viewed_at: string | null
         }
         Insert: {
-          browser?: string | null
-          created_at?: string | null
-          device_type?: string | null
-          element_class?: string | null
-          element_id?: string | null
-          element_text?: string | null
-          entry_page?: boolean | null
-          event_data?: Json | null
-          event_type: string
-          exit_page?: boolean | null
           id?: string
-          os?: string | null
-          page_url: string
-          referrer?: string | null
-          screen_resolution?: string | null
+          load_time_ms?: number | null
+          path: string
           scroll_depth?: number | null
           session_id: string
-          time_on_page?: number | null
-          timestamp?: string | null
-          user_id?: string | null
+          time_on_page_ms?: number | null
+          title?: string | null
+          viewed_at?: string | null
         }
         Update: {
-          browser?: string | null
-          created_at?: string | null
-          device_type?: string | null
-          element_class?: string | null
-          element_id?: string | null
-          element_text?: string | null
-          entry_page?: boolean | null
-          event_data?: Json | null
-          event_type?: string
-          exit_page?: boolean | null
           id?: string
-          os?: string | null
-          page_url?: string
-          referrer?: string | null
-          screen_resolution?: string | null
+          load_time_ms?: number | null
+          path?: string
           scroll_depth?: number | null
           session_id?: string
-          time_on_page?: number | null
-          timestamp?: string | null
-          user_id?: string | null
+          time_on_page_ms?: number | null
+          title?: string | null
+          viewed_at?: string | null
         }
         Relationships: []
       }
       analytics_sessions: {
         Row: {
           browser: string | null
-          created_at: string | null
           device_type: string | null
-          duration: number | null
           ended_at: string | null
-          entry_page: string | null
-          exit_page: string | null
           id: string
-          is_active: boolean | null
+          is_bounce: boolean | null
           os: string | null
-          page_count: number | null
           referrer: string | null
+          screen_height: number | null
+          screen_width: number | null
           session_id: string
           started_at: string | null
-          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visitor_id: string
         }
         Insert: {
           browser?: string | null
-          created_at?: string | null
           device_type?: string | null
-          duration?: number | null
           ended_at?: string | null
-          entry_page?: string | null
-          exit_page?: string | null
           id?: string
-          is_active?: boolean | null
+          is_bounce?: boolean | null
           os?: string | null
-          page_count?: number | null
           referrer?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
           session_id: string
           started_at?: string | null
-          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id: string
         }
         Update: {
           browser?: string | null
-          created_at?: string | null
           device_type?: string | null
-          duration?: number | null
           ended_at?: string | null
-          entry_page?: string | null
-          exit_page?: string | null
           id?: string
-          is_active?: boolean | null
+          is_bounce?: boolean | null
           os?: string | null
-          page_count?: number | null
           referrer?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
           session_id?: string
           started_at?: string | null
-          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string
         }
         Relationships: []
       }
