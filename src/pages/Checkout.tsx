@@ -230,18 +230,11 @@ const Checkout = () => {
         throw new Error(message);
       }
 
-      // Open Stripe checkout - try new tab first, fallback to redirect if blocked
+      // Redirect to Stripe checkout
       if (checkoutData?.url) {
-        const newWindow = window.open(checkoutData.url, '_blank');
-        
-        // If popup was blocked, redirect in current window
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-          toast.info('Redirecting to payment...');
-          window.location.href = checkoutData.url;
-        } else {
-          toast.success('Stripe checkout opened in new tab');
-          setLoading(false);
-        }
+        toast.success('Redirecting to payment...');
+        // Direct redirect - more reliable than popup
+        window.location.href = checkoutData.url;
       } else {
         console.error('create-checkout missing URL:', checkoutData);
         throw new Error('No checkout URL returned from backend');
