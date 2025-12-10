@@ -25,12 +25,30 @@ const OrderConfirmation = () => {
 
   useEffect(() => {
     const fetchOrder = async () => {
+      // Wait for auth session to be restored after Stripe redirect
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log('No auth session, waiting...');
+        // Give the session a moment to restore
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const { data: { session: retrySession } } = await supabase.auth.getSession();
+        if (!retrySession) {
+          console.log('Still no session after retry');
+          toast.error('Please sign in to view your order');
+          navigate('/auth');
+          return;
+        }
+      }
+
       // Extract session ID from URL if it's a Stripe session ID
       let orderIdToFetch = orderId;
       
       if (orderId?.startsWith('cs_')) {
         // This is a Stripe session ID, verify payment first
         try {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          
           const response = await fetch(
             `https://waldggnsstpxasmauwda.functions.supabase.co/verify-payment`,
             {
@@ -38,6 +56,7 @@ const OrderConfirmation = () => {
               headers: {
                 'Content-Type': 'application/json',
                 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                'Authorization': currentSession ? `Bearer ${currentSession.access_token}` : '',
               },
               body: JSON.stringify({ sessionId: orderId }),
             }
@@ -80,6 +99,9 @@ const OrderConfirmation = () => {
         console.error('Error fetching order:', error);
       } else if (data) {
         setOrder(data);
+        // Clear cart after successful order confirmation
+        localStorage.removeItem('cart');
+        localStorage.removeItem('customDesign');
       }
       setLoading(false);
     };
