@@ -70,8 +70,59 @@ export default function CustomDesign() {
   
   // Step 4: Mockups
   const [generatingMockup, setGeneratingMockup] = useState(false);
-  const [productMockup, setProductMockup] = useState<string | null>(null); // Design on product (for cart)
+  const [productMockup, setProductMockup] = useState<string | null>(null); // Design on product (for cart) - stored as HTTPS URL
   const [finalMockup, setFinalMockup] = useState<string | null>(null); // Virtual try-on (optional)
+
+  // Helper function to upload base64 image to storage and return public URL
+  const uploadImageToStorage = async (base64Data: string, fileName: string): Promise<string | null> => {
+    try {
+      // Extract the base64 content (remove data:image/xxx;base64, prefix)
+      const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (!matches) {
+        console.error('Invalid base64 image format');
+        return null;
+      }
+      
+      const imageType = matches[1];
+      const base64Content = matches[2];
+      
+      // Convert base64 to Uint8Array
+      const binaryString = atob(base64Content);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      // Generate unique filename
+      const uniqueFileName = `${Date.now()}-${fileName}.${imageType}`;
+      
+      console.log(`Uploading image to storage: ${uniqueFileName}`);
+      
+      // Upload to storage
+      const { data, error } = await supabase.storage
+        .from('design-images')
+        .upload(uniqueFileName, bytes, {
+          contentType: `image/${imageType}`,
+          upsert: true,
+        });
+      
+      if (error) {
+        console.error('Error uploading to storage:', error);
+        return null;
+      }
+      
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('design-images')
+        .getPublicUrl(uniqueFileName);
+      
+      console.log(`Image uploaded successfully: ${publicUrlData.publicUrl}`);
+      return publicUrlData.publicUrl;
+    } catch (err) {
+      console.error('Error in uploadImageToStorage:', err);
+      return null;
+    }
+  };
 
   useEffect(() => {
     if (currentStep === 2) {
@@ -222,9 +273,20 @@ export default function CustomDesign() {
         throw new Error("Failed to generate product mockup");
       }
 
-      console.log("Product mockup generated:", mockupUrl.substring(0, 100));
-      setProductMockup(mockupUrl);
-      toast.success("Product mockup generated! You can now proceed to checkout or try it on.");
+      console.log("Product mockup generated, uploading to storage...");
+      
+      // Upload mockup to storage to get permanent HTTPS URL
+      const uploadedUrl = await uploadImageToStorage(mockupUrl, `mockup-${selectedProduct.id}`);
+      
+      if (uploadedUrl) {
+        console.log("Mockup uploaded to storage:", uploadedUrl);
+        setProductMockup(uploadedUrl);
+        toast.success("Product mockup generated! You can now proceed to checkout or try it on.");
+      } else {
+        console.warn("Failed to upload mockup, using base64 URL as fallback");
+        setProductMockup(mockupUrl);
+        toast.success("Product mockup generated! You can now proceed to checkout or try it on.");
+      }
     } catch (error: any) {
       console.error("Product mockup generation error:", error);
       toast.error(error.message || "Failed to generate product mockup");
@@ -300,10 +362,9 @@ export default function CustomDesign() {
       : '';
     
     const productImageUrl = extractUrl(productImageRaw);
-    const generatedDesignUrl = extractUrl(generatedDesign); // Original AI design for Printify
-    const productMockupUrl = extractUrl(productMockup); // Design on product mockup for cart display
+    const productMockupUrl = extractUrl(productMockup); // Design on product mockup - use for BOTH cart AND Printify
     
-    // For cart display, use the product mockup (design on product), fallback to product image
+    // For cart display AND Printify, use the product mockup (design on product)
     const cartDisplayImage = productMockupUrl || productImageUrl;
 
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
@@ -315,14 +376,13 @@ export default function CustomDesign() {
       size: "M",
       image: cartDisplayImage, // Show design on product in cart
       mockupUrl: productMockupUrl,
-      artworkUrl: generatedDesignUrl,
-      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
+      designImageUrl: productMockupUrl, // The mockup (design on product) for Printify printing
       printifyProductId: selectedProduct.printify_product_id,
     };
     
     console.log("Storing custom design data:", customDesignData);
     console.log("Cart display image:", cartDisplayImage);
-    console.log("Design URL for Printify:", generatedDesignUrl);
+    console.log("Mockup URL for Printify:", productMockupUrl);
     
     try {
       localStorage.setItem("customDesign", JSON.stringify(customDesignData));
@@ -337,10 +397,10 @@ export default function CustomDesign() {
       size: "M",
       image: cartDisplayImage, // Show design on product in cart
       printifyProductId: selectedProduct.printify_product_id,
-      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
+      designImageUrl: productMockupUrl, // The mockup (design on product) for Printify printing
     });
     
-    console.log("Added to cart with price:", basePrice, "designImageUrl:", generatedDesignUrl);
+    console.log("Added to cart with price:", basePrice, "designImageUrl:", productMockupUrl);
     console.log("Navigating to checkout...");
     navigate("/checkout");
   };
