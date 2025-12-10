@@ -256,28 +256,38 @@ export default function CustomDesign() {
       return;
     }
 
-    const productImage = selectedProduct.images && selectedProduct.images.length > 0 
+    // Helper to extract URL string from various formats
+    const extractUrl = (value: any): string => {
+      if (!value) return '';
+      if (typeof value === 'string') {
+        if (value.startsWith('data:')) return ''; // Skip data URLs
+        return value;
+      }
+      if (typeof value === 'object') {
+        return value.src || value.url || value.image_url || '';
+      }
+      return '';
+    };
+
+    const productImageRaw = selectedProduct.images && selectedProduct.images.length > 0 
       ? selectedProduct.images[0] 
       : finalMockup;
+    
+    const productImageUrl = extractUrl(productImageRaw);
+    const generatedDesignUrl = extractUrl(generatedDesign);
+    const finalMockupUrl = extractUrl(finalMockup);
 
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
-    // Helper to strip large data URLs to prevent localStorage quota exceeded errors
-    const stripDataUrl = (url: string | undefined): string => {
-      if (!url) return '';
-      if (url.startsWith('data:')) return ''; // Skip data URLs - too large for localStorage
-      return url;
-    };
-
     const customDesignData = {
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
-      image: stripDataUrl(productImage),
-      mockupUrl: stripDataUrl(finalMockup),
-      artworkUrl: stripDataUrl(generatedDesign),
-      designImageUrl: stripDataUrl(generatedDesign), // The original AI-generated design for Printify printing
+      image: productImageUrl,
+      mockupUrl: finalMockupUrl,
+      artworkUrl: generatedDesignUrl,
+      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
       printifyProductId: selectedProduct.printify_product_id,
     };
     
@@ -286,20 +296,19 @@ export default function CustomDesign() {
       localStorage.setItem("customDesign", JSON.stringify(customDesignData));
     } catch (e) {
       console.warn('Failed to save customDesign to localStorage:', e);
-      // Continue without localStorage - cart already has the item
     }
     
     addItem({
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
-      size: "M", // Default size, can be made configurable
-      image: productImage,
+      size: "M",
+      image: productImageUrl,
       printifyProductId: selectedProduct.printify_product_id,
-      designImageUrl: generatedDesign, // The original AI-generated design for Printify printing
+      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
     });
     
-    console.log("Added to cart with price:", basePrice);
+    console.log("Added to cart with price:", basePrice, "designImageUrl:", generatedDesignUrl);
     console.log("Navigating to checkout...");
     navigate("/checkout");
   };
