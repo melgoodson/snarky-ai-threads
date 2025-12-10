@@ -2,223 +2,233 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
-// Generate or retrieve session ID
-const getSessionId = (): string => {
-  let sessionId = sessionStorage.getItem('analytics_session_id');
-  if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem('analytics_session_id', sessionId);
+const VISITOR_ID_KEY = 'snarky_visitor_id';
+const SESSION_ID_KEY = 'snarky_session_id';
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+function generateId(): string {
+  return crypto.randomUUID();
+}
+
+function getVisitorId(): string {
+  let visitorId = localStorage.getItem(VISITOR_ID_KEY);
+  if (!visitorId) {
+    visitorId = generateId();
+    localStorage.setItem(VISITOR_ID_KEY, visitorId);
   }
-  return sessionId;
-};
+  return visitorId;
+}
 
-// Detect device type
-const getDeviceType = (): string => {
-  const ua = navigator.userAgent;
-  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-    return 'tablet';
+function getSessionId(): string {
+  const lastActivity = localStorage.getItem('snarky_last_activity');
+  const existingSessionId = sessionStorage.getItem(SESSION_ID_KEY);
+  
+  const now = Date.now();
+  if (existingSessionId && lastActivity && (now - parseInt(lastActivity)) < SESSION_TIMEOUT) {
+    localStorage.setItem('snarky_last_activity', now.toString());
+    return existingSessionId;
   }
-  if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
-    return 'mobile';
-  }
-  return 'desktop';
-};
+  
+  const newSessionId = generateId();
+  sessionStorage.setItem(SESSION_ID_KEY, newSessionId);
+  localStorage.setItem('snarky_last_activity', now.toString());
+  return newSessionId;
+}
 
-// Detect browser
-const getBrowser = (): string => {
+function detectDevice(): { deviceType: string; browser: string; os: string } {
   const ua = navigator.userAgent;
-  if (ua.includes('Firefox')) return 'Firefox';
-  if (ua.includes('Chrome')) return 'Chrome';
-  if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
-  if (ua.includes('Edge')) return 'Edge';
-  if (ua.includes('Opera')) return 'Opera';
-  return 'Unknown';
-};
+  
+  let deviceType = 'desktop';
+  if (/Mobi|Android/i.test(ua)) deviceType = 'mobile';
+  else if (/Tablet|iPad/i.test(ua)) deviceType = 'tablet';
+  
+  let browser = 'unknown';
+  if (/Chrome/i.test(ua) && !/Edge|Edg/i.test(ua)) browser = 'Chrome';
+  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+  else if (/Firefox/i.test(ua)) browser = 'Firefox';
+  else if (/Edge|Edg/i.test(ua)) browser = 'Edge';
+  else if (/MSIE|Trident/i.test(ua)) browser = 'IE';
+  
+  let os = 'unknown';
+  if (/Windows/i.test(ua)) os = 'Windows';
+  else if (/Mac/i.test(ua)) os = 'macOS';
+  else if (/Linux/i.test(ua)) os = 'Linux';
+  else if (/Android/i.test(ua)) os = 'Android';
+  else if (/iOS|iPhone|iPad/i.test(ua)) os = 'iOS';
+  
+  return { deviceType, browser, os };
+}
 
-// Detect OS
-const getOS = (): string => {
-  const ua = navigator.userAgent;
-  if (ua.includes('Win')) return 'Windows';
-  if (ua.includes('Mac')) return 'MacOS';
-  if (ua.includes('Linux')) return 'Linux';
-  if (ua.includes('Android')) return 'Android';
-  if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
-  return 'Unknown';
-};
+function getUtmParams(): Record<string, string | null> {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utm_source: params.get('utm_source'),
+    utm_medium: params.get('utm_medium'),
+    utm_campaign: params.get('utm_campaign'),
+    utm_term: params.get('utm_term'),
+    utm_content: params.get('utm_content'),
+  };
+}
 
-// Get screen resolution
-const getScreenResolution = (): string => {
-  return `${window.screen.width}x${window.screen.height}`;
-};
-
-export const useAnalytics = () => {
+export function useAnalytics() {
   const location = useLocation();
-  const sessionId = getSessionId();
+  const sessionInitialized = useRef(false);
+  const currentPageViewId = useRef<string | null>(null);
   const pageStartTime = useRef<number>(Date.now());
   const maxScrollDepth = useRef<number>(0);
-  const isFirstPage = useRef<boolean>(!sessionStorage.getItem('analytics_page_visited'));
+  const pageCount = useRef<number>(0);
+  const sessionId = useRef<string>(getSessionId());
+  const visitorId = useRef<string>(getVisitorId());
 
-  // Track page view
-  const trackPageView = useCallback(async () => {
+  // Initialize session
+  const initSession = useCallback(async () => {
+    if (sessionInitialized.current) return;
+    sessionInitialized.current = true;
+
+    const { deviceType, browser, os } = detectDevice();
+    const utmParams = getUtmParams();
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      await supabase.from('analytics_events').insert({
-        event_type: 'page_view',
-        page_url: location.pathname,
-        user_id: user?.id || null,
-        session_id: sessionId,
-        device_type: getDeviceType(),
-        browser: getBrowser(),
-        os: getOS(),
-        screen_resolution: getScreenResolution(),
+      await supabase.from('analytics_sessions').insert({
+        visitor_id: visitorId.current,
+        session_id: sessionId.current,
+        device_type: deviceType,
+        browser,
+        os,
+        screen_width: window.screen.width,
+        screen_height: window.screen.height,
         referrer: document.referrer || null,
-        entry_page: isFirstPage.current,
-      });
-
-      // Update session
-      const { data: existingSession } = await supabase
-        .from('analytics_sessions')
-        .select('id, page_count')
-        .eq('session_id', sessionId)
-        .single();
-
-      if (existingSession) {
-        await supabase
-          .from('analytics_sessions')
-          .update({
-            page_count: (existingSession.page_count || 0) + 1,
-            exit_page: location.pathname,
-          })
-          .eq('session_id', sessionId);
-      } else {
-        await supabase.from('analytics_sessions').insert({
-          session_id: sessionId,
-          user_id: user?.id || null,
-          device_type: getDeviceType(),
-          browser: getBrowser(),
-          os: getOS(),
-          entry_page: location.pathname,
-          referrer: document.referrer || null,
-          page_count: 1,
-        });
-      }
-
-      sessionStorage.setItem('analytics_page_visited', 'true');
-      isFirstPage.current = false;
-    } catch (error) {
-      console.debug('Analytics tracking failed:', error);
-    }
-  }, [location.pathname, sessionId]);
-
-  // Track page exit (time on page, scroll depth)
-  const trackPageExit = useCallback(async () => {
-    try {
-      const timeOnPage = Math.floor((Date.now() - pageStartTime.current) / 1000);
-      const { data: { user } } = await supabase.auth.getUser();
-
-      await supabase.from('analytics_events').insert({
-        event_type: 'page_exit',
-        page_url: location.pathname,
-        user_id: user?.id || null,
-        session_id: sessionId,
-        time_on_page: timeOnPage,
-        scroll_depth: maxScrollDepth.current,
-        exit_page: true,
+        utm_source: utmParams.utm_source,
+        utm_medium: utmParams.utm_medium,
+        utm_campaign: utmParams.utm_campaign,
+        utm_term: utmParams.utm_term,
+        utm_content: utmParams.utm_content,
       });
     } catch (error) {
-      console.debug('Page exit tracking failed:', error);
-    }
-  }, [location.pathname, sessionId]);
-
-  // Track clicks
-  const trackClick = useCallback(async (element: HTMLElement) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      await supabase.from('analytics_events').insert({
-        event_type: 'click',
-        page_url: location.pathname,
-        user_id: user?.id || null,
-        session_id: sessionId,
-        element_id: element.id || null,
-        element_class: element.className || null,
-        element_text: element.textContent?.slice(0, 100) || null,
-      });
-    } catch (error) {
-      console.debug('Click tracking failed:', error);
-    }
-  }, [location.pathname, sessionId]);
-
-  // Track scroll depth
-  const updateScrollDepth = useCallback(() => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrollPercent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
-    
-    if (scrollPercent > maxScrollDepth.current) {
-      maxScrollDepth.current = scrollPercent;
+      console.debug('Failed to init analytics session:', error);
     }
   }, []);
 
-  // Track custom event
-  const trackEvent = useCallback(async (eventType: string, eventData?: Record<string, any>) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      await supabase.from('analytics_events').insert({
-        event_type: eventType,
-        page_url: location.pathname,
-        user_id: user?.id || null,
-        session_id: sessionId,
-        event_data: eventData || {},
-      });
-    } catch (error) {
-      console.debug('Custom event tracking failed:', error);
-    }
-  }, [location.pathname, sessionId]);
-
-  // Initialize tracking on page load
-  useEffect(() => {
+  // Track page view
+  const trackPageView = useCallback(async () => {
+    const loadTime = Math.round(performance.now());
     pageStartTime.current = Date.now();
     maxScrollDepth.current = 0;
-    trackPageView();
+    pageCount.current += 1;
 
-    // Track scroll
-    const handleScroll = () => updateScrollDepth();
-    window.addEventListener('scroll', handleScroll);
-
-    // Track page exit
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      trackPageExit();
-    };
-  }, [location.pathname, trackPageView, trackPageExit, updateScrollDepth]);
-
-  // End session on page unload
-  useEffect(() => {
-    const handleUnload = async () => {
-      const sessionStart = sessionStorage.getItem('analytics_session_start');
-      if (sessionStart) {
-        const duration = Math.floor((Date.now() - parseInt(sessionStart)) / 1000);
-        
+    // Mark as not a bounce if this is 2nd+ page
+    if (pageCount.current === 2) {
+      try {
         await supabase
           .from('analytics_sessions')
-          .update({
-            ended_at: new Date().toISOString(),
-            duration,
-            is_active: false,
-          })
-          .eq('session_id', sessionId);
+          .update({ is_bounce: false })
+          .eq('session_id', sessionId.current);
+      } catch (error) {
+        console.debug('Failed to update bounce status:', error);
+      }
+    }
+
+    try {
+      const { data } = await supabase
+        .from('analytics_page_views')
+        .insert({
+          session_id: sessionId.current,
+          path: location.pathname,
+          title: document.title,
+          load_time_ms: loadTime,
+        })
+        .select('id')
+        .single();
+
+      if (data) {
+        currentPageViewId.current = data.id;
+      }
+    } catch (error) {
+      console.debug('Failed to track page view:', error);
+    }
+  }, [location.pathname]);
+
+  // Update page view on leave
+  const updatePageViewOnLeave = useCallback(async () => {
+    if (!currentPageViewId.current) return;
+
+    const timeOnPage = Date.now() - pageStartTime.current;
+
+    try {
+      await supabase
+        .from('analytics_page_views')
+        .update({
+          time_on_page_ms: timeOnPage,
+          scroll_depth: maxScrollDepth.current,
+        })
+        .eq('id', currentPageViewId.current);
+    } catch (error) {
+      console.debug('Failed to update page view:', error);
+    }
+  }, []);
+
+  // Update session ended_at
+  const updateSessionEndTime = useCallback(async () => {
+    try {
+      await supabase
+        .from('analytics_sessions')
+        .update({ ended_at: new Date().toISOString() })
+        .eq('session_id', sessionId.current);
+    } catch (error) {
+      console.debug('Failed to update session end time:', error);
+    }
+  }, []);
+
+  // Scroll depth tracking
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0) {
+        const scrollPercent = Math.round((scrollTop / docHeight) * 100);
+        if (scrollPercent > maxScrollDepth.current) {
+          maxScrollDepth.current = scrollPercent;
+        }
       }
     };
 
-    window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [sessionId]);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Initialize session on mount
+  useEffect(() => {
+    initSession();
+  }, [initSession]);
+
+  // Track page views on route change
+  useEffect(() => {
+    // Update previous page view before tracking new one
+    if (currentPageViewId.current) {
+      updatePageViewOnLeave();
+    }
+    trackPageView();
+  }, [location.pathname, trackPageView, updatePageViewOnLeave]);
+
+  // Update session end time every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(updateSessionEndTime, 30000);
+    return () => clearInterval(interval);
+  }, [updateSessionEndTime]);
+
+  // Update page view on page leave
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      updatePageViewOnLeave();
+      updateSessionEndTime();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [updatePageViewOnLeave, updateSessionEndTime]);
 
   return {
-    trackClick,
-    trackEvent,
+    visitorId: visitorId.current,
+    sessionId: sessionId.current,
   };
-};
+}
