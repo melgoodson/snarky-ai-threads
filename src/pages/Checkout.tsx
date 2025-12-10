@@ -230,9 +230,11 @@ const Checkout = () => {
         throw new Error(message);
       }
 
-      // Redirect to Stripe checkout in the same tab to avoid popup blockers
+      // Open Stripe checkout in a new tab (iframe restrictions prevent same-tab redirect)
       if (checkoutData?.url) {
-        window.location.href = checkoutData.url;
+        window.open(checkoutData.url, '_blank');
+        toast.success('Stripe checkout opened in a new tab');
+        setLoading(false);
       } else {
         console.error('create-checkout missing URL:', checkoutData);
         throw new Error('No checkout URL returned from backend');
