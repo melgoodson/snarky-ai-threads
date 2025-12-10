@@ -15,25 +15,19 @@ async function uploadBase64ToStorage(
   itemId: string
 ): Promise<string | null> {
   try {
-    // Extract the base64 content (remove data:image/xxx;base64, prefix)
     const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
     if (!matches) {
       console.error('Invalid base64 image format');
       return null;
     }
     
-    const imageType = matches[1]; // png, jpeg, etc.
+    const imageType = matches[1];
     const base64Content = matches[2];
-    
-    // Decode base64 to binary
     const imageData = decode(base64Content);
-    
-    // Generate unique filename
     const fileName = `${orderId}/${itemId}-design.${imageType}`;
     
     console.log(`Uploading design image to storage: ${fileName}`);
     
-    // Upload to storage
     const { data, error } = await supabase.storage
       .from('design-images')
       .upload(fileName, imageData, {
@@ -46,7 +40,6 @@ async function uploadBase64ToStorage(
       return null;
     }
     
-    // Get public URL
     const { data: publicUrlData } = supabase.storage
       .from('design-images')
       .getPublicUrl(fileName);
@@ -59,12 +52,12 @@ async function uploadBase64ToStorage(
   }
 }
 
-// Helper function to upload image to Printify and get the preview URL
+// Helper function to upload image to Printify and get the IMAGE ID (not preview_url)
 async function uploadImageToPrintify(
   imageUrl: string,
   printifyApiToken: string,
   fileName: string
-): Promise<string | null> {
+): Promise<{ id: string; width: number; height: number } | null> {
   try {
     console.log(`Uploading image to Printify: ${imageUrl}`);
     
@@ -88,10 +81,182 @@ async function uploadImageToPrintify(
     
     const data = await response.json();
     console.log('Printify image uploaded successfully:', data);
-    // Return the preview_url which is what Printify order API expects for src
-    return data.preview_url;
+    // Return the image ID and dimensions - needed for product creation
+    return {
+      id: data.id,
+      width: data.width || 1024,
+      height: data.height || 1024,
+    };
   } catch (err) {
     console.error('Error uploading image to Printify:', err);
+    return null;
+  }
+}
+
+// Helper function to get blueprint details for a product
+async function getBlueprintInfo(
+  printifyProductId: string,
+  shopId: string,
+  printifyApiToken: string
+): Promise<{ blueprintId: number; printProviderId: number } | null> {
+  try {
+    const response = await fetch(
+      `https://api.printify.com/v1/shops/${shopId}/products/${printifyProductId}.json`,
+      {
+        headers: {
+          'Authorization': `Bearer ${printifyApiToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      console.error('Failed to fetch product details:', await response.text());
+      return null;
+    }
+    
+    const product = await response.json();
+    return {
+      blueprintId: product.blueprint_id,
+      printProviderId: product.print_provider_id,
+    };
+  } catch (err) {
+    console.error('Error getting blueprint info:', err);
+    return null;
+  }
+}
+
+// Helper function to create a new Printify product with custom design
+async function createPrintifyProductWithDesign(
+  shopId: string,
+  printifyApiToken: string,
+  blueprintId: number,
+  printProviderId: number,
+  variantId: number,
+  imageId: string,
+  imageWidth: number,
+  imageHeight: number,
+  orderId: string,
+  itemId: string
+): Promise<string | null> {
+  try {
+    console.log(`Creating custom Printify product for order ${orderId}, item ${itemId}`);
+    console.log(`Blueprint: ${blueprintId}, Provider: ${printProviderId}, Variant: ${variantId}`);
+    
+    // First, get the blueprint's print areas to understand the proper placeholder structure
+    const printAreasResponse = await fetch(
+      `https://api.printify.com/v1/catalog/blueprints/${blueprintId}/print_providers/${printProviderId}/print_areas.json`,
+      {
+        headers: {
+          'Authorization': `Bearer ${printifyApiToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    if (!printAreasResponse.ok) {
+      console.error('Failed to fetch print areas:', await printAreasResponse.text());
+      return null;
+    }
+    
+    const printAreasData = await printAreasResponse.json();
+    console.log('Blueprint print areas:', JSON.stringify(printAreasData, null, 2));
+    
+    // Find the front print area placeholder
+    const frontPrintArea = printAreasData.print_areas?.find((pa: any) => pa.variant_ids.includes(variantId));
+    
+    if (!frontPrintArea) {
+      console.error(`No print area found for variant ${variantId}`);
+      return null;
+    }
+    
+    const frontPlaceholder = frontPrintArea.placeholders?.find((p: any) => p.position === 'front');
+    
+    if (!frontPlaceholder) {
+      console.error('No front placeholder found');
+      return null;
+    }
+    
+    console.log('Using placeholder:', frontPlaceholder);
+    
+    // Calculate proper positioning - center the image in the print area
+    const placeholderWidth = frontPlaceholder.width || 1800;
+    const placeholderHeight = frontPlaceholder.height || 2400;
+    
+    // Scale image to fit within placeholder while maintaining aspect ratio
+    const scale = Math.min(
+      placeholderWidth / imageWidth,
+      placeholderHeight / imageHeight,
+      1 // Don't scale up beyond 100%
+    );
+    
+    const scaledWidth = imageWidth * scale;
+    const scaledHeight = imageHeight * scale;
+    
+    // Center the image in the placeholder
+    const x = (placeholderWidth - scaledWidth) / 2;
+    const y = (placeholderHeight - scaledHeight) / 2;
+    
+    // Create the product with the custom design
+    const productData = {
+      title: `Custom Order ${orderId} - Item ${itemId.slice(0, 8)}`,
+      description: 'Custom design product for order fulfillment',
+      blueprint_id: blueprintId,
+      print_provider_id: printProviderId,
+      variants: [
+        {
+          id: variantId,
+          price: 100, // Price in cents (doesn't matter for order)
+          is_enabled: true,
+        }
+      ],
+      print_areas: [
+        {
+          variant_ids: [variantId],
+          placeholders: [
+            {
+              position: 'front',
+              images: [
+                {
+                  id: imageId,
+                  x: x,
+                  y: y,
+                  scale: scale,
+                  angle: 0,
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+    
+    console.log('Creating product with data:', JSON.stringify(productData, null, 2));
+    
+    const createResponse = await fetch(
+      `https://api.printify.com/v1/shops/${shopId}/products.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${printifyApiToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      }
+    );
+    
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text();
+      console.error('Failed to create custom product:', errorText);
+      return null;
+    }
+    
+    const newProduct = await createResponse.json();
+    console.log('Custom product created:', newProduct.id);
+    
+    return newProduct.id;
+  } catch (err) {
+    console.error('Error creating custom product:', err);
     return null;
   }
 }
@@ -148,8 +313,11 @@ serve(async (req) => {
       throw new Error('No Printify shop found');
     }
 
-    // Build line items with valid variant IDs and print areas
+    console.log('Using shop ID:', shopId);
+
+    // Build line items - for custom designs, create new products
     const lineItems = [];
+    const createdProductIds: string[] = []; // Track products to clean up if needed
     
     for (const item of order.order_items) {
       let variantId = item.variant_id;
@@ -158,7 +326,6 @@ serve(async (req) => {
       if (!variantId || variantId === 'placeholder' || variantId === 'undefined') {
         console.log(`Item ${item.id} has invalid variant_id: ${variantId}, looking up default variant...`);
         
-        // Fetch the product to get its variants
         const { data: product, error: productError } = await supabase
           .from('products')
           .select('variants')
@@ -170,7 +337,6 @@ serve(async (req) => {
           throw new Error(`Product not found for item: ${item.product_id}`);
         }
         
-        // Find the first enabled variant
         const variants = product.variants || [];
         const enabledVariant = variants.find((v: any) => v.is_enabled === true);
         
@@ -182,21 +348,13 @@ serve(async (req) => {
         variantId = enabledVariant.id;
         console.log(`Using default enabled variant: ${variantId} (${enabledVariant.title})`);
         
-        // Update the order item with the correct variant ID for future reference
         await supabase
           .from('order_items')
           .update({ variant_id: String(variantId) })
           .eq('id', item.id);
       }
       
-      // Build line item with print_areas if design image is available
-      const lineItem: any = {
-        product_id: item.printify_product_id,
-        variant_id: Number(variantId),
-        quantity: item.quantity,
-      };
-      
-      // Handle design image URL - may be base64 or HTTPS URL
+      // Handle design image URL
       let designUrl = item.design_image_url;
       
       // Check if it's a base64 data URL - upload to storage first
@@ -205,7 +363,6 @@ serve(async (req) => {
         const publicUrl = await uploadBase64ToStorage(supabase, designUrl, orderId, item.id);
         if (publicUrl) {
           designUrl = publicUrl;
-          // Update the order item with the permanent URL
           await supabase
             .from('order_items')
             .update({ design_image_url: publicUrl })
@@ -216,39 +373,68 @@ serve(async (req) => {
         }
       }
       
-      // Add print_areas with the design image - upload to Printify first to get image ID
+      // Check if we have a valid design URL to create a custom product
+      let productIdToUse = item.printify_product_id;
+      
       if (designUrl && typeof designUrl === 'string' && 
           !designUrl.includes('[object') && 
           designUrl.startsWith('http')) {
         
-        // Upload image to Printify to get the preview URL
-        const printifyImageUrl = await uploadImageToPrintify(
+        // Step 1: Upload image to Printify and get the image ID
+        const uploadResult = await uploadImageToPrintify(
           designUrl, 
           printifyApiToken,
           `order-${orderId}-item-${item.id}.png`
         );
         
-        if (printifyImageUrl) {
-          console.log(`Adding print_areas with Printify image URL: ${printifyImageUrl}`);
-          lineItem.print_areas = {
-            front: [
-              {
-                src: printifyImageUrl,
-                scale: 1,
-                x: 0.5,
-                y: 0.5,
-                angle: 0,
-              }
-            ],
-          };
+        if (uploadResult) {
+          console.log(`Image uploaded to Printify with ID: ${uploadResult.id}`);
+          
+          // Step 2: Get the blueprint info from the original product
+          const blueprintInfo = await getBlueprintInfo(
+            item.printify_product_id,
+            shopId,
+            printifyApiToken
+          );
+          
+          if (blueprintInfo) {
+            // Step 3: Create a new product with the custom design
+            const customProductId = await createPrintifyProductWithDesign(
+              shopId,
+              printifyApiToken,
+              blueprintInfo.blueprintId,
+              blueprintInfo.printProviderId,
+              Number(variantId),
+              uploadResult.id,
+              uploadResult.width,
+              uploadResult.height,
+              orderId,
+              item.id
+            );
+            
+            if (customProductId) {
+              productIdToUse = customProductId;
+              createdProductIds.push(customProductId);
+              console.log(`Using custom product ${customProductId} for order`);
+            } else {
+              console.log('Failed to create custom product, falling back to original product');
+            }
+          } else {
+            console.log('Failed to get blueprint info, falling back to original product');
+          }
         } else {
-          console.log(`Failed to upload design to Printify for item ${item.id}, order will use product's default print`);
+          console.log(`Failed to upload design to Printify for item ${item.id}`);
         }
       } else {
-        console.log(`Invalid or missing design_image_url for item ${item.id}: "${designUrl}", order will use product's default print`);
+        console.log(`No valid design URL for item ${item.id}, using original product`);
       }
       
-      lineItems.push(lineItem);
+      // Build line item - NO print_areas here, design is already on the product
+      lineItems.push({
+        product_id: productIdToUse,
+        variant_id: Number(variantId),
+        quantity: item.quantity,
+      });
     }
 
     const shippingAddress = order.shipping_address;
@@ -277,22 +463,18 @@ serve(async (req) => {
       'new zealand': 'NZ',
     };
 
-    // Convert country name to ISO code if needed
     let countryCode = shippingAddress.country;
     const countryLower = countryCode?.toLowerCase();
     if (countryLower && countryCodeMap[countryLower]) {
       countryCode = countryCodeMap[countryLower];
-    } else if (countryCode && countryCode.length > 2) {
-      // If it's still a full country name and not in our map, log warning
-      console.warn(`Unknown country name: ${countryCode}, attempting to use as-is`);
     }
 
-    // Create order in Printify
+    // Create order in Printify - NO print_areas, just product references
     const printifyOrderData = {
       external_id: orderId,
       label: `Order ${orderId}`,
       line_items: lineItems,
-      shipping_method: 1, // Standard shipping
+      shipping_method: 1,
       send_shipping_notification: true,
       address_to: {
         first_name: shippingAddress.firstName,
@@ -308,7 +490,7 @@ serve(async (req) => {
       },
     };
 
-    console.log('Creating Printify order with data:', printifyOrderData);
+    console.log('Creating Printify order with data:', JSON.stringify(printifyOrderData, null, 2));
 
     const createOrderResponse = await fetch(
       `https://api.printify.com/v1/shops/${shopId}/orders.json`,
@@ -355,6 +537,7 @@ serve(async (req) => {
         success: true,
         printifyOrderId: printifyOrder.id,
         status: printifyOrder.status,
+        customProductsCreated: createdProductIds,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
