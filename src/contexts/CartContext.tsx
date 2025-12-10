@@ -36,7 +36,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
-      // Strip large data URLs before saving to prevent quota exceeded errors
+      // Strip only base64 data URLs before saving to prevent quota exceeded errors
+      // Keep valid HTTPS URLs intact
       const itemsToStore = items.map(item => ({
         ...item,
         image: item.image?.startsWith('data:') ? '' : item.image,

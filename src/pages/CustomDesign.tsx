@@ -68,7 +68,10 @@ export default function CustomDesign() {
   // Step 3: User Photo
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   
-  // Step 4: Final Mockup
+  // Product mockup (design applied to product - used for checkout preview)
+  const [productMockupUrl, setProductMockupUrl] = useState<string | null>(null);
+  
+  // Step 4: Final Mockup (virtual try-on)
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [finalMockup, setFinalMockup] = useState<string | null>(null);
 
@@ -216,6 +219,9 @@ export default function CustomDesign() {
       if (!productWithDesign) {
         throw new Error("Failed to generate product mockup");
       }
+      
+      // Store the product mockup URL for checkout
+      setProductMockupUrl(productWithDesign);
 
       // Then, show the product on the user
       const { data: finalData, error: finalError } = await supabase.functions.invoke(
@@ -244,7 +250,7 @@ export default function CustomDesign() {
     }
   };
 
-  const proceedToCheckout = () => {
+  const proceedToCheckout = async () => {
     if (!selectedProduct || !generatedDesign) {
       toast.error("Please complete all steps before checkout");
       return;
@@ -260,15 +266,44 @@ export default function CustomDesign() {
       productImage = selectedProduct.template_image_url || '/placeholder.svg';
     }
 
+    // If we have a product mockup URL (from virtual try-on), use it as the display image
+    // Otherwise, generate one now for the checkout preview
+    let mockupImageUrl = productMockupUrl;
+    
+    if (!mockupImageUrl) {
+      // Generate product mockup for checkout display
+      try {
+        toast.info("Generating product preview...");
+        const { data: mockupData, error } = await supabase.functions.invoke(
+          "generate-user-mockup",
+          {
+            body: {
+              userImage: generatedDesign,
+              productImage: selectedProduct.template_image_url,
+              productTitle: selectedProduct.title,
+            },
+          }
+        );
+        if (!error && mockupData?.mockupUrl) {
+          mockupImageUrl = mockupData.mockupUrl;
+        }
+      } catch (e) {
+        console.warn("Could not generate mockup for preview:", e);
+      }
+    }
+
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
-    // Only store small metadata, not base64 images (avoids localStorage quota errors)
+    // Store metadata including the mockup URL (if available and not base64)
     const customDesignData = {
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
       printifyProductId: selectedProduct.printify_product_id,
+      image: mockupImageUrl && !mockupImageUrl.startsWith('data:') ? mockupImageUrl : productImage,
+      mockupUrl: mockupImageUrl && !mockupImageUrl.startsWith('data:') ? mockupImageUrl : null,
+      designImageUrl: generatedDesign && !generatedDesign.startsWith('data:') ? generatedDesign : null,
     };
     
     try {
@@ -277,12 +312,17 @@ export default function CustomDesign() {
       console.warn("Could not save to localStorage:", e);
     }
     
+    // Use mockup as display image, fallback to product image
+    const displayImage = mockupImageUrl && !mockupImageUrl.startsWith('data:') 
+      ? mockupImageUrl 
+      : productImage;
+    
     addItem({
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
-      image: productImage,
+      image: displayImage,
       printifyProductId: selectedProduct.printify_product_id,
       designImageUrl: generatedDesign,
     });
