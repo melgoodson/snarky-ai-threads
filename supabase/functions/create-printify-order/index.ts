@@ -59,7 +59,7 @@ async function uploadBase64ToStorage(
   }
 }
 
-// Helper function to upload image to Printify and get image ID
+// Helper function to upload image to Printify and get the preview URL
 async function uploadImageToPrintify(
   imageUrl: string,
   printifyApiToken: string,
@@ -88,7 +88,8 @@ async function uploadImageToPrintify(
     
     const data = await response.json();
     console.log('Printify image uploaded successfully:', data);
-    return data.id;
+    // Return the preview_url which is what Printify order API expects for src
+    return data.preview_url;
   } catch (err) {
     console.error('Error uploading image to Printify:', err);
     return null;
@@ -220,19 +221,19 @@ serve(async (req) => {
           !designUrl.includes('[object') && 
           designUrl.startsWith('http')) {
         
-        // Upload image to Printify to get image ID
-        const printifyImageId = await uploadImageToPrintify(
+        // Upload image to Printify to get the preview URL
+        const printifyImageUrl = await uploadImageToPrintify(
           designUrl, 
           printifyApiToken,
           `order-${orderId}-item-${item.id}.png`
         );
         
-        if (printifyImageId) {
-          console.log(`Adding print_areas with Printify image ID: ${printifyImageId}`);
+        if (printifyImageUrl) {
+          console.log(`Adding print_areas with Printify image URL: ${printifyImageUrl}`);
           lineItem.print_areas = {
             front: [
               {
-                src: printifyImageId,
+                src: printifyImageUrl,
                 scale: 1,
                 x: 0.5,
                 y: 0.5,
