@@ -83,19 +83,36 @@ serve(async (req) => {
     // Create order items
     const orderItems = cartItems.map((item: any) => {
       // Extract design image URL - ensure it's a string, not an object
-      let designUrl = item.designImageUrl || item.artworkUrl || null;
+      let designUrl: string | null = null;
       
-      // If designUrl is an object (has src property), extract the string
-      if (designUrl && typeof designUrl === 'object' && designUrl.src) {
-        designUrl = designUrl.src;
+      // Try designImageUrl first
+      if (item.designImageUrl) {
+        if (typeof item.designImageUrl === 'string' && item.designImageUrl.startsWith('http')) {
+          designUrl = item.designImageUrl;
+        } else if (typeof item.designImageUrl === 'object' && item.designImageUrl.src) {
+          designUrl = item.designImageUrl.src;
+        }
       }
       
-      // Fallback to image if it's a string URL
-      if (!designUrl && typeof item.image === 'string') {
-        designUrl = item.image;
+      // Try artworkUrl 
+      if (!designUrl && item.artworkUrl) {
+        if (typeof item.artworkUrl === 'string' && item.artworkUrl.startsWith('http')) {
+          designUrl = item.artworkUrl;
+        } else if (typeof item.artworkUrl === 'object' && item.artworkUrl.src) {
+          designUrl = item.artworkUrl.src;
+        }
       }
       
-      console.log(`Order item design URL: ${designUrl}`);
+      // Try image field (could be string URL or object with src)
+      if (!designUrl && item.image) {
+        if (typeof item.image === 'string' && item.image.startsWith('http')) {
+          designUrl = item.image;
+        } else if (typeof item.image === 'object' && item.image.src && typeof item.image.src === 'string') {
+          designUrl = item.image.src;
+        }
+      }
+      
+      console.log(`Order item design URL extracted: ${designUrl}`);
       
       return {
         order_id: orderData.id,
