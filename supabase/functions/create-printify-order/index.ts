@@ -1,10 +1,63 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Helper function to upload base64 image to storage and return public URL
+async function uploadBase64ToStorage(
+  supabase: any,
+  base64Data: string,
+  orderId: string,
+  itemId: string
+): Promise<string | null> {
+  try {
+    // Extract the base64 content (remove data:image/xxx;base64, prefix)
+    const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
+    if (!matches) {
+      console.error('Invalid base64 image format');
+      return null;
+    }
+    
+    const imageType = matches[1]; // png, jpeg, etc.
+    const base64Content = matches[2];
+    
+    // Decode base64 to binary
+    const imageData = decode(base64Content);
+    
+    // Generate unique filename
+    const fileName = `${orderId}/${itemId}-design.${imageType}`;
+    
+    console.log(`Uploading design image to storage: ${fileName}`);
+    
+    // Upload to storage
+    const { data, error } = await supabase.storage
+      .from('design-images')
+      .upload(fileName, imageData, {
+        contentType: `image/${imageType}`,
+        upsert: true,
+      });
+    
+    if (error) {
+      console.error('Error uploading to storage:', error);
+      return null;
+    }
+    
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('design-images')
+      .getPublicUrl(fileName);
+    
+    console.log(`Design image uploaded successfully: ${publicUrlData.publicUrl}`);
+    return publicUrlData.publicUrl;
+  } catch (err) {
+    console.error('Error in uploadBase64ToStorage:', err);
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -106,9 +159,28 @@ serve(async (req) => {
         quantity: item.quantity,
       };
       
+      // Handle design image URL - may be base64 or HTTPS URL
+      let designUrl = item.design_image_url;
+      
+      // Check if it's a base64 data URL - upload to storage first
+      if (designUrl && typeof designUrl === 'string' && designUrl.startsWith('data:image/')) {
+        console.log(`Design image is base64, uploading to storage...`);
+        const publicUrl = await uploadBase64ToStorage(supabase, designUrl, orderId, item.id);
+        if (publicUrl) {
+          designUrl = publicUrl;
+          // Update the order item with the permanent URL
+          await supabase
+            .from('order_items')
+            .update({ design_image_url: publicUrl })
+            .eq('id', item.id);
+        } else {
+          console.error('Failed to upload base64 image to storage');
+          designUrl = null;
+        }
+      }
+      
       // Add print_areas with the design image URL for custom prints
       // Skip invalid values like "[object Object]" or empty strings
-      let designUrl = item.design_image_url;
       if (designUrl && typeof designUrl === 'string' && 
           !designUrl.includes('[object') && 
           designUrl.startsWith('http')) {
