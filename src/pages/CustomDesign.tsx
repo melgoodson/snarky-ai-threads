@@ -71,6 +71,7 @@ export default function CustomDesign() {
   // Step 4: Final Mockup
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [finalMockup, setFinalMockup] = useState<string | null>(null);
+  const [creatingPrintifyProduct, setCreatingPrintifyProduct] = useState(false);
 
   useEffect(() => {
     if (currentStep === 2) {
@@ -244,13 +245,13 @@ export default function CustomDesign() {
     }
   };
 
-  const proceedToCheckout = () => {
+  const proceedToCheckout = async () => {
     console.log("Proceed to checkout clicked");
     console.log("Selected Product:", selectedProduct);
     console.log("Generated Design:", generatedDesign);
     console.log("Final Mockup:", finalMockup);
     
-    if (!selectedProduct || !generatedDesign || !finalMockup) {
+    if (!selectedProduct || !generatedDesign) {
       console.error("Missing required data for checkout");
       toast.error("Please complete all steps before checkout");
       return;
@@ -260,7 +261,7 @@ export default function CustomDesign() {
     const extractUrl = (value: any): string => {
       if (!value) return '';
       if (typeof value === 'string') {
-        if (value.startsWith('data:')) return ''; // Skip data URLs
+        if (value.startsWith('data:')) return ''; // Skip data URLs for storage keys
         return value;
       }
       if (typeof value === 'object') {
@@ -269,48 +270,87 @@ export default function CustomDesign() {
       return '';
     };
 
-    const productImageRaw = selectedProduct.images && selectedProduct.images.length > 0 
-      ? selectedProduct.images[0] 
-      : finalMockup;
-    
-    const productImageUrl = extractUrl(productImageRaw);
-    const generatedDesignUrl = extractUrl(generatedDesign);
-    const finalMockupUrl = extractUrl(finalMockup);
+    setCreatingPrintifyProduct(true);
+    toast.info("Creating your custom product in Printify...");
 
-    const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
-    
-    const customDesignData = {
-      productId: selectedProduct.id,
-      title: `Custom ${selectedProduct.title}`,
-      price: basePrice,
-      size: "M",
-      image: productImageUrl,
-      mockupUrl: finalMockupUrl,
-      artworkUrl: generatedDesignUrl,
-      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
-      printifyProductId: selectedProduct.printify_product_id,
-    };
-    
-    console.log("Storing custom design data:", customDesignData);
     try {
-      localStorage.setItem("customDesign", JSON.stringify(customDesignData));
-    } catch (e) {
-      console.warn('Failed to save customDesign to localStorage:', e);
+      // Step 1: Create custom Printify product with the design
+      const { data: customProductData, error: customProductError } = await supabase.functions.invoke(
+        "create-custom-printify-product",
+        {
+          body: {
+            designImageUrl: generatedDesign, // Send the design (can be base64 or URL)
+            baseProductId: selectedProduct.id,
+            variantId: null, // Will use all enabled variants
+            customTitle: `Custom ${selectedProduct.title}`,
+          },
+        }
+      );
+
+      if (customProductError) {
+        throw customProductError;
+      }
+
+      if (!customProductData?.success || !customProductData?.printifyProductId) {
+        throw new Error(customProductData?.error || "Failed to create custom product");
+      }
+
+      console.log("Custom Printify product created:", customProductData);
+      toast.success("Custom product created successfully!");
+
+      const productImageRaw = selectedProduct.images && selectedProduct.images.length > 0 
+        ? selectedProduct.images[0] 
+        : finalMockup;
+      
+      const productImageUrl = extractUrl(productImageRaw);
+      const generatedDesignUrl = extractUrl(generatedDesign);
+      const finalMockupUrl = extractUrl(finalMockup);
+
+      // Use the Printify mockup image if available, otherwise fall back to our generated mockup
+      const displayImage = customProductData.mockupImageUrl || finalMockupUrl || productImageUrl;
+
+      const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
+      
+      const customDesignData = {
+        productId: selectedProduct.id,
+        title: `Custom ${selectedProduct.title}`,
+        price: basePrice,
+        size: "M",
+        image: displayImage,
+        mockupUrl: customProductData.mockupImageUrl || finalMockupUrl,
+        artworkUrl: generatedDesignUrl,
+        designImageUrl: customProductData.uploadedImagePreview || generatedDesignUrl,
+        // Use the NEW custom Printify product ID for orders
+        printifyProductId: customProductData.printifyProductId,
+        isCustomProduct: true,
+      };
+      
+      console.log("Storing custom design data:", customDesignData);
+      try {
+        localStorage.setItem("customDesign", JSON.stringify(customDesignData));
+      } catch (e) {
+        console.warn('Failed to save customDesign to localStorage:', e);
+      }
+      
+      addItem({
+        productId: selectedProduct.id,
+        title: `Custom ${selectedProduct.title}`,
+        price: basePrice,
+        size: "M",
+        image: displayImage,
+        // Use the NEW custom Printify product ID
+        printifyProductId: customProductData.printifyProductId,
+        designImageUrl: customProductData.uploadedImagePreview || generatedDesignUrl,
+      });
+      
+      console.log("Added to cart with custom Printify product:", customProductData.printifyProductId);
+      navigate("/checkout");
+    } catch (error: any) {
+      console.error("Error creating custom Printify product:", error);
+      toast.error(error.message || "Failed to create custom product. Please try again.");
+    } finally {
+      setCreatingPrintifyProduct(false);
     }
-    
-    addItem({
-      productId: selectedProduct.id,
-      title: `Custom ${selectedProduct.title}`,
-      price: basePrice,
-      size: "M",
-      image: productImageUrl,
-      printifyProductId: selectedProduct.printify_product_id,
-      designImageUrl: generatedDesignUrl, // The original AI-generated design for Printify printing
-    });
-    
-    console.log("Added to cart with price:", basePrice, "designImageUrl:", generatedDesignUrl);
-    console.log("Navigating to checkout...");
-    navigate("/checkout");
   };
 
   return (
@@ -797,8 +837,19 @@ export default function CustomDesign() {
                       >
                         Regenerate Mockup
                       </Button>
-                      <Button onClick={proceedToCheckout} className="flex-1">
-                        Proceed to Checkout →
+                      <Button 
+                        onClick={proceedToCheckout} 
+                        className="flex-1"
+                        disabled={creatingPrintifyProduct}
+                      >
+                        {creatingPrintifyProduct ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating Product...
+                          </>
+                        ) : (
+                          "Proceed to Checkout →"
+                        )}
                       </Button>
                     </div>
                   </Card>

@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.get-analytics]
 verify_jwt = false
+
+[functions.create-custom-printify-product]
+verify_jwt = false
