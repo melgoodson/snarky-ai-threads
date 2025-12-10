@@ -262,20 +262,32 @@ export default function CustomDesign() {
 
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
+    // Helper to strip large data URLs to prevent localStorage quota exceeded errors
+    const stripDataUrl = (url: string | undefined): string => {
+      if (!url) return '';
+      if (url.startsWith('data:')) return ''; // Skip data URLs - too large for localStorage
+      return url;
+    };
+
     const customDesignData = {
       productId: selectedProduct.id,
       title: `Custom ${selectedProduct.title}`,
       price: basePrice,
       size: "M",
-      image: productImage,
-      mockupUrl: finalMockup,
-      artworkUrl: generatedDesign,
-      designImageUrl: generatedDesign, // The original AI-generated design for Printify printing
+      image: stripDataUrl(productImage),
+      mockupUrl: stripDataUrl(finalMockup),
+      artworkUrl: stripDataUrl(generatedDesign),
+      designImageUrl: stripDataUrl(generatedDesign), // The original AI-generated design for Printify printing
       printifyProductId: selectedProduct.printify_product_id,
     };
     
     console.log("Storing custom design data:", customDesignData);
-    localStorage.setItem("customDesign", JSON.stringify(customDesignData));
+    try {
+      localStorage.setItem("customDesign", JSON.stringify(customDesignData));
+    } catch (e) {
+      console.warn('Failed to save customDesign to localStorage:', e);
+      // Continue without localStorage - cart already has the item
+    }
     
     addItem({
       productId: selectedProduct.id,
