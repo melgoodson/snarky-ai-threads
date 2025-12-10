@@ -250,9 +250,15 @@ export default function CustomDesign() {
       return;
     }
 
-    const productImage = selectedProduct.images && selectedProduct.images.length > 0 
-      ? selectedProduct.images[0] 
-      : selectedProduct.template_image_url || '';
+    // Ensure productImage is always a string URL, not an object
+    let productImage = '';
+    if (selectedProduct.images && selectedProduct.images.length > 0) {
+      const img = selectedProduct.images[0];
+      productImage = typeof img === 'string' ? img : (img as any)?.src || '';
+    }
+    if (!productImage) {
+      productImage = selectedProduct.template_image_url || '/placeholder.svg';
+    }
 
     const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
     
