@@ -420,17 +420,20 @@ const Checkout = () => {
               <h2 className="text-xl font-black mb-4">ORDER SUMMARY</h2>
               <div className="space-y-4">
                 {checkoutItems.map(item => {
-                  // Handle image being either a string or object with src property
-                  const imageUrl = typeof item.image === 'string' 
-                    ? item.image 
-                    : (item.image as any)?.src || '/placeholder.svg';
+                  // Handle image being either a string, object with src, or empty
+                  let imageUrl = '/placeholder.svg';
+                  if (typeof item.image === 'string' && item.image && !item.image.startsWith('data:')) {
+                    imageUrl = item.image;
+                  } else if (item.image && typeof item.image === 'object' && (item.image as any)?.src) {
+                    imageUrl = (item.image as any).src;
+                  }
                   
                   return (
                   <div key={item.id} className="flex gap-4">
                     <img
                       src={imageUrl}
                       alt={item.title}
-                      className="w-16 h-16 object-cover rounded"
+                      className="w-16 h-16 object-cover rounded bg-muted"
                     />
                     <div className="flex-1">
                       <p className="font-bold text-sm">{item.title}</p>
