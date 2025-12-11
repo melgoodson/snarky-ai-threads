@@ -82,18 +82,29 @@ export default function CustomDesign() {
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [finalMockup, setFinalMockup] = useState<string | null>(null);
 
+  // Known size values (exact match)
+  const KNOWN_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11oz', '15oz'];
+  
+  // Helper to check if a string is a size
+  const isSize = (str: string): boolean => {
+    const normalized = str.trim().toUpperCase();
+    return KNOWN_SIZES.includes(normalized);
+  };
+
   // Helper to extract color from variant title (e.g., "White / M" -> "White", "15oz / Black" -> "Black")
   const extractColorFromVariant = (variantTitle: string): string => {
     const parts = variantTitle.split('/').map(p => p.trim());
-    // For clothing: "Color / Size" format
-    // For mugs: "Size / Color" format
     if (parts.length === 2) {
-      // Check if first part looks like a size
-      const sizePatterns = ['S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11oz', '15oz'];
-      if (sizePatterns.some(s => parts[0].toUpperCase().includes(s.toUpperCase()))) {
-        return parts[1]; // Second part is color
+      // If first part is a known size, second is color
+      if (isSize(parts[0])) {
+        return parts[1];
       }
-      return parts[0]; // First part is color
+      // If second part is a known size, first is color
+      if (isSize(parts[1])) {
+        return parts[0];
+      }
+      // Default: assume first is color (clothing format)
+      return parts[0];
     }
     return variantTitle;
   };
@@ -102,11 +113,16 @@ export default function CustomDesign() {
   const extractSizeFromVariant = (variantTitle: string): string => {
     const parts = variantTitle.split('/').map(p => p.trim());
     if (parts.length === 2) {
-      const sizePatterns = ['S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11oz', '15oz'];
-      if (sizePatterns.some(s => parts[0].toUpperCase().includes(s.toUpperCase()))) {
-        return parts[0]; // First part is size
+      // If first part is a known size, return it
+      if (isSize(parts[0])) {
+        return parts[0];
       }
-      return parts[1]; // Second part is size
+      // If second part is a known size, return it
+      if (isSize(parts[1])) {
+        return parts[1];
+      }
+      // Default: assume second is size (clothing format)
+      return parts[1];
     }
     return 'M';
   };
