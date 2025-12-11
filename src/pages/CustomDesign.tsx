@@ -404,7 +404,7 @@ export default function CustomDesign() {
       // Use the Printify mockup image if available, otherwise fall back to our generated mockup
       const displayImage = customProductData.mockupImageUrl || finalMockupUrl || productImageUrl;
 
-      const basePrice = Number(selectedVariant?.price ? selectedVariant.price / 100 : selectedProduct.retail_price || selectedProduct.price) || 0;
+      const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
       const selectedSize = selectedVariant ? extractSizeFromVariant(selectedVariant.title) : 'M';
       const selectedColor = selectedVariant ? extractColorFromVariant(selectedVariant.title) : 'White';
       
