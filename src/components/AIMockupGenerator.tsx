@@ -6,9 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface AIMockupGeneratorProps {
   productImage: string;
+  productTitle?: string;
+  productColor?: string;
 }
 
-export const AIMockupGenerator = ({ productImage }: AIMockupGeneratorProps) => {
+export const AIMockupGenerator = ({ productImage, productTitle, productColor }: AIMockupGeneratorProps) => {
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [userImage, setUserImage] = useState<string | null>(null);
@@ -56,6 +58,8 @@ export const AIMockupGenerator = ({ productImage }: AIMockupGeneratorProps) => {
         body: {
           userImage,
           productImage: productImageBase64,
+          productTitle: productTitle || "T-Shirt",
+          productColor: productColor || "White",
         },
       });
 
