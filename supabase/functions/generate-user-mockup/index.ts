@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userImage, productImage, productTitle } = await req.json();
+    const { userImage, productImage, productTitle, productColor } = await req.json();
     
     if (!userImage || !productImage) {
       throw new Error('Both userImage and productImage are required');
@@ -22,13 +22,18 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    console.log(`Generating mockup for ${productTitle}`);
+    const colorInstruction = productColor 
+      ? `CRITICAL: The product must be ${productColor} color. Do NOT use any other color.` 
+      : '';
+
+    console.log(`Generating mockup for ${productTitle} in color: ${productColor || 'default'}`);
 
     // Use Lovable AI to place the design onto the product template
     const prompt = `You are a professional product mockup designer. Your task is to accurately place the FIRST image (the design/artwork) onto the SECOND image (the ${productTitle} template).
 
 CRITICAL REQUIREMENTS:
 - Use the EXACT design from the first image - do NOT modify, regenerate, or change it in any way
+- ${colorInstruction}
 - Place the design in the correct print area on the product (centered on chest for shirts, front center for hoodies, wrap around for mugs)
 - Maintain the design's original colors, details, and quality
 - Ensure the design looks professionally printed/applied to the product
@@ -36,7 +41,7 @@ CRITICAL REQUIREMENTS:
 - Keep the product background clean and professional
 - Do NOT add any text, logos, or elements that aren't in the original design
 
-Output a high-quality mockup image showing the product with the design applied exactly as provided.`;
+Output a high-quality mockup image showing the ${productColor ? productColor + ' ' : ''}product with the design applied exactly as provided.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

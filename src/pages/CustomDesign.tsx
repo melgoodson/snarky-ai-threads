@@ -11,6 +11,14 @@ import { toast } from "sonner";
 import { Loader2, Upload, Check, Sparkles, Palette } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 
+interface Variant {
+  id: number;
+  title: string;
+  is_enabled: boolean;
+  price: number;
+  cost: number;
+}
+
 interface Product {
   id: string;
   title: string;
@@ -23,6 +31,7 @@ interface Product {
   template_image_url: string;
   price: number;
   retail_price: number;
+  variants: Variant[];
 }
 
 const PRESET_DESIGNS = [
@@ -64,6 +73,7 @@ export default function CustomDesign() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   
   // Step 3: User Photo
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -71,6 +81,49 @@ export default function CustomDesign() {
   // Step 4: Final Mockup
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [finalMockup, setFinalMockup] = useState<string | null>(null);
+
+  // Helper to extract color from variant title (e.g., "White / M" -> "White", "15oz / Black" -> "Black")
+  const extractColorFromVariant = (variantTitle: string): string => {
+    const parts = variantTitle.split('/').map(p => p.trim());
+    // For clothing: "Color / Size" format
+    // For mugs: "Size / Color" format
+    if (parts.length === 2) {
+      // Check if first part looks like a size
+      const sizePatterns = ['S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11oz', '15oz'];
+      if (sizePatterns.some(s => parts[0].toUpperCase().includes(s.toUpperCase()))) {
+        return parts[1]; // Second part is color
+      }
+      return parts[0]; // First part is color
+    }
+    return variantTitle;
+  };
+
+  // Helper to extract size from variant title
+  const extractSizeFromVariant = (variantTitle: string): string => {
+    const parts = variantTitle.split('/').map(p => p.trim());
+    if (parts.length === 2) {
+      const sizePatterns = ['S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11oz', '15oz'];
+      if (sizePatterns.some(s => parts[0].toUpperCase().includes(s.toUpperCase()))) {
+        return parts[0]; // First part is size
+      }
+      return parts[1]; // Second part is size
+    }
+    return 'M';
+  };
+
+  // Get unique colors from variants
+  const getUniqueColors = (variants: Variant[]): string[] => {
+    const enabledVariants = variants.filter(v => v.is_enabled);
+    const colors = enabledVariants.map(v => extractColorFromVariant(v.title));
+    return [...new Set(colors)];
+  };
+
+  // Get unique sizes from variants for a given color
+  const getSizesForColor = (variants: Variant[], color: string): Variant[] => {
+    return variants.filter(v => 
+      v.is_enabled && extractColorFromVariant(v.title) === color
+    );
+  };
   const [creatingPrintifyProduct, setCreatingPrintifyProduct] = useState(false);
 
   useEffect(() => {
@@ -102,6 +155,13 @@ export default function CustomDesign() {
         template_image_url: p.template_image_url || "",
         price: Number(p.price) || 0,
         retail_price: Number(p.retail_price) || 0,
+        variants: Array.isArray(p.variants) ? p.variants.map((v: any) => ({
+          id: v.id,
+          title: v.title || '',
+          is_enabled: v.is_enabled || false,
+          price: v.price || 0,
+          cost: v.cost || 0,
+        })) : [],
       }));
 
       setProducts(formattedProducts);
@@ -196,9 +256,14 @@ export default function CustomDesign() {
       return;
     }
 
+    // Get the selected color from variant, or default
+    const selectedColor = selectedVariant 
+      ? extractColorFromVariant(selectedVariant.title) 
+      : 'White';
+
     setGeneratingMockup(true);
     try {
-      // First, composite the design onto the product
+      // First, composite the design onto the product with the correct color
       const { data: productMockupData, error: productError } = await supabase.functions.invoke(
         "generate-user-mockup",
         {
@@ -206,6 +271,7 @@ export default function CustomDesign() {
             userImage: generatedDesign,
             productImage: selectedProduct.template_image_url,
             productTitle: selectedProduct.title,
+            productColor: selectedColor, // Pass the selected color
           },
         }
       );
@@ -248,12 +314,19 @@ export default function CustomDesign() {
   const proceedToCheckout = async () => {
     console.log("Proceed to checkout clicked");
     console.log("Selected Product:", selectedProduct);
+    console.log("Selected Variant:", selectedVariant);
     console.log("Generated Design:", generatedDesign);
     console.log("Final Mockup:", finalMockup);
     
     if (!selectedProduct || !generatedDesign) {
       console.error("Missing required data for checkout");
       toast.error("Please complete all steps before checkout");
+      return;
+    }
+
+    if (!selectedVariant) {
+      console.error("No variant selected");
+      toast.error("Please select a color and size for your product");
       return;
     }
 
@@ -274,15 +347,16 @@ export default function CustomDesign() {
     toast.info("Creating your custom product in Printify...");
 
     try {
-      // Step 1: Create custom Printify product with the design
+      // Step 1: Create custom Printify product with the design and selected variant
       const { data: customProductData, error: customProductError } = await supabase.functions.invoke(
         "create-custom-printify-product",
         {
           body: {
             designImageUrl: generatedDesign, // Send the design (can be base64 or URL)
             baseProductId: selectedProduct.id,
-            variantId: null, // Will use all enabled variants
+            variantId: selectedVariant.id, // Pass the selected variant ID
             customTitle: `Custom ${selectedProduct.title}`,
+            productColor: extractColorFromVariant(selectedVariant.title), // Pass color for mockup
           },
         }
       );
@@ -309,13 +383,17 @@ export default function CustomDesign() {
       // Use the Printify mockup image if available, otherwise fall back to our generated mockup
       const displayImage = customProductData.mockupImageUrl || finalMockupUrl || productImageUrl;
 
-      const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
+      const basePrice = Number(selectedVariant?.price ? selectedVariant.price / 100 : selectedProduct.retail_price || selectedProduct.price) || 0;
+      const selectedSize = selectedVariant ? extractSizeFromVariant(selectedVariant.title) : 'M';
+      const selectedColor = selectedVariant ? extractColorFromVariant(selectedVariant.title) : 'White';
       
       const customDesignData = {
         productId: selectedProduct.id,
-        title: `Custom ${selectedProduct.title}`,
+        title: `Custom ${selectedProduct.title} - ${selectedColor}`,
         price: basePrice,
-        size: "M",
+        size: selectedSize,
+        color: selectedColor,
+        variantId: selectedVariant?.id,
         image: displayImage,
         mockupUrl: customProductData.mockupImageUrl || finalMockupUrl,
         artworkUrl: generatedDesignUrl,
@@ -334,12 +412,13 @@ export default function CustomDesign() {
       
       addItem({
         productId: selectedProduct.id,
-        title: `Custom ${selectedProduct.title}`,
+        title: `Custom ${selectedProduct.title} - ${selectedColor}`,
         price: basePrice,
-        size: "M",
+        size: selectedSize,
         image: displayImage,
         // Use the NEW custom Printify product ID
         printifyProductId: customProductData.printifyProductId,
+        variantId: String(selectedVariant?.id),
         designImageUrl: customProductData.uploadedImagePreview || generatedDesignUrl,
       });
       
@@ -655,7 +734,10 @@ export default function CustomDesign() {
                           ? "ring-4 ring-primary shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
                           : "hover:border-primary/50"
                       }`}
-                      onClick={() => setSelectedProduct(product)}
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setSelectedVariant(null); // Reset variant when product changes
+                      }}
                     >
                       <div className="relative aspect-square bg-secondary">
                         <img
@@ -690,13 +772,81 @@ export default function CustomDesign() {
                 </div>
               )}
 
+              {/* Variant Selection */}
+              {selectedProduct && selectedProduct.variants.filter(v => v.is_enabled).length > 0 && (
+                <Card className="max-w-2xl mx-auto mt-8 p-6">
+                  <h3 className="text-xl font-bold mb-4">Select Your Color & Size</h3>
+                  
+                  {/* Color Selection */}
+                  <div className="mb-6">
+                    <h4 className="font-semibold mb-3">Pick Your Color</h4>
+                    <div className="flex flex-wrap gap-3">
+                      {getUniqueColors(selectedProduct.variants).map((color) => {
+                        const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title) === color;
+                        return (
+                          <button
+                            key={color}
+                            onClick={() => {
+                              // Select first variant with this color
+                              const firstVariant = getSizesForColor(selectedProduct.variants, color)[0];
+                              if (firstVariant) setSelectedVariant(firstVariant);
+                            }}
+                            className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                              isSelected
+                                ? "border-primary bg-primary/10 text-primary font-semibold"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                          >
+                            {color}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Size Selection (show only when color is selected) */}
+                  {selectedVariant && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold mb-3">Pick Your Size</h4>
+                      <div className="flex flex-wrap gap-3">
+                        {getSizesForColor(selectedProduct.variants, extractColorFromVariant(selectedVariant.title)).map((variant) => {
+                          const size = extractSizeFromVariant(variant.title);
+                          const isSelected = selectedVariant.id === variant.id;
+                          return (
+                            <button
+                              key={variant.id}
+                              onClick={() => setSelectedVariant(variant)}
+                              className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                                isSelected
+                                  ? "border-primary bg-primary/10 text-primary font-semibold"
+                                  : "border-border hover:border-primary/50"
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedVariant && (
+                    <div className="mt-4 p-3 bg-muted rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        Selected: <span className="font-semibold text-foreground">{selectedVariant.title}</span>
+                      </p>
+                    </div>
+                  )}
+                </Card>
+              )}
+
               <div className="flex justify-center gap-4 mt-8">
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>
                   Back to Design
                 </Button>
                 <Button
                   onClick={() => setCurrentStep(3)}
-                  disabled={!selectedProduct}
+                  disabled={!selectedProduct || !selectedVariant}
                   size="lg"
                 >
                   Continue to Photo Upload →
