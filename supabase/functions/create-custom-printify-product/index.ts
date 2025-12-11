@@ -25,12 +25,17 @@ serve(async (req) => {
       baseProductId,
       variantId,
       customTitle,
+      productColor,
     } = await req.json();
 
-    console.log('Creating custom Printify product:', { designImageUrl, baseProductId, variantId, customTitle });
+    console.log('Creating custom Printify product:', { designImageUrl, baseProductId, variantId, customTitle, productColor });
 
     if (!designImageUrl || !baseProductId) {
       throw new Error('designImageUrl and baseProductId are required');
+    }
+
+    if (!variantId) {
+      throw new Error('variantId is required - please select a color and size');
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
