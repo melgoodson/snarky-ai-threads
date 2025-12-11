@@ -18,6 +18,19 @@ interface Order {
   shipping_address: any;
   user_id: string | null;
   updated_at: string;
+  mockup_url: string | null;
+}
+
+interface OrderItem {
+  id: string;
+  design_image_url: string | null;
+  quantity: number;
+  price: number;
+  product_id: string | null;
+  products: {
+    title: string;
+    images: any;
+  } | null;
 }
 
 interface PrintifyOrder {
@@ -32,6 +45,7 @@ const OrderTracking = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [printifyOrder, setPrintifyOrder] = useState<PrintifyOrder | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,6 +105,18 @@ const OrderTracking = () => {
       console.error('Error fetching order:', orderError);
     } else if (orderData) {
       setOrder(orderData as Order);
+    }
+
+    // Fetch order items with product info
+    const { data: itemsData, error: itemsError } = await supabase
+      .from('order_items')
+      .select('id, design_image_url, quantity, price, product_id, products(title, images)')
+      .eq('order_id', orderId);
+
+    if (itemsError) {
+      console.error('Error fetching order items:', itemsError);
+    } else if (itemsData) {
+      setOrderItems(itemsData as OrderItem[]);
     }
 
     const { data: printifyData, error: printifyError } = await supabase
@@ -255,6 +281,38 @@ const OrderTracking = () => {
                     <p className="font-medium capitalize">{printifyOrder.printify_status.replace(/_/g, ' ')}</p>
                   </div>
                 )}
+              </div>
+            </Card>
+          )}
+
+          {/* Order Items with Mockups */}
+          {orderItems.length > 0 && (
+            <Card className="p-6">
+              <h2 className="text-lg font-bold mb-4">Order Items</h2>
+              <div className="space-y-4">
+                {orderItems.map((item) => {
+                  const productImage = item.products?.images?.[0]?.src || item.design_image_url;
+                  const displayImage = item.design_image_url || productImage;
+                  
+                  return (
+                    <div key={item.id} className="flex gap-4 p-4 bg-muted rounded-lg">
+                      {displayImage && (
+                        <div className="w-20 h-20 rounded-md overflow-hidden bg-background flex-shrink-0">
+                          <img 
+                            src={displayImage} 
+                            alt={item.products?.title || 'Order item'}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-medium">{item.products?.title || 'Custom Product'}</p>
+                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                        <p className="text-sm font-medium">${item.price.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
           )}
