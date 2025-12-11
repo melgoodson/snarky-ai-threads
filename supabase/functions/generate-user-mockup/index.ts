@@ -26,31 +26,42 @@ serve(async (req) => {
     
     console.log(`Generating mockup for ${productTitle} in color: ${color}`);
 
-    // Use Lovable AI to place the design onto the product
-    const prompt = `You are a professional product mockup designer. Create a realistic product mockup.
+    // Optimized prompt for accurate color, texture, and realistic mockup generation
+    const prompt = `Create a photorealistic product mockup for e-commerce.
 
-INPUTS:
-- FIRST IMAGE: The design/artwork to print on the product
-- SECOND IMAGE: Reference for the product TYPE and SHAPE only (ignore its color)
+PRODUCT SPECIFICATION:
+- Product: ${productTitle}
+- Color: ${color.toUpperCase()} (MANDATORY - override any reference image color)
 
-CRITICAL COLOR REQUIREMENT:
-The product MUST be ${color.toUpperCase()} colored. This is non-negotiable.
-- If the reference product image shows a different color, CHANGE IT to ${color}.
-- The final mockup MUST show a ${color} ${productTitle}.
-- DO NOT use the color from the reference image - use ${color} ONLY.
+IMAGE INPUTS:
+1. FIRST IMAGE = Design artwork to print (use EXACTLY as-is, no modifications)
+2. SECOND IMAGE = Product shape/style reference ONLY (IGNORE its color completely)
 
-DESIGN PLACEMENT:
-- Use the EXACT design from the first image without any modifications
-- Place it in the correct print area:
-  * T-shirts/Hoodies: Centered on the chest/front
-  * Mugs: Wrapped around the surface
-  * Tote bags: Centered on the front
-- Apply realistic perspective, shadows, and fabric texture
+MANDATORY COLOR RULE:
+Generate the ${productTitle} in ${color.toUpperCase()} fabric/material color.
+- Do NOT copy the color from the reference image
+- The entire product surface must be ${color}
+- This color will match what Printify produces
 
-OUTPUT:
-Generate a professional e-commerce quality mockup showing a ${color} ${productTitle} with the design printed on it.`;
+DESIGN APPLICATION:
+- Print area placement:
+  * T-shirts/Hoodies: Center chest, proportional to garment
+  * Mugs: Wrap naturally around cylindrical surface
+  * Tote bags: Center front panel
+  * Greeting cards: Center front face
+- Apply the design with realistic:
+  * Fabric texture (cotton weave for apparel, smooth for mugs)
+  * Natural wrinkles and folds where fabric bends
+  * Proper perspective distortion following the product contours
+  * Soft shadows where design meets fabric
 
+LIGHTING & REALISM:
+- Consistent soft studio lighting from upper-left
+- Subtle shadows under the product
+- Design should appear screen-printed/heat-transferred, not floating
+- Colors should integrate with the ${color} base naturally
 
+OUTPUT: Professional-quality mockup of a ${color} ${productTitle} with the exact design printed on it.`;
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
