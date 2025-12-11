@@ -12,12 +12,17 @@ serve(async (req) => {
   }
 
   try {
-    const { userImage, productImage } = await req.json();
+    const { userImage, productImage, productTitle, productColor } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    const color = productColor || "White";
+    const product = productTitle || "T-Shirt";
+
+    console.log(`Generating virtual try-on for ${product} in ${color}`);
 
     // Prepare images for the API
     const userImageData = userImage.startsWith("data:") 
@@ -29,6 +34,35 @@ serve(async (req) => {
       : productImage.startsWith("http")
       ? productImage
       : `data:image/png;base64,${productImage}`;
+
+    // Optimized prompt for virtual try-on with accurate color
+    const prompt = `Create a photorealistic virtual try-on image.
+
+INPUTS:
+- IMAGE A (FIRST): Photo of the person who will wear the product
+- IMAGE B (SECOND): ${product} with design printed on it (reference for design extraction only)
+
+TASK:
+Show the person from IMAGE A wearing a ${color.toUpperCase()} ${product} with the EXACT design from IMAGE B.
+
+CRITICAL COLOR RULE:
+- The ${product} MUST be ${color.toUpperCase()} colored
+- Do NOT use the garment color from IMAGE B - change it to ${color}
+- The fabric/material must appear as ${color}
+
+DESIGN EXTRACTION:
+- Extract ONLY the printed graphic/artwork from IMAGE B
+- Ignore the model/mannequin in IMAGE B completely
+- Preserve the design exactly as shown
+
+APPLICATION:
+- Place the extracted design on a ${color} ${product} worn by the person in IMAGE A
+- Center the design appropriately (chest for shirts/hoodies, front for bags)
+- Match perspective to the person's body position
+- Apply realistic fabric texture, wrinkles, and shadows
+- Blend lighting to match IMAGE A's environment
+
+OUTPUT: Professional photo of the person wearing a ${color} ${product} with the design.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -44,7 +78,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "IMAGE A: Person photo. IMAGE B: Product t-shirt that already has the FINAL DESIGN printed on it (may include a different model/body). STEP 1: From IMAGE B, precisely extract ONLY the graphic/print from the shirt (ignore the original model/body and background). STEP 2: Place that exact graphic onto a plain t-shirt worn by the person in IMAGE A, centered on the chest, matching perspective and lighting. The final image must look like a realistic photo of the person from IMAGE A wearing a t-shirt with that same design, with NO trace of the original model from IMAGE B.",
+                text: prompt,
               },
               {
                 type: "image_url",

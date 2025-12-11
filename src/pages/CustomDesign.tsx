@@ -305,13 +305,15 @@ export default function CustomDesign() {
         throw new Error("Failed to generate product mockup");
       }
 
-      // Then, show the product on the user
+      // Then, show the product on the user with correct color
       const { data: finalData, error: finalError } = await supabase.functions.invoke(
         "generate-mockup",
         {
           body: {
             userImage: userPhoto,
             productImage: productWithDesign,
+            productTitle: selectedProduct.title,
+            productColor: selectedColor, // Pass color for virtual try-on
           },
         }
       );
