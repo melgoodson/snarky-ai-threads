@@ -23,45 +23,69 @@ serve(async (req) => {
     }
 
     const color = productColor || 'White';
+    const product = productTitle || 'T-Shirt';
     
-    console.log(`Generating mockup for ${productTitle} in color: ${color}`);
+    console.log(`Generating Printify mockup for ${product} in color: ${color}`);
 
-    // Optimized prompt for accurate color, texture, and realistic mockup generation
-    const prompt = `Create a photorealistic product mockup for e-commerce.
+    // Determine print placement based on product type
+    const getPlacement = (productName: string) => {
+      const name = productName.toLowerCase();
+      if (name.includes('mug')) return 'wrapped around the cylindrical surface with natural curvature distortion';
+      if (name.includes('tote') || name.includes('bag')) return 'centered on the front panel';
+      if (name.includes('card') || name.includes('greeting')) return 'centered on the front face';
+      if (name.includes('hoodie')) return 'centered on the chest area, sized proportionally';
+      return 'centered on the chest, sized appropriately for the garment';
+    };
 
-PRODUCT SPECIFICATION:
-- Product: ${productTitle}
-- Color: ${color.toUpperCase()} (MANDATORY - override any reference image color)
+    const getTexture = (productName: string) => {
+      const name = productName.toLowerCase();
+      if (name.includes('mug')) return 'smooth ceramic with subtle gloss';
+      if (name.includes('tote') || name.includes('bag')) return 'canvas weave with slight texture';
+      if (name.includes('card')) return 'matte cardstock paper';
+      return 'cotton fabric with visible weave texture';
+    };
 
-IMAGE INPUTS:
-1. FIRST IMAGE = Design artwork to print (use EXACTLY as-is, no modifications)
-2. SECOND IMAGE = Product shape/style reference ONLY (IGNORE its color completely)
+    const placement = getPlacement(product);
+    const texture = getTexture(product);
 
-MANDATORY COLOR RULE:
-Generate the ${productTitle} in ${color.toUpperCase()} fabric/material color.
-- Do NOT copy the color from the reference image
-- The entire product surface must be ${color}
-- This color will match what Printify produces
+    // Optimized prompt for Printify-ready mockup generation
+    const prompt = `Generate a clean, professional e-commerce product mockup.
+
+PRODUCT SPECIFICATIONS:
+- Product Type: ${product}
+- Product Color: ${color.toUpperCase()} (MANDATORY - this is the exact color the customer ordered)
+- Material Texture: ${texture}
+
+INPUT IMAGES:
+1. FIRST IMAGE = Customer's design artwork (use EXACTLY as provided, no modifications)
+2. SECOND IMAGE = Product template/shape reference ONLY (IGNORE its color completely)
+
+CRITICAL REQUIREMENTS:
+
+COLOR ACCURACY:
+- Render the entire ${product} in ${color.toUpperCase()} color
+- Override any color from the reference template image
+- This color must match what Printify will produce
 
 DESIGN APPLICATION:
-- Print area placement:
-  * T-shirts/Hoodies: Center chest, proportional to garment
-  * Mugs: Wrap naturally around cylindrical surface
-  * Tote bags: Center front panel
-  * Greeting cards: Center front face
-- Apply the design with realistic:
-  * Fabric texture (cotton weave for apparel, smooth for mugs)
-  * Natural wrinkles and folds where fabric bends
-  * Proper perspective distortion following the product contours
-  * Soft shadows where design meets fabric
+- Print Placement: ${placement}
+- Transfer the design EXACTLY as shown - do not alter, crop, or resize disproportionately
+- Apply the design as if screen-printed or heat-transferred onto the ${color} surface
+- The design should follow the product's contours naturally
 
-LIGHTING & REALISM:
-- Consistent soft studio lighting from upper-left
-- Subtle shadows under the product
-- Design should appear screen-printed/heat-transferred, not floating
-- Colors should integrate with the ${color} base naturally
+REALISTIC BLENDING:
+- Apply subtle fabric/material texture over the design where it meets the ${color} surface
+- Add natural shadows where the design edges meet the product
+- Include realistic wrinkles/folds that affect both the product AND the design
+- Design ink should appear absorbed into the material, not floating on top
 
-OUTPUT: Professional-quality mockup of a ${color} ${productTitle} with the exact design printed on it.`;
+LIGHTING & SHADOWS:
+- Soft, even studio lighting from upper-left
+- Gentle drop shadow beneath the product
+- Highlights should be consistent across product and design
+- Colors should integrate naturally with the ${color} base
+
+FINAL OUTPUT: A photorealistic ${color} ${product} with the exact customer design cleanly printed on it, ready for e-commerce display and Printify fulfillment.`;
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
