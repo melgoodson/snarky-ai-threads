@@ -91,27 +91,6 @@ const Designs = () => {
             Choose from our collection or create your own custom design
           </p>
 
-          {/* Custom Design CTA */}
-          <Card className="mb-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-primary/20">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Create Your Own Design</h2>
-                  <p className="text-muted-foreground">Use AI to generate a unique custom design</p>
-                </div>
-              </div>
-              <Button 
-                size="lg" 
-                onClick={() => navigate('/custom-design')}
-                className="w-full md:w-auto"
-              >
-                Start Creating
-              </Button>
-            </CardContent>
-          </Card>
 
           {/* Your Designs Section */}
           {isLoggedIn && (
