@@ -10,8 +10,8 @@ export const Hero = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.1)_0%,transparent_70%)]" />
       </div>
 
-      <div className="relative z-10 container px-4 text-center">
-        <div className="max-w-3xl mx-auto space-y-8">
+      <div className="relative z-10 w-full flex justify-center px-4 text-center">
+        <div className="max-w-3xl w-full space-y-8">
           {/* Animated Logo */}
           <div className="flex justify-center mb-8">
             <video 

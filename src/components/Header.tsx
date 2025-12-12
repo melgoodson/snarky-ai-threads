@@ -60,12 +60,14 @@ export const Header = () => {
       </div>
 
       {/* Navigation Menu */}
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" className="md:hidden">
+      <div className="container flex h-16 items-center px-4">
+        <div className="flex items-center gap-6 md:hidden">
+          <Button variant="ghost" size="icon">
             <Menu className="h-5 w-5" />
           </Button>
         </div>
+        
+        <div className="flex-1 flex justify-center">
 
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/#products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -90,6 +92,7 @@ export const Header = () => {
             </Link>
           )}
         </nav>
+        </div>
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon">
