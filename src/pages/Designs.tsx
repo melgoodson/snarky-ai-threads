@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Sparkles, User } from "lucide-react";
+import { User, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Design {
@@ -81,6 +81,25 @@ const Designs = () => {
     }
   };
 
+  const handleDeleteDesign = async (e: React.MouseEvent, designId: string) => {
+    e.stopPropagation();
+    
+    try {
+      const { error } = await supabase
+        .from("ai_generated_images")
+        .delete()
+        .eq("id", designId);
+
+      if (error) throw error;
+
+      setUserDesigns(prev => prev.filter(d => d.id !== designId));
+      toast.success("Design deleted");
+    } catch (error) {
+      console.error("Error deleting design:", error);
+      toast.error("Failed to delete design");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -123,16 +142,24 @@ const Designs = () => {
                   {userDesigns.map((design) => (
                     <Card
                       key={design.id}
-                      className="cursor-pointer hover:shadow-lg transition-shadow group"
+                      className="cursor-pointer hover:shadow-lg transition-shadow group relative"
                       onClick={() => navigate('/custom-design', { state: { existingDesign: design } })}
                     >
                       <CardContent className="p-3">
-                        <div className="aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
+                        <div className="aspect-square bg-muted rounded-lg mb-2 overflow-hidden relative">
                           <img
                             src={design.image_url}
                             alt={design.prompt_text}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => handleDeleteDesign(e, design.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2">
                           {design.prompt_text}
