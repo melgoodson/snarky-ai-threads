@@ -234,6 +234,25 @@ export default function CustomDesign() {
 
       if (data?.image) {
         setGeneratedDesign(data.image);
+        
+        // Save generated design to ai_generated_images table
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        const { error: saveError } = await supabase
+          .from("ai_generated_images")
+          .insert({
+            image_url: data.image,
+            prompt_text: prompt.trim(),
+            user_id: user?.id || null,
+            selected: false,
+          });
+        
+        if (saveError) {
+          console.error("Error saving design:", saveError);
+        } else {
+          console.log("Design saved to Your Designs");
+        }
+        
         toast.success("Design generated! Review and approve to continue.");
         // Scroll to approval section after a brief delay
         setTimeout(() => {
