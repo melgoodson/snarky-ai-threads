@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,7 @@ const PRESET_DESIGNS = [
 
 export default function CustomDesign() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { addItem } = useCart();
   const [currentStep, setCurrentStep] = useState(1);
   
@@ -146,6 +147,17 @@ export default function CustomDesign() {
       });
   };
   const [creatingPrintifyProduct, setCreatingPrintifyProduct] = useState(false);
+
+  // Handle existing design from "Your Designs" section
+  useEffect(() => {
+    const existingDesign = location.state?.existingDesign;
+    if (existingDesign?.image_url) {
+      setGeneratedDesign(existingDesign.image_url);
+      setCustomPrompt(existingDesign.prompt_text || "");
+      setCurrentStep(2); // Skip to product selection
+      toast.success("Design loaded! Now choose a product.");
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (currentStep === 2) {
