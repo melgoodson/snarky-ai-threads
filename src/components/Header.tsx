@@ -71,9 +71,6 @@ export const Header = () => {
           <Link to="/#products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             SHOP
           </Link>
-          <Link to="/designs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            SHOP DESIGNS
-          </Link>
           <Link to="/custom-design" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             CUSTOMIZE
           </Link>
