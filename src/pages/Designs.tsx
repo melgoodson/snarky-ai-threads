@@ -5,6 +5,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface Design {
@@ -46,10 +48,34 @@ const Designs = () => {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">Our Designs</h1>
+          <h1 className="text-4xl font-bold mb-2">Shop Designs</h1>
           <p className="text-muted-foreground mb-8">
-            Choose your favorite design and print it on any of our 5 products
+            Choose from our collection or create your own custom design
           </p>
+
+          {/* Custom Design CTA */}
+          <Card className="mb-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+            <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/20">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Create Your Own Design</h2>
+                  <p className="text-muted-foreground">Use AI to generate a unique custom design</p>
+                </div>
+              </div>
+              <Button 
+                size="lg" 
+                onClick={() => navigate('/custom-design')}
+                className="w-full md:w-auto"
+              >
+                Start Creating
+              </Button>
+            </CardContent>
+          </Card>
+
+          <h2 className="text-2xl font-bold mb-4">Our Designs</h2>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

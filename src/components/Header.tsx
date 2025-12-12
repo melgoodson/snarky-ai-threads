@@ -72,10 +72,7 @@ export const Header = () => {
             SHOP
           </Link>
           <Link to="/designs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            DESIGNS
-          </Link>
-          <Link to="/custom-design" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            CUSTOMIZE
+            SHOP DESIGNS
           </Link>
           <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             BLOG
