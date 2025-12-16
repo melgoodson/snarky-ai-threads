@@ -1,9 +1,15 @@
-import { Search, Menu, Shield, User } from "lucide-react";
+import { Search, Menu, Shield, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Cart } from "@/components/Cart";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 
 export const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -46,6 +52,56 @@ export const Header = () => {
     }
   };
 
+  const NavLinks = ({ onClose }: { onClose?: () => void }) => (
+    <>
+      <Link 
+        to="/#products" 
+        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        onClick={onClose}
+      >
+        SHOP
+      </Link>
+      <Link 
+        to="/custom-design" 
+        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        onClick={onClose}
+      >
+        CUSTOMIZE
+      </Link>
+      <Link 
+        to="/blog" 
+        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        onClick={onClose}
+      >
+        BLOG
+      </Link>
+      <Link 
+        to="/faq" 
+        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        onClick={onClose}
+      >
+        FAQ
+      </Link>
+      <Link 
+        to="/about" 
+        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        onClick={onClose}
+      >
+        ABOUT
+      </Link>
+      {isAdmin && (
+        <Link 
+          to="/admin" 
+          className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+          onClick={onClose}
+        >
+          <Shield className="h-4 w-4" />
+          ADMIN
+        </Link>
+      )}
+    </>
+  );
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       {/* Top Banner */}
@@ -60,36 +116,41 @@ export const Header = () => {
       </div>
 
       {/* Navigation Menu */}
-      <div className="container relative flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-6 md:hidden">
-          <Button variant="ghost" size="icon">
-            <Menu className="h-5 w-5" />
-          </Button>
+      <div className="container flex h-16 items-center justify-between px-4">
+        {/* Mobile Menu */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 bg-background">
+              <nav className="flex flex-col gap-4 mt-8">
+                <NavLinks />
+              </nav>
+              <div className="mt-8 pt-4 border-t border-border">
+                {isLoggedIn ? (
+                  <Link to="/profile" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                    <User className="h-4 w-4" />
+                    Profile
+                  </Link>
+                ) : (
+                  <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                    Sign In
+                  </Link>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
-        <div className="hidden md:block" /> {/* Spacer for desktop */}
         
-        <nav className="hidden md:flex items-center gap-6 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <Link to="/#products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            SHOP
-          </Link>
-          <Link to="/custom-design" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            CUSTOMIZE
-          </Link>
-          <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            BLOG
-          </Link>
-          <Link to="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            FAQ
-          </Link>
-          <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            ABOUT
-          </Link>
-          {isAdmin && (
-            <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-              <Shield className="h-4 w-4" />
-              ADMIN
-            </Link>
-          )}
+        {/* Desktop spacer */}
+        <div className="hidden md:block w-[100px]" />
+        
+        {/* Desktop Navigation - centered */}
+        <nav className="hidden md:flex items-center justify-center gap-6 flex-1">
+          <NavLinks />
         </nav>
 
         <div className="flex items-center gap-2">
@@ -97,16 +158,18 @@ export const Header = () => {
             <Search className="h-5 w-5" />
           </Button>
           <Cart />
-          {isLoggedIn ? (
-            <Button variant="outline" onClick={() => window.location.href = '/profile'}>
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={() => window.location.href = '/auth'}>
-              Sign In
-            </Button>
-          )}
+          <div className="hidden md:block">
+            {isLoggedIn ? (
+              <Button variant="outline" onClick={() => window.location.href = '/profile'}>
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => window.location.href = '/auth'}>
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </header>
