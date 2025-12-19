@@ -50,21 +50,25 @@ const PRESET_DESIGNS = [
   {
     id: 1,
     name: "Abstract Art",
+    description: "Bold shapes & vibrant colors",
     prompt: "Create a vibrant abstract art design with colorful geometric shapes and flowing patterns, perfect for print on demand products. Modern and eye-catching.",
   },
   {
     id: 2,
     name: "Nature Scene",
+    description: "Mountains, forests & sunsets",
     prompt: "Create a beautiful nature scene with mountains, forests, and a sunset sky. Serene and peaceful design suitable for apparel and home decor.",
   },
   {
     id: 3,
     name: "Minimalist Typography",
+    description: "Clean quotes & modern fonts",
     prompt: "Create a minimalist typography design with inspiring quote and clean modern fonts. Simple, elegant, and timeless.",
   },
   {
     id: 4,
     name: "Retro Vibes",
+    description: "80s aesthetic & neon colors",
     prompt: "Create a retro vintage style design with 80s aesthetic, bold colors, and nostalgic elements. Fun and energetic.",
   },
 ];
@@ -597,6 +601,7 @@ export default function CustomDesign() {
                       >
                         <Palette className="h-6 w-6 text-primary mb-2" />
                         <p className="font-medium text-sm">{preset.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{preset.description}</p>
                       </button>
                     ))}
                   </div>
