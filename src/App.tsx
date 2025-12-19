@@ -7,6 +7,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
+import Collections from "./pages/Collections";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import FAQ from "./pages/FAQ";
@@ -44,6 +45,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/collections" element={<Collections />} />
             <Route path="/designs" element={<Designs />} />
             <Route path="/designs/:id" element={<DesignDetail />} />
             <Route path="/blog" element={<Blog />} />

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Cart } from "@/components/Cart";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 
 export const Header = () => {
+  const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -160,12 +161,12 @@ export const Header = () => {
           <Cart />
           <div className="hidden md:block">
             {isLoggedIn ? (
-              <Button variant="outline" onClick={() => window.location.href = '/profile'}>
+              <Button variant="outline" onClick={() => navigate('/profile')}>
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </Button>
             ) : (
-              <Button variant="outline" onClick={() => window.location.href = '/auth'}>
+              <Button variant="outline" onClick={() => navigate('/auth')}>
                 Sign In
               </Button>
             )}
