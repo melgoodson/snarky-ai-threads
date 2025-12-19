@@ -109,7 +109,7 @@ const DesignDetail = () => {
     const colors = new Set<string>();
     
     enabledVariants.forEach((variant: any) => {
-      const [size, color] = variant.title.split(' / ');
+      const [color, size] = variant.title.split(' / ');
       if (size) sizes.add(size.trim());
       if (color) colors.add(color.trim());
     });
@@ -127,7 +127,7 @@ const DesignDetail = () => {
     
     const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
     return enabledVariants.find((v: any) => {
-      const [variantSize, variantColor] = v.title.split(' / ');
+      const [variantColor, variantSize] = v.title.split(' / ');
       return variantSize?.trim() === size && variantColor?.trim() === color;
     });
   };
