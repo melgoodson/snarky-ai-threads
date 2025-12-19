@@ -487,7 +487,7 @@ export default function CustomDesign() {
       const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
       const selectedSize = extractSizeFromVariant(selectedVariant.title);
       const selectedColor = extractColorFromVariant(selectedVariant.title);
-      const displayImage = customProductData.mockupImageUrl || mockupPreview;
+      const displayImage = mockupPreview || customProductData.mockupImageUrl;
 
       // Add items to cart based on quantity
       for (let i = 0; i < quantity; i++) {
