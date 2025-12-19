@@ -6,6 +6,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Product-specific integration settings for virtual try-on
+const PRODUCT_INTEGRATION = {
+  tee: {
+    placement: 'centered on chest, 10-12 inches wide',
+    warp: 'subtle chest curvature, follows torso contour',
+    texture: 'cotton jersey - visible weave, soft shadows in folds'
+  },
+  hoodie: {
+    placement: 'centered on chest, 8-10 inches wide',
+    warp: 'thicker material with more pronounced folds',
+    texture: 'fleece - fuzzy surface, deeper shadows in creases'
+  },
+  mug: {
+    placement: 'wrapped around cylinder',
+    warp: 'cylindrical distortion - compressed at edges',
+    texture: 'glossy ceramic with reflections'
+  },
+  tote: {
+    placement: 'centered on flat front panel',
+    warp: 'minimal - mostly flat with slight drape',
+    texture: 'canvas weave visible through design'
+  }
+};
+
+function getProductType(title: string) {
+  const lower = title.toLowerCase();
+  if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
+  if (lower.includes('mug')) return 'mug';
+  if (lower.includes('tote') || lower.includes('bag')) return 'tote';
+  return 'tee';
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,8 +53,11 @@ serve(async (req) => {
 
     const color = productColor || "White";
     const product = productTitle || "T-Shirt";
+    const productType = getProductType(product);
+    const config = PRODUCT_INTEGRATION[productType] || PRODUCT_INTEGRATION.tee;
 
     console.log(`Generating virtual try-on for ${product} in ${color}`);
+    console.log('Product config:', config);
 
     // Prepare images for the API
     const userImageData = userImage.startsWith("data:") 
@@ -35,34 +70,54 @@ serve(async (req) => {
       ? productImage
       : `data:image/png;base64,${productImage}`;
 
-    // Optimized prompt for virtual try-on with accurate color
-    const prompt = `Create a photorealistic virtual try-on image.
+    // Enhanced prompt for photorealistic virtual try-on with proper integration
+    const prompt = `Create a PHOTOREALISTIC virtual try-on image with the design NATURALLY INTEGRATED into the garment.
 
-INPUTS:
-- IMAGE A (FIRST): Photo of the person who will wear the product
-- IMAGE B (SECOND): ${product} with design printed on it (reference for design extraction only)
+=== INPUTS ===
+• IMAGE A (FIRST): Photo of the person wearing the product
+• IMAGE B (SECOND): ${product} mockup - extract the DESIGN ONLY from this
 
-TASK:
-Show the person from IMAGE A wearing a ${color.toUpperCase()} ${product} with the EXACT design from IMAGE B.
+=== TASK ===
+Show the person from IMAGE A wearing a ${color.toUpperCase()} ${product} with the EXACT design from IMAGE B printed on it.
 
-CRITICAL COLOR RULE:
-- The ${product} MUST be ${color.toUpperCase()} colored
-- Do NOT use the garment color from IMAGE B - change it to ${color}
-- The fabric/material must appear as ${color}
+=== CRITICAL: NATURAL DESIGN INTEGRATION ===
 
-DESIGN EXTRACTION:
-- Extract ONLY the printed graphic/artwork from IMAGE B
-- Ignore the model/mannequin in IMAGE B completely
-- Preserve the design exactly as shown
+COLOR ACCURACY:
+• The ${product} MUST be ${color.toUpperCase()} color
+• IGNORE the garment color from IMAGE B - use ${color} instead
+• Fabric must appear as ${color} with proper shading
 
-APPLICATION:
-- Place the extracted design on a ${color} ${product} worn by the person in IMAGE A
-- Center the design appropriately (chest for shirts/hoodies, front for bags)
-- Match perspective to the person's body position
-- Apply realistic fabric texture, wrinkles, and shadows
-- Blend lighting to match IMAGE A's environment
+DESIGN EXTRACTION & APPLICATION:
+• Extract ONLY the graphic/artwork from IMAGE B (ignore model/mannequin)
+• Preserve the design EXACTLY - no alterations, cropping, or distortion
+• Placement: ${config.placement}
 
-OUTPUT: Professional photo of the person wearing a ${color} ${product} with the design.`;
+PERSPECTIVE & WARP:
+• ${config.warp}
+• Design must follow the person's body contours in IMAGE A
+• Apply proper perspective transformation to match pose
+• Design edges follow fabric curves precisely
+
+MATERIAL INTEGRATION:
+• ${config.texture}
+• Design should appear PRINTED on fabric - NOT pasted/floating
+• Fabric texture must be slightly visible THROUGH lighter design areas
+• Design edges should have subtle softening where ink meets fabric
+
+REALISTIC EFFECTS:
+• Wrinkles and folds in IMAGE A's clothing MUST distort the design
+• Design dips into creases and rises over bumps
+• Shadows on fabric should darken the design proportionally
+• Highlighted areas brighten the design naturally
+
+LIGHTING MATCH:
+• Match the lighting from IMAGE A exactly
+• Design receives same shadows/highlights as surrounding fabric
+• Maintain IMAGE A's environment and ambiance
+• Natural shadow under person consistent with scene
+
+=== OUTPUT ===
+A completely photorealistic image where the person from IMAGE A is wearing a ${color} ${product} with the design naturally printed on it - indistinguishable from a real photo.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -133,10 +188,11 @@ OUTPUT: Professional photo of the person wearing a ${color} ${product} with the 
     const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!generatedImage) {
+      console.error("No image in response:", JSON.stringify(data, null, 2));
       throw new Error("No image generated");
     }
 
-    console.log("Mockup generated successfully");
+    console.log("Virtual try-on mockup generated successfully");
 
     return new Response(
       JSON.stringify({ image: generatedImage }),
