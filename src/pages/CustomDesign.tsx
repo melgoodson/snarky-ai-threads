@@ -568,39 +568,14 @@ export default function CustomDesign() {
             <section className="space-y-8">
               <div className="text-center">
                 <h2 className="text-3xl font-black text-foreground mb-2">Step 1: Create Your Design</h2>
-                <p className="text-muted-foreground">Upload an existing design or create one with AI</p>
+                <p className="text-muted-foreground">Generate a design with AI or upload your own</p>
               </div>
-
-              {/* Upload Design Option */}
-              <Card className="max-w-2xl mx-auto p-8">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Upload className="h-5 w-5 text-primary" />
-                  Option A: Upload Your Design
-                </h3>
-                <label className="flex flex-col items-center justify-center min-h-[200px] cursor-pointer hover:bg-secondary/50 transition-colors border-2 border-dashed border-border rounded-lg">
-                  <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                  <span className="text-lg font-semibold text-foreground mb-2">
-                    Click to Upload
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    PNG, JPG, or SVG - max 10MB
-                  </span>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleDesignUpload}
-                    className="hidden"
-                  />
-                </label>
-              </Card>
-
-              <div className="text-center text-muted-foreground font-medium">— OR —</div>
 
               {/* AI Design Creation */}
               <Card className="max-w-3xl mx-auto p-8">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  Option B: Generate with AI
+                  Option A: Generate with AI
                 </h3>
 
                 {/* Presets */}
@@ -683,6 +658,31 @@ export default function CustomDesign() {
                     </>
                   )}
                 </Button>
+              </Card>
+
+              <div className="text-center text-muted-foreground font-medium">— OR —</div>
+
+              {/* Upload Design Option */}
+              <Card className="max-w-2xl mx-auto p-8">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-primary" />
+                  Option B: Upload Your Design
+                </h3>
+                <label className="flex flex-col items-center justify-center min-h-[200px] cursor-pointer hover:bg-secondary/50 transition-colors border-2 border-dashed border-border rounded-lg">
+                  <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                  <span className="text-lg font-semibold text-foreground mb-2">
+                    Click to Upload
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    PNG, JPG, or SVG - max 10MB
+                  </span>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDesignUpload}
+                    className="hidden"
+                  />
+                </label>
               </Card>
             </section>
           )}
