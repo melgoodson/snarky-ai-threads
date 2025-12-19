@@ -708,13 +708,6 @@ export default function CustomDesign() {
                     className="w-full rounded-lg border border-border"
                   />
                   
-                  {designDraft.promptText && designDraft.promptText !== "Uploaded design" && (
-                    <div className="bg-muted/50 p-4 rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold">Prompt:</span> {designDraft.promptText}
-                      </p>
-                    </div>
-                  )}
 
                   <div className="flex gap-4 justify-center">
                     <Button size="lg" onClick={approveDesign} className="min-w-[180px]">
