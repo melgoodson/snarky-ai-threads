@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, Check, Sparkles, Palette } from "lucide-react";
+import { Loader2, Upload, Check, Sparkles, Palette, Edit, ShoppingCart, Camera, Minus, Plus } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 
 interface Variant {
@@ -34,6 +34,18 @@ interface Product {
   variants: Variant[];
 }
 
+interface DesignDraft {
+  imageUrl: string;
+  promptText: string;
+  createdAt: Date;
+}
+
+interface ApprovedDesign {
+  imageUrl: string;
+  promptText: string;
+  approvedAt: Date;
+}
+
 const PRESET_DESIGNS = [
   {
     id: 1,
@@ -57,86 +69,87 @@ const PRESET_DESIGNS = [
   },
 ];
 
+// Flow Steps
+type FlowStep = 'create' | 'approve' | 'product' | 'mockup' | 'review';
+
 export default function CustomDesign() {
   const navigate = useNavigate();
   const location = useLocation();
   const { addItem } = useCart();
-  const [currentStep, setCurrentStep] = useState(1);
   
-  // Step 1: Design
+  // Flow state
+  const [currentStep, setCurrentStep] = useState<FlowStep>('create');
+  
+  // Step 1: Create Design
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [uploadedDesign, setUploadedDesign] = useState<string | null>(null);
   const [generatingDesign, setGeneratingDesign] = useState(false);
-  const [generatedDesign, setGeneratedDesign] = useState<string | null>(null);
+  const [designDraft, setDesignDraft] = useState<DesignDraft | null>(null);
   
-  // Step 2: Product
+  // Step 2: Approved Design
+  const [approvedDesign, setApprovedDesign] = useState<ApprovedDesign | null>(null);
+  
+  // Step 3: Product Selection
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const [quantity, setQuantity] = useState(1);
   
-  // Step 3: User Photo
-  const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  
-  // Step 4: Final Mockup
+  // Step 4 & 5: Mockup
   const [generatingMockup, setGeneratingMockup] = useState(false);
-  const [finalMockup, setFinalMockup] = useState<string | null>(null);
+  const [mockupPreview, setMockupPreview] = useState<string | null>(null);
+  
+  // Virtual Try-On
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [tryOnMockup, setTryOnMockup] = useState<string | null>(null);
+  const [generatingTryOn, setGeneratingTryOn] = useState(false);
+  
+  // Checkout
+  const [creatingPrintifyProduct, setCreatingPrintifyProduct] = useState(false);
 
-  // Known size values in order (exact match)
+  // Size ordering
   const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11OZ', '15OZ'];
   
-  // Helper to check if a string is a size
   const isSize = (str: string): boolean => {
     const normalized = str.trim().toUpperCase();
     return SIZE_ORDER.includes(normalized);
   };
 
-  // Helper to get size order index
   const getSizeOrderIndex = (size: string): number => {
     const normalized = size.trim().toUpperCase();
     const index = SIZE_ORDER.indexOf(normalized);
     return index === -1 ? 999 : index;
   };
 
-  // Helper to extract color from variant title (e.g., "White / M" -> "White", "15oz / Black" -> "Black")
   const extractColorFromVariant = (variantTitle: string): string => {
     const parts = variantTitle.split('/').map(p => p.trim());
     if (parts.length === 2) {
-      if (isSize(parts[0])) {
-        return parts[1];
-      }
-      if (isSize(parts[1])) {
-        return parts[0];
-      }
+      if (isSize(parts[0])) return parts[1];
+      if (isSize(parts[1])) return parts[0];
       return parts[0];
     }
     return variantTitle;
   };
 
-  // Helper to extract size from variant title
   const extractSizeFromVariant = (variantTitle: string): string => {
     const parts = variantTitle.split('/').map(p => p.trim());
     if (parts.length === 2) {
-      if (isSize(parts[0])) {
-        return parts[0];
-      }
-      if (isSize(parts[1])) {
-        return parts[1];
-      }
+      if (isSize(parts[0])) return parts[0];
+      if (isSize(parts[1])) return parts[1];
       return parts[1];
     }
     return 'M';
   };
 
-  // Get unique colors from variants
   const getUniqueColors = (variants: Variant[]): string[] => {
     const enabledVariants = variants.filter(v => v.is_enabled);
     const colors = enabledVariants.map(v => extractColorFromVariant(v.title));
     return [...new Set(colors)];
   };
 
-  // Get unique sizes from variants for a given color, sorted by size order
   const getSizesForColor = (variants: Variant[], color: string): Variant[] => {
     return variants
       .filter(v => v.is_enabled && extractColorFromVariant(v.title) === color)
@@ -146,24 +159,34 @@ export default function CustomDesign() {
         return getSizeOrderIndex(sizeA) - getSizeOrderIndex(sizeB);
       });
   };
-  const [creatingPrintifyProduct, setCreatingPrintifyProduct] = useState(false);
 
-  // Handle existing design from "Your Designs" section
+  // Handle existing design from navigation state
   useEffect(() => {
     const existingDesign = location.state?.existingDesign;
     if (existingDesign?.image_url) {
-      setGeneratedDesign(existingDesign.image_url);
-      setCustomPrompt(existingDesign.prompt_text || "");
-      setCurrentStep(2); // Skip to product selection
-      toast.success("Design loaded! Now choose a product.");
+      setDesignDraft({
+        imageUrl: existingDesign.image_url,
+        promptText: existingDesign.prompt_text || "",
+        createdAt: new Date(),
+      });
+      setCurrentStep('approve');
+      toast.success("Design loaded! Review and approve to continue.");
     }
   }, [location.state]);
 
+  // Fetch products when entering product step
   useEffect(() => {
-    if (currentStep === 2) {
+    if (currentStep === 'product') {
       fetchProducts();
     }
   }, [currentStep]);
+
+  // Auto-generate mockup when product is selected
+  useEffect(() => {
+    if (currentStep === 'mockup' && approvedDesign && selectedProduct && selectedVariant && !mockupPreview) {
+      generateMockup();
+    }
+  }, [currentStep, approvedDesign, selectedProduct, selectedVariant]);
 
   const fetchProducts = async () => {
     setLoadingProducts(true);
@@ -206,6 +229,30 @@ export default function CustomDesign() {
     }
   };
 
+  const handleDesignUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string;
+      setUploadedDesign(imageUrl);
+      setDesignDraft({
+        imageUrl,
+        promptText: "Uploaded design",
+        createdAt: new Date(),
+      });
+      toast.success("Design uploaded! Review and approve to continue.");
+      setCurrentStep('approve');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleReferenceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -245,34 +292,23 @@ export default function CustomDesign() {
       if (error) throw error;
 
       if (data?.image) {
-        setGeneratedDesign(data.image);
-        
-        // Save generated design to ai_generated_images table
+        // Save to database
         const { data: { user } } = await supabase.auth.getUser();
-        
-        const { error: saveError } = await supabase
-          .from("ai_generated_images")
-          .insert({
-            image_url: data.image,
-            prompt_text: prompt.trim(),
-            user_id: user?.id || null,
-            selected: false,
-          });
-        
-        if (saveError) {
-          console.error("Error saving design:", saveError);
-        } else {
-          console.log("Design saved to Your Designs");
-        }
+        await supabase.from("ai_generated_images").insert({
+          image_url: data.image,
+          prompt_text: prompt.trim(),
+          user_id: user?.id || null,
+          selected: false,
+        });
+
+        setDesignDraft({
+          imageUrl: data.image,
+          promptText: prompt.trim(),
+          createdAt: new Date(),
+        });
         
         toast.success("Design generated! Review and approve to continue.");
-        // Scroll to approval section after a brief delay
-        setTimeout(() => {
-          const approvalSection = document.getElementById('design-approval');
-          if (approvalSection) {
-            approvalSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 300);
+        setCurrentStep('approve');
       } else {
         throw new Error("No design image returned");
       }
@@ -281,6 +317,59 @@ export default function CustomDesign() {
       toast.error(error.message || "Failed to generate design");
     } finally {
       setGeneratingDesign(false);
+    }
+  };
+
+  const approveDesign = () => {
+    if (!designDraft) return;
+    
+    setApprovedDesign({
+      imageUrl: designDraft.imageUrl,
+      promptText: designDraft.promptText,
+      approvedAt: new Date(),
+    });
+    
+    toast.success("Design approved! Now choose a product.");
+    setCurrentStep('product');
+  };
+
+  const editDesign = () => {
+    setDesignDraft(null);
+    setUploadedDesign(null);
+    setCurrentStep('create');
+    toast.info("Edit your design");
+  };
+
+  const generateMockup = async () => {
+    if (!approvedDesign || !selectedProduct || !selectedVariant) return;
+
+    const selectedColor = extractColorFromVariant(selectedVariant.title);
+
+    setGeneratingMockup(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-user-mockup", {
+        body: {
+          userImage: approvedDesign.imageUrl,
+          productImage: selectedProduct.template_image_url,
+          productTitle: selectedProduct.title,
+          productColor: selectedColor,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.mockupUrl) {
+        setMockupPreview(data.mockupUrl);
+        toast.success("Mockup generated!");
+        setCurrentStep('review');
+      } else {
+        throw new Error("Failed to generate mockup");
+      }
+    } catch (error: any) {
+      console.error("Mockup generation error:", error);
+      toast.error(error.message || "Failed to generate mockup");
+    } finally {
+      setGeneratingMockup(false);
     }
   };
 
@@ -296,200 +385,113 @@ export default function CustomDesign() {
     const reader = new FileReader();
     reader.onload = (event) => {
       setUserPhoto(event.target?.result as string);
-      toast.success("Photo uploaded!");
-      setCurrentStep(4);
+      toast.success("Photo uploaded! Generating try-on...");
+      generateTryOnMockup(event.target?.result as string);
     };
     reader.readAsDataURL(file);
   };
 
-  const generateFinalMockup = async () => {
-    if (!generatedDesign || !selectedProduct) {
-      toast.error("Missing required data for mockup generation");
-      return;
-    }
+  const generateTryOnMockup = async (photo: string) => {
+    if (!mockupPreview || !selectedProduct || !selectedVariant) return;
 
-    // Get the selected color from variant, or default
-    const selectedColor = selectedVariant 
-      ? extractColorFromVariant(selectedVariant.title) 
-      : 'White';
+    const selectedColor = extractColorFromVariant(selectedVariant.title);
 
-    setGeneratingMockup(true);
+    setGeneratingTryOn(true);
     try {
-      // First, composite the design onto the product with the correct color
-      const { data: productMockupData, error: productError } = await supabase.functions.invoke(
-        "generate-user-mockup",
-        {
-          body: {
-            userImage: generatedDesign,
-            productImage: selectedProduct.template_image_url,
-            productTitle: selectedProduct.title,
-            productColor: selectedColor,
-          },
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("generate-mockup", {
+        body: {
+          userImage: photo,
+          productImage: mockupPreview,
+          productTitle: selectedProduct.title,
+          productColor: selectedColor,
+        },
+      });
 
-      if (productError) throw productError;
+      if (error) throw error;
 
-      const productWithDesign = productMockupData?.mockupUrl;
-
-      if (!productWithDesign) {
-        throw new Error("Failed to generate product mockup");
-      }
-
-      // If user uploaded a photo, show product on them; otherwise just show the product mockup
-      if (userPhoto) {
-        const { data: finalData, error: finalError } = await supabase.functions.invoke(
-          "generate-mockup",
-          {
-            body: {
-              userImage: userPhoto,
-              productImage: productWithDesign,
-              productTitle: selectedProduct.title,
-              productColor: selectedColor,
-            },
-          }
-        );
-
-        if (finalError) throw finalError;
-
-        if (finalData?.image) {
-          setFinalMockup(finalData.image);
-          toast.success("Mockup generated! See how it looks on you!");
-        } else {
-          throw new Error("No mockup image returned");
-        }
+      if (data?.image) {
+        setTryOnMockup(data.image);
+        toast.success("Virtual try-on generated!");
       } else {
-        // No user photo - just use the product mockup with design
-        setFinalMockup(productWithDesign);
-        toast.success("Product mockup generated!");
+        throw new Error("Failed to generate try-on");
       }
     } catch (error: any) {
-      console.error("Mockup generation error:", error);
-      toast.error(error.message || "Failed to generate mockup");
+      console.error("Try-on generation error:", error);
+      toast.error(error.message || "Failed to generate try-on");
     } finally {
-      setGeneratingMockup(false);
+      setGeneratingTryOn(false);
     }
   };
 
   const proceedToCheckout = async () => {
-    console.log("Proceed to checkout clicked");
-    console.log("Selected Product:", selectedProduct);
-    console.log("Selected Variant:", selectedVariant);
-    console.log("Generated Design:", generatedDesign);
-    console.log("Final Mockup:", finalMockup);
-    
-    if (!selectedProduct || !generatedDesign) {
-      console.error("Missing required data for checkout");
+    if (!selectedProduct || !approvedDesign || !selectedVariant || !mockupPreview) {
       toast.error("Please complete all steps before checkout");
       return;
     }
 
-    if (!selectedVariant) {
-      console.error("No variant selected");
-      toast.error("Please select a color and size for your product");
-      return;
-    }
-
-    // Helper to extract URL string from various formats
-    const extractUrl = (value: any): string => {
-      if (!value) return '';
-      if (typeof value === 'string') {
-        if (value.startsWith('data:')) return ''; // Skip data URLs for storage keys
-        return value;
-      }
-      if (typeof value === 'object') {
-        return value.src || value.url || value.image_url || '';
-      }
-      return '';
-    };
-
     setCreatingPrintifyProduct(true);
-    toast.info("Creating your custom product in Printify...");
+    toast.info("Creating your custom product...");
 
     try {
-      // Step 1: Create custom Printify product with the design and selected variant
       const { data: customProductData, error: customProductError } = await supabase.functions.invoke(
         "create-custom-printify-product",
         {
           body: {
-            designImageUrl: generatedDesign, // Send the design (can be base64 or URL)
+            designImageUrl: approvedDesign.imageUrl,
             baseProductId: selectedProduct.id,
-            variantId: selectedVariant.id, // Pass the selected variant ID
+            variantId: selectedVariant.id,
             customTitle: `Custom ${selectedProduct.title}`,
-            productColor: extractColorFromVariant(selectedVariant.title), // Pass color for mockup
+            productColor: extractColorFromVariant(selectedVariant.title),
           },
         }
       );
 
-      if (customProductError) {
-        throw customProductError;
-      }
-
+      if (customProductError) throw customProductError;
       if (!customProductData?.success || !customProductData?.printifyProductId) {
         throw new Error(customProductData?.error || "Failed to create custom product");
       }
 
-      console.log("Custom Printify product created:", customProductData);
-      toast.success("Custom product created successfully!");
-
-      const productImageRaw = selectedProduct.images && selectedProduct.images.length > 0 
-        ? selectedProduct.images[0] 
-        : finalMockup;
-      
-      const productImageUrl = extractUrl(productImageRaw);
-      const generatedDesignUrl = extractUrl(generatedDesign);
-      const finalMockupUrl = extractUrl(finalMockup);
-
-      // Use the Printify mockup image if available, otherwise fall back to our generated mockup
-      const displayImage = customProductData.mockupImageUrl || finalMockupUrl || productImageUrl;
+      toast.success("Custom product created!");
 
       const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
-      const selectedSize = selectedVariant ? extractSizeFromVariant(selectedVariant.title) : 'M';
-      const selectedColor = selectedVariant ? extractColorFromVariant(selectedVariant.title) : 'White';
-      
-      const customDesignData = {
-        productId: selectedProduct.id,
-        title: `Custom ${selectedProduct.title} - ${selectedColor}`,
-        price: basePrice,
-        size: selectedSize,
-        color: selectedColor,
-        variantId: selectedVariant?.id,
-        image: displayImage,
-        mockupUrl: customProductData.mockupImageUrl || finalMockupUrl,
-        artworkUrl: generatedDesignUrl,
-        designImageUrl: customProductData.uploadedImagePreview || generatedDesignUrl,
-        // Use the NEW custom Printify product ID for orders
-        printifyProductId: customProductData.printifyProductId,
-        isCustomProduct: true,
-      };
-      
-      console.log("Storing custom design data:", customDesignData);
-      try {
-        localStorage.setItem("customDesign", JSON.stringify(customDesignData));
-      } catch (e) {
-        console.warn('Failed to save customDesign to localStorage:', e);
+      const selectedSize = extractSizeFromVariant(selectedVariant.title);
+      const selectedColor = extractColorFromVariant(selectedVariant.title);
+      const displayImage = customProductData.mockupImageUrl || mockupPreview;
+
+      // Add items to cart based on quantity
+      for (let i = 0; i < quantity; i++) {
+        addItem({
+          productId: selectedProduct.id,
+          title: `Custom ${selectedProduct.title} - ${selectedColor}`,
+          price: basePrice,
+          size: selectedSize,
+          image: displayImage,
+          printifyProductId: customProductData.printifyProductId,
+          variantId: String(selectedVariant.id),
+          designImageUrl: customProductData.uploadedImagePreview || approvedDesign.imageUrl,
+        });
       }
-      
-      addItem({
-        productId: selectedProduct.id,
-        title: `Custom ${selectedProduct.title} - ${selectedColor}`,
-        price: basePrice,
-        size: selectedSize,
-        image: displayImage,
-        // Use the NEW custom Printify product ID
-        printifyProductId: customProductData.printifyProductId,
-        variantId: String(selectedVariant?.id),
-        designImageUrl: customProductData.uploadedImagePreview || generatedDesignUrl,
-      });
-      
-      console.log("Added to cart with custom Printify product:", customProductData.printifyProductId);
+
       navigate("/checkout");
     } catch (error: any) {
-      console.error("Error creating custom Printify product:", error);
-      toast.error(error.message || "Failed to create custom product. Please try again.");
+      console.error("Error creating custom product:", error);
+      toast.error(error.message || "Failed to create custom product");
     } finally {
       setCreatingPrintifyProduct(false);
     }
+  };
+
+  const getStepNumber = (step: FlowStep): number => {
+    const steps: FlowStep[] = ['create', 'approve', 'product', 'mockup', 'review'];
+    return steps.indexOf(step) + 1;
+  };
+
+  const stepLabels = {
+    create: 'Create Design',
+    approve: 'Approve Design',
+    product: 'Choose Product',
+    mockup: 'Create Mockup',
+    review: 'Review & Order',
   };
 
   return (
@@ -497,288 +499,221 @@ export default function CustomDesign() {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto space-y-12">
-          {/* How It Works Guide */}
+          {/* Header */}
           <Card className="max-w-4xl mx-auto p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
             <div className="text-center space-y-4">
               <h1 className="text-4xl font-black text-foreground">Create Your Custom Product</h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Follow these 4 simple steps to bring your unique design to life. Whether you're a beginner or a pro, we'll guide you through the entire process!
+                Design, preview, and order your unique custom merchandise in just a few steps.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8 text-sm">
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mx-auto">1</div>
-                  <h4 className="font-bold">Create Design</h4>
-                  <p className="text-muted-foreground text-xs">Choose preset or describe your own</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold mx-auto">2</div>
-                  <h4 className="font-bold">Pick Product</h4>
-                  <p className="text-muted-foreground text-xs">Select what to print on</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold mx-auto">3</div>
-                  <h4 className="font-bold">Upload Photo</h4>
-                  <p className="text-muted-foreground text-xs">See it on yourself</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold mx-auto">4</div>
-                  <h4 className="font-bold">Review & Buy</h4>
-                  <p className="text-muted-foreground text-xs">Finalize and checkout</p>
-                </div>
-              </div>
             </div>
           </Card>
 
-          {/* Progress indicator */}
-          <div className="flex justify-center items-center gap-4">
-            {[1, 2, 3, 4].map((step) => (
+          {/* Progress Steps */}
+          <div className="flex justify-center items-center gap-2 flex-wrap">
+            {(['create', 'approve', 'product', 'mockup', 'review'] as FlowStep[]).map((step, index) => (
               <div key={step} className="flex items-center gap-2">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                    currentStep >= step
+                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                    getStepNumber(currentStep) >= index + 1
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {step}
+                  {index + 1}
                 </div>
-                {step < 4 && (
-                  <div
-                    className={`w-12 h-1 ${
-                      currentStep > step ? "bg-primary" : "bg-muted"
-                    }`}
-                  />
+                <span className={`hidden md:inline text-sm ${
+                  getStepNumber(currentStep) >= index + 1 ? "text-foreground font-medium" : "text-muted-foreground"
+                }`}>
+                  {stepLabels[step]}
+                </span>
+                {index < 4 && (
+                  <div className={`w-6 md:w-12 h-1 ${
+                    getStepNumber(currentStep) > index + 1 ? "bg-primary" : "bg-muted"
+                  }`} />
                 )}
               </div>
             ))}
           </div>
 
-          {/* Step 1: Design Generation */}
-          {currentStep === 1 && (
-            <section>
-              <h2 className="text-3xl font-black text-foreground mb-2">
-                Step 1: Create Your Design
-              </h2>
-              <Card className="p-6 mb-8 bg-muted/30 border-primary/20">
-                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  How This Works
+          {/* Step 1: Create Design */}
+          {currentStep === 'create' && (
+            <section className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-black text-foreground mb-2">Step 1: Create Your Design</h2>
+                <p className="text-muted-foreground">Upload an existing design or create one with AI</p>
+              </div>
+
+              {/* Upload Design Option */}
+              <Card className="max-w-2xl mx-auto p-8">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-primary" />
+                  Option A: Upload Your Design
                 </h3>
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <p className="font-semibold text-foreground">You have 3 options to create your design:</p>
-                  <ul className="space-y-2 list-disc list-inside ml-2">
-                    <li><strong className="text-foreground">Use a Preset:</strong> Click any preset below for instant inspiration</li>
-                    <li><strong className="text-foreground">Write Your Own:</strong> Describe your custom design idea in detail</li>
-                    <li><strong className="text-foreground">Add a Reference (Optional):</strong> Upload an image to guide the AI</li>
-                  </ul>
-                  <p className="italic">💡 Tip: You can use presets OR custom descriptions, and optionally add a reference image with either option!</p>
-                </div>
+                <label className="flex flex-col items-center justify-center min-h-[200px] cursor-pointer hover:bg-secondary/50 transition-colors border-2 border-dashed border-border rounded-lg">
+                  <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                  <span className="text-lg font-semibold text-foreground mb-2">
+                    Click to Upload
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    PNG, JPG, or SVG - max 10MB
+                  </span>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDesignUpload}
+                    className="hidden"
+                  />
+                </label>
               </Card>
 
-              <div className="space-y-8">
-                {/* Preset Designs */}
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Option 1: Choose a Preset Design</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Click any preset below to use a pre-made design concept</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="text-center text-muted-foreground font-medium">— OR —</div>
+
+              {/* AI Design Creation */}
+              <Card className="max-w-3xl mx-auto p-8">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Option B: Generate with AI
+                </h3>
+
+                {/* Presets */}
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3">Choose a Preset Style:</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {PRESET_DESIGNS.map((preset) => (
-                      <Card
+                      <button
                         key={preset.id}
-                        className={`p-6 cursor-pointer transition-all hover:shadow-lg ${
-                          selectedPreset === preset.id
-                            ? "ring-4 ring-primary shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
-                            : ""
-                        }`}
                         onClick={() => {
                           setSelectedPreset(preset.id);
                           setCustomPrompt("");
                         }}
+                        className={`p-4 rounded-lg border-2 text-left transition-all ${
+                          selectedPreset === preset.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        }`}
                       >
-                        <div className="space-y-3">
-                          <Palette className="h-8 w-8 text-primary" />
-                          <h4 className="font-bold text-lg">{preset.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {preset.prompt.slice(0, 80)}...
-                          </p>
-                          {selectedPreset === preset.id && (
-                            <div className="flex items-center gap-2 text-primary font-semibold">
-                              <Check className="h-4 w-4" />
-                              Selected
-                            </div>
-                          )}
-                        </div>
-                      </Card>
+                        <Palette className="h-6 w-6 text-primary mb-2" />
+                        <p className="font-medium text-sm">{preset.name}</p>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Custom Prompt */}
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Option 2: Or Describe Your Custom Design</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Write a detailed description of what you want to create</p>
-                  
-                  <Card className="p-6 mb-4 bg-primary/5 border-primary/20 max-w-2xl">
-                    <h4 className="font-bold text-sm mb-3">📝 How to Write a Great Prompt (4 Key Elements)</h4>
-                    <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
-                      <li><strong className="text-foreground">Subject:</strong> What's the main focus? (person, object, animal, etc.)</li>
-                      <li><strong className="text-foreground">Style:</strong> What's the artistic style? (cartoon, realistic, abstract, vintage, etc.)</li>
-                      <li><strong className="text-foreground">Colors:</strong> What colors dominate? (vibrant, pastel, monochrome, neon, etc.)</li>
-                      <li><strong className="text-foreground">Mood/Details:</strong> What feeling or extra details? (playful, serious, minimalist, detailed, etc.)</li>
-                    </ol>
-                    <div className="mt-4 p-4 bg-background rounded-lg border border-border">
-                      <p className="text-xs font-semibold text-primary mb-1">✨ Example of a Great Prompt:</p>
-                      <p className="text-xs italic text-foreground">
-                        "A playful cartoon cat wearing sunglasses and a leather jacket, retro 80s style with vibrant neon pink and purple colors, bold outlines, fun and energetic vibe, perfect for a t-shirt design"
-                      </p>
-                    </div>
-                  </Card>
-
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3">Or Describe Your Design:</h4>
                   <Textarea
-                    placeholder="Example: A majestic lion in watercolor style with golden and orange tones, serene and powerful mood..."
+                    placeholder="Example: A playful cartoon cat wearing sunglasses, retro 80s style with neon colors..."
                     value={customPrompt}
                     onChange={(e) => {
                       setCustomPrompt(e.target.value);
                       setSelectedPreset(null);
                     }}
                     rows={4}
-                    className="max-w-2xl"
                   />
                 </div>
 
-                {/* Reference Image Upload */}
-                <div>
-                  <h3 className="text-xl font-bold mb-2">
-                    Option 3: Add Reference Image (Optional)
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Upload an image to help guide the AI. This works with presets OR custom descriptions!
-                  </p>
-                  <Card className="max-w-2xl p-6">
-                    {!referenceImage ? (
-                      <label className="flex flex-col items-center justify-center min-h-[200px] cursor-pointer hover:bg-secondary/50 transition-colors border-2 border-dashed border-border rounded-lg">
-                        <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                        <span className="text-lg font-semibold text-foreground mb-2">
-                          Upload Reference Image
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          Optional: Add an image to guide the AI
-                        </span>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleReferenceUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    ) : (
-                      <div className="space-y-4">
-                        <img
-                          src={referenceImage}
-                          alt="Reference"
-                          className="w-full rounded-lg"
-                        />
-                        <Button
-                          variant="outline"
-                          onClick={() => setReferenceImage(null)}
-                        >
-                          Remove Reference
-                        </Button>
-                      </div>
-                    )}
-                  </Card>
+                {/* Reference Image */}
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3">Reference Image (Optional):</h4>
+                  {!referenceImage ? (
+                    <label className="flex items-center justify-center p-6 cursor-pointer border-2 border-dashed border-border rounded-lg hover:bg-secondary/50 transition-colors">
+                      <Upload className="h-5 w-5 mr-2 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Add reference image</span>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleReferenceUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <img src={referenceImage} alt="Reference" className="w-24 h-24 object-cover rounded-lg" />
+                      <Button variant="outline" size="sm" onClick={() => setReferenceImage(null)}>
+                        Remove
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Generated Design Preview & Approval */}
-                {generatedDesign && (
-                  <div id="design-approval" className="mt-8 scroll-mt-20">
-                    <h3 className="text-xl font-bold mb-4">Your Generated Design</h3>
-                    <Card className="max-w-2xl mx-auto p-6 ring-4 ring-primary/20 shadow-lg">
-                      <div className="space-y-6">
-                        <img
-                          src={generatedDesign}
-                          alt="Generated design"
-                          className="w-full rounded-lg border border-border"
-                        />
-                        <div className="flex gap-4 justify-center">
-                          <Button
-                            size="lg"
-                            onClick={() => setCurrentStep(2)}
-                            className="min-w-[200px]"
-                          >
-                            <Check className="mr-2 h-5 w-5" />
-                            Approve & Continue
-                          </Button>
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            onClick={() => {
-                              setGeneratedDesign(null);
-                              toast.info("Create a new design");
-                            }}
-                          >
-                            Regenerate
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                )}
-
-                {/* Generate Button */}
-                {!generatedDesign && (
-                  <div className="flex justify-center">
-                    <Button
-                      size="lg"
-                      onClick={generateDesign}
-                      disabled={generatingDesign || (!selectedPreset && !customPrompt.trim())}
-                      className="min-w-[200px]"
-                    >
-                      {generatingDesign ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Generating Design...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="mr-2 h-5 w-5" />
-                          Generate Design
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
+                <Button
+                  size="lg"
+                  onClick={generateDesign}
+                  disabled={generatingDesign || (!selectedPreset && !customPrompt.trim())}
+                  className="w-full"
+                >
+                  {generatingDesign ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Generating Design...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Generate Design
+                    </>
+                  )}
+                </Button>
+              </Card>
             </section>
           )}
 
-          {/* Step 2: Product Selection */}
-          {currentStep === 2 && (
-            <section>
-              <h2 className="text-3xl font-black text-foreground mb-2">
-                Step 2: Choose Your Product
-              </h2>
-              <Card className="p-6 mb-8 bg-muted/30 border-primary/20 max-w-3xl mx-auto">
-                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-primary" />
-                  What to Do Now
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Your design is ready! Now pick which product you want it printed on. Click any product below to select it, then hit "Continue" to move to the next step.
-                </p>
-              </Card>
+          {/* Step 2: Approve Design */}
+          {currentStep === 'approve' && designDraft && (
+            <section className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-black text-foreground mb-2">Step 2: Approve Your Design</h2>
+                <p className="text-muted-foreground">Review your design before proceeding</p>
+              </div>
 
-              {generatedDesign && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-bold mb-4">Your Generated Design</h3>
-                  <Card className="max-w-md p-4">
-                    <img
-                      src={generatedDesign}
-                      alt="Generated design"
-                      className="w-full rounded-lg"
-                    />
-                  </Card>
+              <Card className="max-w-2xl mx-auto p-8">
+                <div className="space-y-6">
+                  <img
+                    src={designDraft.imageUrl}
+                    alt="Design preview"
+                    className="w-full rounded-lg border border-border"
+                  />
+                  
+                  {designDraft.promptText && designDraft.promptText !== "Uploaded design" && (
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold">Prompt:</span> {designDraft.promptText}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-4 justify-center">
+                    <Button size="lg" onClick={approveDesign} className="min-w-[180px]">
+                      <Check className="mr-2 h-5 w-5" />
+                      Approve Design
+                    </Button>
+                    <Button size="lg" variant="outline" onClick={editDesign}>
+                      <Edit className="mr-2 h-5 w-5" />
+                      Edit Design
+                    </Button>
+                  </div>
                 </div>
-              )}
+              </Card>
+            </section>
+          )}
+
+          {/* Step 3: Choose Product */}
+          {currentStep === 'product' && approvedDesign && (
+            <section className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-black text-foreground mb-2">Step 3: Choose Your Product</h2>
+                <p className="text-muted-foreground">Select a product, color, size, and quantity</p>
+              </div>
+
+              {/* Show approved design */}
+              <div className="flex justify-center">
+                <Card className="p-4 max-w-xs">
+                  <p className="text-xs text-muted-foreground mb-2 text-center">Your Approved Design</p>
+                  <img src={approvedDesign.imageUrl} alt="Approved design" className="w-full rounded-lg" />
+                </Card>
+              </div>
 
               {loadingProducts ? (
                 <div className="flex justify-center py-12">
@@ -796,7 +731,7 @@ export default function CustomDesign() {
                       }`}
                       onClick={() => {
                         setSelectedProduct(product);
-                        setSelectedVariant(null); // Reset variant when product changes
+                        setSelectedVariant(null);
                       }}
                     >
                       <div className="relative aspect-square bg-secondary">
@@ -812,20 +747,9 @@ export default function CustomDesign() {
                         )}
                       </div>
                       <div className="p-4 space-y-2">
-                        <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                          {product.category}
-                        </span>
-                        <h3 className="font-bold text-lg text-foreground line-clamp-2">
-                          {product.title}
-                        </h3>
-                        {product.brand && (
-                          <p className="text-sm text-muted-foreground">
-                            {product.brand} {product.model && `• ${product.model}`}
-                          </p>
-                        )}
-                        <p className="text-2xl font-black text-foreground">
-                          ${product.retail_price.toFixed(2)}
-                        </p>
+                        <span className="text-xs font-semibold text-primary uppercase">{product.category}</span>
+                        <h3 className="font-bold text-lg text-foreground line-clamp-2">{product.title}</h3>
+                        <p className="text-2xl font-black text-foreground">${product.retail_price.toFixed(2)}</p>
                       </div>
                     </Card>
                   ))}
@@ -834,12 +758,12 @@ export default function CustomDesign() {
 
               {/* Variant Selection */}
               {selectedProduct && selectedProduct.variants.filter(v => v.is_enabled).length > 0 && (
-                <Card className="max-w-2xl mx-auto mt-8 p-6">
-                  <h3 className="text-xl font-bold mb-4">Select Your Color & Size</h3>
+                <Card className="max-w-2xl mx-auto p-6">
+                  <h3 className="text-xl font-bold mb-4">Select Options</h3>
                   
                   {/* Color Selection */}
                   <div className="mb-6">
-                    <h4 className="font-semibold mb-3">Pick Your Color</h4>
+                    <h4 className="font-semibold mb-3">Color</h4>
                     <div className="flex flex-wrap gap-3">
                       {getUniqueColors(selectedProduct.variants).map((color) => {
                         const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title) === color;
@@ -847,13 +771,12 @@ export default function CustomDesign() {
                           <button
                             key={color}
                             onClick={() => {
-                              // Select first variant with this color
                               const firstVariant = getSizesForColor(selectedProduct.variants, color)[0];
                               if (firstVariant) setSelectedVariant(firstVariant);
                             }}
                             className={`px-4 py-2 rounded-lg border-2 transition-all ${
                               isSelected
-                                ? "border-primary bg-primary/10 text-primary font-semibold"
+                                ? "border-primary bg-primary/10 font-semibold"
                                 : "border-border hover:border-primary/50"
                             }`}
                           >
@@ -864,10 +787,10 @@ export default function CustomDesign() {
                     </div>
                   </div>
 
-                  {/* Size Selection (show only when color is selected) */}
+                  {/* Size Selection */}
                   {selectedVariant && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold mb-3">Pick Your Size</h4>
+                    <div className="mb-6">
+                      <h4 className="font-semibold mb-3">Size</h4>
                       <div className="flex flex-wrap gap-3">
                         {getSizesForColor(selectedProduct.variants, extractColorFromVariant(selectedVariant.title)).map((variant) => {
                           const size = extractSizeFromVariant(variant.title);
@@ -876,9 +799,9 @@ export default function CustomDesign() {
                             <button
                               key={variant.id}
                               onClick={() => setSelectedVariant(variant)}
-                              className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                              className={`px-4 py-2 rounded-lg border-2 transition-all min-w-[60px] ${
                                 isSelected
-                                  ? "border-primary bg-primary/10 text-primary font-semibold"
+                                  ? "border-primary bg-primary/10 font-semibold"
                                   : "border-border hover:border-primary/50"
                               }`}
                             >
@@ -890,220 +813,188 @@ export default function CustomDesign() {
                     </div>
                   )}
 
-                  {selectedVariant && (
-                    <div className="mt-4 p-3 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        Selected: <span className="font-semibold text-foreground">{selectedVariant.title}</span>
-                      </p>
+                  {/* Quantity */}
+                  <div className="mb-6">
+                    <h4 className="font-semibold mb-3">Quantity</h4>
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        disabled={quantity <= 1}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xl font-bold w-12 text-center">{quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(quantity + 1)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
-                  )}
+                  </div>
+
+                  <Button
+                    size="lg"
+                    onClick={() => setCurrentStep('mockup')}
+                    disabled={!selectedVariant}
+                    className="w-full"
+                  >
+                    Continue to Mockup
+                  </Button>
                 </Card>
               )}
+            </section>
+          )}
 
-              <div className="flex flex-col items-center gap-4 mt-8">
-                <div className="flex gap-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                    Back to Design
-                  </Button>
-                  <Button
-                    onClick={() => setCurrentStep(3)}
-                    disabled={!selectedProduct || !selectedVariant}
-                    size="lg"
-                  >
-                    Upload Photo to Try On →
-                  </Button>
+          {/* Step 4: Create Mockup (auto-generates) */}
+          {currentStep === 'mockup' && (
+            <section className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-black text-foreground mb-2">Step 4: Creating Your Mockup</h2>
+                <p className="text-muted-foreground">Generating preview of your product...</p>
+              </div>
+
+              <div className="flex justify-center py-12">
+                <div className="text-center space-y-4">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                  <p className="text-muted-foreground">Generating mockup with your design...</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setUserPhoto(null);
-                    setCurrentStep(4);
-                  }}
-                  disabled={!selectedProduct || !selectedVariant}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Skip photo upload, just show product mockup →
-                </Button>
               </div>
             </section>
           )}
 
-          {/* Step 3: User Photo Upload */}
-          {currentStep === 3 && (
-            <section>
-              <h2 className="text-3xl font-black text-foreground mb-2">
-                Step 3: Upload Your Photo
-              </h2>
-              <Card className="p-6 mb-8 bg-muted/30 border-primary/20 max-w-3xl mx-auto">
-                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                  <Upload className="h-5 w-5 text-primary" />
-                  See It On You!
-                </h3>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>
-                    Upload a photo of yourself (or someone else) to generate a realistic mockup showing how your custom product will look when worn or used.
-                  </p>
-                  <p className="font-semibold text-foreground">
-                    💡 Tips for best results:
-                  </p>
-                  <ul className="list-disc list-inside ml-2 space-y-1">
-                    <li>Use a clear, well-lit photo</li>
-                    <li>Face the camera directly</li>
-                    <li>Make sure your upper body is visible (for apparel)</li>
-                  </ul>
-                </div>
-              </Card>
+          {/* Step 5: Review & Order */}
+          {currentStep === 'review' && mockupPreview && selectedProduct && selectedVariant && (
+            <section className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-black text-foreground mb-2">Step 5: Review Your Product</h2>
+                <p className="text-muted-foreground">Your custom product is ready!</p>
+              </div>
 
-              <div className="max-w-2xl mx-auto">
-                <Card className="p-8">
-                  {!userPhoto ? (
-                    <label className="flex flex-col items-center justify-center min-h-[300px] cursor-pointer hover:bg-secondary/50 transition-colors border-2 border-dashed border-border rounded-lg">
-                      <Upload className="h-16 w-16 text-muted-foreground mb-4" />
-                      <span className="text-lg font-semibold text-foreground mb-2">
-                        Click to upload your photo
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        PNG, JPG up to 10MB
-                      </span>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleUserPhotoUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  ) : (
-                    <div className="space-y-4">
-                      <img
-                        src={userPhoto}
-                        alt="Your photo"
-                        className="w-full rounded-lg"
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setUserPhoto(null);
-                          setCurrentStep(3);
-                        }}
-                        className="w-full"
-                      >
-                        Upload Different Photo
-                      </Button>
+              {/* Mockup Display */}
+              <Card className="max-w-3xl mx-auto p-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Mockup Image */}
+                  <div>
+                    <img
+                      src={tryOnMockup || mockupPreview}
+                      alt="Product mockup"
+                      className="w-full rounded-lg border border-border"
+                    />
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground">{selectedProduct.title}</h3>
+                      <p className="text-muted-foreground">{selectedProduct.brand}</p>
                     </div>
-                  )}
-                </Card>
 
-                <div className="flex justify-center gap-4 mt-8">
-                  <Button variant="outline" onClick={() => setCurrentStep(2)}>
-                    Back to Products
-                  </Button>
-                </div>
-              </div>
-            </section>
-          )}
+                    <div className="space-y-2">
+                      <p><span className="font-semibold">Color:</span> {extractColorFromVariant(selectedVariant.title)}</p>
+                      <p><span className="font-semibold">Size:</span> {extractSizeFromVariant(selectedVariant.title)}</p>
+                      <p><span className="font-semibold">Quantity:</span> {quantity}</p>
+                    </div>
 
-          {/* Step 4: Final Mockup */}
-          {currentStep === 4 && (
-            <section>
-              <h2 className="text-3xl font-black text-foreground mb-2">
-                Step 4: Review Your Mockup
-              </h2>
-              <Card className="p-6 mb-8 bg-muted/30 border-primary/20 max-w-3xl mx-auto">
-                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                  <Check className="h-5 w-5 text-primary" />
-                  Almost Done!
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Click "Generate Final Mockup" below to create a realistic preview of your custom product. Once you're happy with how it looks, proceed to checkout to complete your order!
-                </p>
-              </Card>
-
-              <div className="max-w-3xl mx-auto space-y-8">
-                {!finalMockup ? (
-                  <Card className="p-8">
-                    <div className="text-center space-y-6">
-                      <p className="text-lg text-foreground">
-                        {userPhoto 
-                          ? "Ready to see how your custom design looks on you?"
-                          : "Ready to see your custom product mockup?"}
+                    <div className="border-t pt-4">
+                      <p className="text-sm text-muted-foreground">Price per item</p>
+                      <p className="text-3xl font-black text-foreground">
+                        ${selectedProduct.retail_price.toFixed(2)}
                       </p>
+                      {quantity > 1 && (
+                        <p className="text-sm text-muted-foreground">
+                          Total: ${(selectedProduct.retail_price * quantity).toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="space-y-3">
                       <Button
                         size="lg"
-                        onClick={generateFinalMockup}
-                        disabled={generatingMockup}
-                        className="min-w-[200px]"
-                      >
-                        {generatingMockup ? (
-                          <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            Generating Mockup...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="mr-2 h-5 w-5" />
-                            Generate {userPhoto ? "Final" : "Product"} Mockup
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </Card>
-                ) : (
-                  <Card className="p-8">
-                    <img
-                      src={finalMockup}
-                      alt="Final mockup"
-                      className="w-full rounded-lg mb-6"
-                    />
-                    <div className="flex gap-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => setFinalMockup(null)}
-                        className="flex-1"
-                      >
-                        Regenerate Mockup
-                      </Button>
-                      <Button 
-                        onClick={proceedToCheckout} 
-                        className="flex-1"
+                        onClick={proceedToCheckout}
                         disabled={creatingPrintifyProduct}
+                        className="w-full"
                       >
                         {creatingPrintifyProduct ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             Creating Product...
                           </>
                         ) : (
-                          "Proceed to Checkout →"
+                          <>
+                            <ShoppingCart className="mr-2 h-5 w-5" />
+                            Continue to Checkout
+                          </>
                         )}
                       </Button>
-                    </div>
-                  </Card>
-                )}
 
-                <div className="flex justify-center gap-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep(2)}
-                  >
-                    Back to Products
-                  </Button>
-                  {!userPhoto && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentStep(3)}
-                    >
-                      Add Your Photo (Optional)
-                    </Button>
-                  )}
-                  {userPhoto && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentStep(3)}
-                    >
-                      Change Photo
-                    </Button>
-                  )}
+                      {/* Virtual Try-On */}
+                      {!tryOnMockup && (
+                        <div>
+                          <label className="block">
+                            <Button variant="outline" size="lg" className="w-full" asChild>
+                              <span className="cursor-pointer">
+                                <Camera className="mr-2 h-5 w-5" />
+                                Virtual Try-On
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleUserPhotoUpload}
+                                  className="hidden"
+                                  disabled={generatingTryOn}
+                                />
+                              </span>
+                            </Button>
+                          </label>
+                          <p className="text-xs text-muted-foreground text-center mt-2">
+                            Upload your photo to see how it looks on you
+                          </p>
+                        </div>
+                      )}
+
+                      {generatingTryOn && (
+                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Generating try-on...</span>
+                        </div>
+                      )}
+
+                      {tryOnMockup && (
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setTryOnMockup(null);
+                            setUserPhoto(null);
+                          }}
+                          className="w-full"
+                        >
+                          View Product Only
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
+              </Card>
+
+              {/* Edit Options */}
+              <div className="flex justify-center gap-4">
+                <Button variant="outline" onClick={() => {
+                  setMockupPreview(null);
+                  setCurrentStep('product');
+                }}>
+                  Change Product
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  setApprovedDesign(null);
+                  setMockupPreview(null);
+                  setCurrentStep('approve');
+                }}>
+                  Change Design
+                </Button>
               </div>
             </section>
           )}
