@@ -160,6 +160,33 @@ export default function CustomDesign() {
       });
   };
 
+  // Check if product is apparel (for Virtual Try-On eligibility)
+  const isApparelProduct = (product: Product | null): boolean => {
+    if (!product) return false;
+    const category = (product.category || '').toLowerCase();
+    const title = (product.title || '').toLowerCase();
+    
+    const apparelKeywords = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater', 'apparel', 'clothing'];
+    const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap'];
+    
+    // Check if it's explicitly non-apparel
+    for (const keyword of nonApparelKeywords) {
+      if (category.includes(keyword) || title.includes(keyword)) {
+        return false;
+      }
+    }
+    
+    // Check if it's apparel
+    for (const keyword of apparelKeywords) {
+      if (category.includes(keyword) || title.includes(keyword)) {
+        return true;
+      }
+    }
+    
+    // Default to true for unknown categories (safer for apparel-focused store)
+    return true;
+  };
+
   // Handle existing design from navigation state
   useEffect(() => {
     const existingDesign = location.state?.existingDesign;
@@ -875,15 +902,31 @@ export default function CustomDesign() {
               </div>
 
               {/* Mockup Display */}
-              <Card className="max-w-3xl mx-auto p-8">
+              <Card className="max-w-4xl mx-auto p-8">
                 <div className="grid md:grid-cols-2 gap-8">
-                  {/* Mockup Image */}
+                  {/* Product Mockup - This is what will be in the order */}
                   <div>
+                    <p className="text-sm font-semibold text-muted-foreground mb-2">Product Preview</p>
                     <img
-                      src={tryOnMockup || mockupPreview}
+                      src={mockupPreview}
                       alt="Product mockup"
                       className="w-full rounded-lg border border-border"
                     />
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      This is how your product will look
+                    </p>
+                    
+                    {/* Virtual Try-On Preview (if generated) */}
+                    {tryOnMockup && isApparelProduct(selectedProduct) && (
+                      <div className="mt-4">
+                        <p className="text-sm font-semibold text-muted-foreground mb-2">Virtual Try-On</p>
+                        <img
+                          src={tryOnMockup}
+                          alt="Try-on preview"
+                          className="w-full rounded-lg border border-border"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Product Details */}
@@ -932,8 +975,8 @@ export default function CustomDesign() {
                         )}
                       </Button>
 
-                      {/* Virtual Try-On */}
-                      {!tryOnMockup && (
+                      {/* Virtual Try-On - Only for apparel products */}
+                      {!tryOnMockup && isApparelProduct(selectedProduct) && (
                         <div>
                           <label className="block">
                             <Button variant="outline" size="lg" className="w-full" asChild>
@@ -963,7 +1006,7 @@ export default function CustomDesign() {
                         </div>
                       )}
 
-                      {tryOnMockup && (
+                      {tryOnMockup && isApparelProduct(selectedProduct) && (
                         <Button
                           variant="ghost"
                           onClick={() => {
@@ -972,7 +1015,7 @@ export default function CustomDesign() {
                           }}
                           className="w-full"
                         >
-                          View Product Only
+                          Clear Try-On
                         </Button>
                       )}
                     </div>
