@@ -84,7 +84,7 @@ export default function CustomDesign() {
   const [finalMockup, setFinalMockup] = useState<string | null>(null);
 
   // Known size values in order (exact match)
-  const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11oz', '15oz'];
+  const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11OZ', '15OZ'];
   
   // Helper to check if a string is a size
   const isSize = (str: string): boolean => {
