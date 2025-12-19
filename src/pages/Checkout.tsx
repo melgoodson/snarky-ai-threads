@@ -7,10 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const checkoutSchema = z.object({
   email: z.string().email('Invalid email address').max(255),
@@ -51,6 +61,8 @@ const Checkout = () => {
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutForm, string>>>({});
   const [userId, setUserId] = useState<string | null>(null);
+  const [showPopupAlert, setShowPopupAlert] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -230,10 +242,10 @@ const Checkout = () => {
         throw new Error(message);
       }
 
-      // Open Stripe checkout in new tab - required because Stripe cannot run in iframes
+      // Show popup alert before opening Stripe checkout
       if (checkoutData?.url) {
-        window.open(checkoutData.url, '_blank');
-        toast.success('Stripe checkout opened in new tab');
+        setCheckoutUrl(checkoutData.url);
+        setShowPopupAlert(true);
         setLoading(false);
       } else {
         console.error('create-checkout missing URL:', checkoutData);
@@ -245,6 +257,14 @@ const Checkout = () => {
       toast.error(`Failed to create checkout: ${message}`);
       setLoading(false);
     }
+  };
+
+  const handleOpenStripeCheckout = () => {
+    if (checkoutUrl) {
+      window.open(checkoutUrl, '_blank');
+      toast.success('Stripe checkout opened in new tab');
+    }
+    setShowPopupAlert(false);
   };
 
   return (
@@ -466,6 +486,32 @@ const Checkout = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Pop-up Warning Alert Dialog */}
+      <AlertDialog open={showPopupAlert} onOpenChange={setShowPopupAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <ExternalLink className="h-5 w-5" />
+              Secure Payment Opening
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                Your secure Stripe payment page will open in a <strong>new browser tab</strong>.
+              </p>
+              <p className="text-sm bg-muted p-3 rounded-md">
+                💡 <strong>Important:</strong> If you don't see the checkout page, please check if your browser blocked the pop-up. Look for a pop-up notification in your address bar and click "Allow" to continue.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleOpenStripeCheckout}>
+              Continue to Payment
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
