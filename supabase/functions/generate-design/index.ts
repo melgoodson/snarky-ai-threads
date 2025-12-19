@@ -29,20 +29,25 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Enhanced prompt for better print-on-demand designs
+    const enhancedPrompt = `Create a high-quality, print-ready design for print-on-demand products. ${prompt}. The design should be clear, vibrant, and suitable for printing on apparel and merchandise. Use a transparent or solid background. Make the design eye-catching and professional.`;
+
     const messages: any[] = [
       {
         role: "user",
         content: referenceImage
           ? [
-              { type: "text", text: prompt },
+              { type: "text", text: enhancedPrompt },
               {
                 type: "image_url",
                 image_url: { url: referenceImage },
               },
             ]
-          : prompt,
+          : enhancedPrompt,
       },
     ];
+
+    console.log("Sending request to AI Gateway with prompt:", enhancedPrompt);
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -61,6 +66,10 @@ serve(async (req) => {
     );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("AI Gateway error status:", response.status);
+      console.error("AI Gateway error body:", errorText);
+      
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
@@ -79,17 +88,32 @@ serve(async (req) => {
           }
         );
       }
-      const errorText = await response.text();
-      console.error("AI Gateway error:", response.status, errorText);
-      throw new Error(`AI Gateway error: ${response.status}`);
+      throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    const generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    console.log("AI Gateway response structure:", JSON.stringify(data, null, 2).substring(0, 1000));
+
+    // Try multiple possible response structures
+    let generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    // Alternative structure: directly on the message
+    if (!generatedImageUrl) {
+      generatedImageUrl = data.choices?.[0]?.message?.content?.find?.((c: any) => c.type === 'image_url')?.image_url?.url;
+    }
+    
+    // Another alternative: image_url directly in images array
+    if (!generatedImageUrl && data.choices?.[0]?.message?.images?.[0]) {
+      const img = data.choices[0].message.images[0];
+      generatedImageUrl = img.url || img.image_url?.url || img;
+    }
 
     if (!generatedImageUrl) {
-      throw new Error("No image URL in response");
+      console.error("Full API response:", JSON.stringify(data));
+      throw new Error("No image URL in response. API may have returned text only or the model failed to generate an image.");
     }
+
+    console.log("Successfully generated image");
 
     return new Response(
       JSON.stringify({ image: generatedImageUrl }),
