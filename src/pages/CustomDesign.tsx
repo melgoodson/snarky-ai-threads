@@ -303,7 +303,7 @@ export default function CustomDesign() {
   };
 
   const generateFinalMockup = async () => {
-    if (!generatedDesign || !selectedProduct || !userPhoto) {
+    if (!generatedDesign || !selectedProduct) {
       toast.error("Missing required data for mockup generation");
       return;
     }
@@ -323,7 +323,7 @@ export default function CustomDesign() {
             userImage: generatedDesign,
             productImage: selectedProduct.template_image_url,
             productTitle: selectedProduct.title,
-            productColor: selectedColor, // Pass the selected color
+            productColor: selectedColor,
           },
         }
       );
@@ -336,26 +336,32 @@ export default function CustomDesign() {
         throw new Error("Failed to generate product mockup");
       }
 
-      // Then, show the product on the user with correct color
-      const { data: finalData, error: finalError } = await supabase.functions.invoke(
-        "generate-mockup",
-        {
-          body: {
-            userImage: userPhoto,
-            productImage: productWithDesign,
-            productTitle: selectedProduct.title,
-            productColor: selectedColor, // Pass color for virtual try-on
-          },
+      // If user uploaded a photo, show product on them; otherwise just show the product mockup
+      if (userPhoto) {
+        const { data: finalData, error: finalError } = await supabase.functions.invoke(
+          "generate-mockup",
+          {
+            body: {
+              userImage: userPhoto,
+              productImage: productWithDesign,
+              productTitle: selectedProduct.title,
+              productColor: selectedColor,
+            },
+          }
+        );
+
+        if (finalError) throw finalError;
+
+        if (finalData?.image) {
+          setFinalMockup(finalData.image);
+          toast.success("Mockup generated! See how it looks on you!");
+        } else {
+          throw new Error("No mockup image returned");
         }
-      );
-
-      if (finalError) throw finalError;
-
-      if (finalData?.image) {
-        setFinalMockup(finalData.image);
-        toast.success("Mockup generated! See how it looks on you!");
       } else {
-        throw new Error("No mockup image returned");
+        // No user photo - just use the product mockup with design
+        setFinalMockup(productWithDesign);
+        toast.success("Product mockup generated!");
       }
     } catch (error: any) {
       console.error("Mockup generation error:", error);
@@ -894,16 +900,29 @@ export default function CustomDesign() {
                 </Card>
               )}
 
-              <div className="flex justify-center gap-4 mt-8">
-                <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                  Back to Design
-                </Button>
+              <div className="flex flex-col items-center gap-4 mt-8">
+                <div className="flex gap-4">
+                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                    Back to Design
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentStep(3)}
+                    disabled={!selectedProduct || !selectedVariant}
+                    size="lg"
+                  >
+                    Upload Photo to Try On →
+                  </Button>
+                </div>
                 <Button
-                  onClick={() => setCurrentStep(3)}
+                  variant="ghost"
+                  onClick={() => {
+                    setUserPhoto(null);
+                    setCurrentStep(4);
+                  }}
                   disabled={!selectedProduct || !selectedVariant}
-                  size="lg"
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  Continue to Photo Upload →
+                  Skip photo upload, just show product mockup →
                 </Button>
               </div>
             </section>
@@ -1004,7 +1023,9 @@ export default function CustomDesign() {
                   <Card className="p-8">
                     <div className="text-center space-y-6">
                       <p className="text-lg text-foreground">
-                        Ready to see how your custom design looks on you?
+                        {userPhoto 
+                          ? "Ready to see how your custom design looks on you?"
+                          : "Ready to see your custom product mockup?"}
                       </p>
                       <Button
                         size="lg"
@@ -1020,7 +1041,7 @@ export default function CustomDesign() {
                         ) : (
                           <>
                             <Sparkles className="mr-2 h-5 w-5" />
-                            Generate Final Mockup
+                            Generate {userPhoto ? "Final" : "Product"} Mockup
                           </>
                         )}
                       </Button>
@@ -1059,13 +1080,29 @@ export default function CustomDesign() {
                   </Card>
                 )}
 
-                <div className="flex justify-center">
+                <div className="flex justify-center gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() => setCurrentStep(2)}
                   >
-                    Back to Photo Upload
+                    Back to Products
                   </Button>
+                  {!userPhoto && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentStep(3)}
+                    >
+                      Add Your Photo (Optional)
+                    </Button>
+                  )}
+                  {userPhoto && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentStep(3)}
+                    >
+                      Change Photo
+                    </Button>
+                  )}
                 </div>
               </div>
             </section>
