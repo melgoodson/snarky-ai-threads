@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import melFounder from "@/assets/mel-founder.png";
 
 const About = () => {
@@ -97,10 +98,10 @@ const About = () => {
 
               <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" asChild>
-                  <a href="/">Shop Now</a>
+                  <Link to="/">Shop Now</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                  <a href="/collections">Browse Collections</a>
+                  <Link to="/collections">Browse Collections</Link>
                 </Button>
               </div>
             </article>
