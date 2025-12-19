@@ -487,7 +487,20 @@ export default function CustomDesign() {
       const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
       const selectedSize = extractSizeFromVariant(selectedVariant.title);
       const selectedColor = extractColorFromVariant(selectedVariant.title);
-      const displayImage = mockupPreview || customProductData.mockupImageUrl;
+      
+      // Use Printify's mockup if available (actual product), fallback to AI preview
+      const displayImage = customProductData.mockupImageUrl || mockupPreview;
+      // Use Printify's confirmed design URL (what will actually be printed)
+      const confirmedDesignUrl = customProductData.uploadedImagePreview || approvedDesign.imageUrl;
+      
+      console.log('Order consistency check:', {
+        printifyMockup: customProductData.mockupImageUrl,
+        aiMockup: mockupPreview,
+        displayImage,
+        printifyDesignUrl: customProductData.uploadedImagePreview,
+        originalDesignUrl: approvedDesign.imageUrl,
+        confirmedDesignUrl,
+      });
 
       // Add items to cart based on quantity
       for (let i = 0; i < quantity; i++) {
@@ -499,7 +512,7 @@ export default function CustomDesign() {
           image: displayImage,
           printifyProductId: customProductData.printifyProductId,
           variantId: String(selectedVariant.id),
-          designImageUrl: customProductData.uploadedImagePreview || approvedDesign.imageUrl,
+          designImageUrl: confirmedDesignUrl,
         });
       }
 
