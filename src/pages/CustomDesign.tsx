@@ -116,6 +116,10 @@ export default function CustomDesign() {
   // Checkout
   const [creatingPrintifyProduct, setCreatingPrintifyProduct] = useState(false);
 
+  // Auth state
+  const [authChecking, setAuthChecking] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   // Size ordering
   const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11OZ', '15OZ'];
   
@@ -193,18 +197,23 @@ export default function CustomDesign() {
     return true;
   };
 
-  // Require login so designs can be saved to the customer's profile
+  // Check auth state - show prompt instead of redirecting
   useEffect(() => {
-    const ensureAuthed = async () => {
+    const checkAuth = async () => {
+      setAuthChecking(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please sign in to create and save designs");
-        navigate("/auth");
-      }
+      setIsAuthenticated(!!user);
+      setAuthChecking(false);
     };
 
-    ensureAuthed();
-  }, [navigate]);
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Handle existing design from navigation state
   useEffect(() => {
@@ -617,15 +626,47 @@ export default function CustomDesign() {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto space-y-12">
-          {/* Header */}
-          <Card className="max-w-4xl mx-auto p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl font-black text-foreground">Create Your Custom Product</h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Design, preview, and order your unique custom merchandise in just a few steps.
-              </p>
+        {/* Loading State */}
+        {authChecking && (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Sign-In Required Prompt */}
+        {!authChecking && !isAuthenticated && (
+          <Card className="max-w-2xl mx-auto p-8 text-center space-y-6">
+            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+              <Save className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Sign In to Create Designs</h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              To ensure your designs are saved and never lost, please sign in or create an account first. 
+              Your designs will be saved to your profile (up to 10 designs).
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" onClick={() => navigate('/auth')}>
+                Sign In / Create Account
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate('/')}>
+                Back to Home
+              </Button>
             </div>
           </Card>
+        )}
+
+        {/* Main Content - Only show when authenticated */}
+        {!authChecking && isAuthenticated && (
+          <>
+            {/* Header */}
+            <Card className="max-w-4xl mx-auto p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+              <div className="text-center space-y-4">
+                <h1 className="text-4xl font-black text-foreground">Create Your Custom Product</h1>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Design, preview, and order your unique custom merchandise in just a few steps.
+                </p>
+              </div>
+            </Card>
 
           {/* Progress Steps */}
           <div className="flex justify-center items-center gap-2 flex-wrap">
@@ -1161,6 +1202,8 @@ export default function CustomDesign() {
               </div>
             </section>
           )}
+          </>
+        )}
         </div>
       </main>
       <Footer />
