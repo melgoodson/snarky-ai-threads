@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, Check, Sparkles, Palette, Edit, ShoppingCart, Camera, Minus, Plus } from "lucide-react";
+import { Loader2, Upload, Check, Sparkles, Palette, Edit, ShoppingCart, Camera, Minus, Plus, Save } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 
 interface Variant {
@@ -90,6 +90,8 @@ export default function CustomDesign() {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [uploadedDesign, setUploadedDesign] = useState<string | null>(null);
   const [generatingDesign, setGeneratingDesign] = useState(false);
+  const [savingDesign, setSavingDesign] = useState(false);
+  const [savedDesignId, setSavedDesignId] = useState<string | null>(null);
   const [designDraft, setDesignDraft] = useState<DesignDraft | null>(null);
   
   // Step 2: Approved Design
@@ -191,17 +193,31 @@ export default function CustomDesign() {
     return true;
   };
 
+  // Require login so designs can be saved to the customer's profile
+  useEffect(() => {
+    const ensureAuthed = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to create and save designs");
+        navigate("/auth");
+      }
+    };
+
+    ensureAuthed();
+  }, [navigate]);
+
   // Handle existing design from navigation state
   useEffect(() => {
     const existingDesign = location.state?.existingDesign;
     if (existingDesign?.image_url) {
+      setSavedDesignId(existingDesign.id || null);
       setDesignDraft({
         imageUrl: existingDesign.image_url,
         promptText: existingDesign.prompt_text || "",
         createdAt: new Date(),
       });
       setCurrentStep('approve');
-      toast.success("Design loaded! Review and approve to continue.");
+      toast.success("Design loaded! Review, save, and continue.");
     }
   }, [location.state]);
 
@@ -273,12 +289,13 @@ export default function CustomDesign() {
     reader.onload = (event) => {
       const imageUrl = event.target?.result as string;
       setUploadedDesign(imageUrl);
+      setSavedDesignId(null);
       setDesignDraft({
         imageUrl,
         promptText: "Uploaded design",
         createdAt: new Date(),
       });
-      toast.success("Design uploaded! Review and approve to continue.");
+      toast.success("Design uploaded! Review, save, and continue.");
       setCurrentStep('approve');
     };
     reader.readAsDataURL(file);
@@ -323,14 +340,7 @@ export default function CustomDesign() {
       if (error) throw error;
 
       if (data?.image) {
-        // Save to database
-        const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from("ai_generated_images").insert({
-          image_url: data.image,
-          prompt_text: prompt.trim(),
-          user_id: user?.id || null,
-          selected: false,
-        });
+        setSavedDesignId(null);
 
         setDesignDraft({
           imageUrl: data.image,
@@ -338,7 +348,7 @@ export default function CustomDesign() {
           createdAt: new Date(),
         });
         
-        toast.success("Design generated! Review and approve to continue.");
+        toast.success("Design generated! Review, save, and continue.");
         setCurrentStep('approve');
       } else {
         throw new Error("No design image returned");
@@ -365,10 +375,74 @@ export default function CustomDesign() {
   };
 
   const editDesign = () => {
+    setSavedDesignId(null);
     setDesignDraft(null);
     setUploadedDesign(null);
     setCurrentStep('create');
     toast.info("Edit your design");
+  };
+
+  const saveDesignToProfile = async (): Promise<boolean> => {
+    if (!designDraft) return false;
+
+    if (savedDesignId) {
+      toast.success("This design is already saved in your profile");
+      return true;
+    }
+
+    setSavingDesign(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast.error("Please sign in to save designs");
+        navigate("/auth");
+        return false;
+      }
+
+      const { count, error: countError } = await supabase
+        .from('ai_generated_images')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (countError) throw countError;
+
+      if ((count ?? 0) >= 10) {
+        toast.error("You've reached the 10-design limit. Delete one in your profile to save a new design.");
+        navigate('/profile');
+        return false;
+      }
+
+      const { data, error } = await supabase
+        .from('ai_generated_images')
+        .insert({
+          image_url: designDraft.imageUrl,
+          prompt_text: designDraft.promptText || 'Custom design',
+          user_id: user.id,
+          selected: false,
+        })
+        .select('id');
+
+      if (error) throw error;
+
+      const newId = (data || [])[0]?.id as string | undefined;
+      if (!newId) throw new Error('Save failed (no id returned)');
+
+      setSavedDesignId(newId);
+      toast.success('Design saved to your profile');
+      return true;
+    } catch (error: any) {
+      console.error('Error saving design:', error);
+      toast.error(error?.message || 'Failed to save design');
+      return false;
+    } finally {
+      setSavingDesign(false);
+    }
+  };
+
+  const saveAndProceed = async () => {
+    const saved = await saveDesignToProfile();
+    if (saved) approveDesign();
   };
 
   const generateMockup = async () => {
@@ -722,15 +796,50 @@ export default function CustomDesign() {
                   />
                   
 
-                  <div className="flex gap-4 justify-center">
-                    <Button size="lg" onClick={approveDesign} className="min-w-[180px]">
-                      <Check className="mr-2 h-5 w-5" />
-                      Approve Design
-                    </Button>
-                    <Button size="lg" variant="outline" onClick={editDesign}>
-                      <Edit className="mr-2 h-5 w-5" />
-                      Edit Design
-                    </Button>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Save this design to your profile (10 max) so you don’t lose it.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button
+                        size="lg"
+                        onClick={saveAndProceed}
+                        className="min-w-[200px]"
+                        disabled={savingDesign || !!savedDesignId}
+                      >
+                        {savingDesign ? (
+                          <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            Saving...
+                          </>
+                        ) : savedDesignId ? (
+                          <>
+                            <Check className="mr-2 h-5 w-5" />
+                            Saved
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 h-5 w-5" />
+                            Save & Continue
+                          </>
+                        )}
+                      </Button>
+
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={approveDesign}
+                        className="min-w-[200px]"
+                      >
+                        Continue (no save)
+                      </Button>
+
+                      <Button size="lg" variant="outline" onClick={editDesign}>
+                        <Edit className="mr-2 h-5 w-5" />
+                        Edit Design
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </Card>
