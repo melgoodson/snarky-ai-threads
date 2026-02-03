@@ -82,7 +82,7 @@ export const Footer = () => {
               </li>
               <li>
                 <a href="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Admin Dashboard
+                  Admin
                 </a>
               </li>
             </ul>
