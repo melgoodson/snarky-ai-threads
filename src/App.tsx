@@ -10,6 +10,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Collections from "./pages/Collections";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import BlogPostDynamic from "./pages/BlogPostDynamic";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Checkout from "./pages/Checkout";
@@ -21,6 +22,8 @@ import NotFound from "./pages/NotFound";
 import PrintifyAdmin from "./pages/PrintifyAdmin";
 import CustomDesign from "./pages/CustomDesign";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminBlog from "./pages/AdminBlog";
+import AdminFAQ from "./pages/AdminFAQ";
 import TeeinblueAdmin from "./pages/TeeinblueAdmin";
 import Auth from "./pages/Auth";
 import ProductManagement from "./pages/ProductManagement";
@@ -50,6 +53,7 @@ const App = () => (
             <Route path="/designs/:id" element={<DesignDetail />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/funny-snarky-shirts-make-friends" element={<BlogPost />} />
+            <Route path="/blog/:slug" element={<BlogPostDynamic />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />
             <Route path="/checkout" element={<Checkout />} />
@@ -58,6 +62,8 @@ const App = () => (
             <Route path="/printify-admin" element={<PrintifyAdmin />} />
             <Route path="/custom-design" element={<CustomDesign />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/blog" element={<AdminBlog />} />
+            <Route path="/admin/faq" element={<AdminFAQ />} />
             <Route path="/teeinblue-admin" element={<TeeinblueAdmin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/product-management" element={<ProductManagement />} />

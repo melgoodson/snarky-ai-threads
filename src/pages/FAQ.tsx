@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -7,9 +8,40 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { supabase } from "@/integrations/supabase/client";
+
+interface DatabaseFAQ {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  sort_order: number;
+}
 
 const FAQ = () => {
-  const faqData = {
+  const [databaseFaqs, setDatabaseFaqs] = useState<DatabaseFAQ[]>([]);
+
+  useEffect(() => {
+    fetchDatabaseFaqs();
+  }, []);
+
+  const fetchDatabaseFaqs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("faqs")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+
+      if (error) throw error;
+      setDatabaseFaqs((data as DatabaseFAQ[]) || []);
+    } catch (error) {
+      console.error("Error fetching FAQs:", error);
+    }
+  };
+
+  // Static FAQ data for backwards compatibility
+  const staticFaqData: Record<string, Array<{ q: string; a: string }>> = {
     "Sizing & Fit": [
       {
         q: "How do your sizes run (and do you have up to 4XL)?",
@@ -156,10 +188,31 @@ const FAQ = () => {
     ]
   };
 
+  // Group database FAQs by category
+  const groupedDbFaqs = databaseFaqs.reduce((acc, faq) => {
+    const category = faq.category || "General";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push({ q: faq.question, a: faq.answer });
+    return acc;
+  }, {} as Record<string, Array<{ q: string; a: string }>>);
+
+  // Merge database FAQs at the top, then static FAQs
+  const allFaqData = { ...groupedDbFaqs };
+  Object.entries(staticFaqData).forEach(([category, questions]) => {
+    if (allFaqData[category]) {
+      // Append static to database FAQs for same category
+      allFaqData[category] = [...allFaqData[category], ...questions];
+    } else {
+      allFaqData[category] = questions;
+    }
+  });
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": Object.entries(faqData).flatMap(([category, questions]) =>
+    "mainEntity": Object.entries(allFaqData).flatMap(([category, questions]) =>
       questions.map(({ q, a }) => ({
         "@type": "Question",
         "name": q,
@@ -208,7 +261,7 @@ const FAQ = () => {
             </p>
 
             <div className="space-y-8">
-              {Object.entries(faqData).map(([category, questions]) => (
+              {Object.entries(allFaqData).map(([category, questions]) => (
                 <div key={category}>
                   <h2 className="text-2xl font-bold mb-4 text-primary">{category}</h2>
                   <Accordion type="single" collapsible className="w-full">
