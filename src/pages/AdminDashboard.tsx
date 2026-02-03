@@ -25,7 +25,9 @@ import {
   Users,
   ShoppingCart,
   BarChart3,
-  Calendar
+  Calendar,
+  FileText,
+  HelpCircle
 } from "lucide-react";
 import { 
   LineChart, 
@@ -397,7 +399,21 @@ export default function AdminDashboard() {
               </p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/admin/blog")}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Blog
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/admin/faq")}
+              >
+                <HelpCircle className="h-4 w-4 mr-2" />
+                FAQ
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => navigate("/product-management")}
