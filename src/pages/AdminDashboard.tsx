@@ -405,7 +405,7 @@ export default function AdminDashboard() {
                 onClick={() => navigate("/admin/blog")}
               >
                 <FileText className="h-4 w-4 mr-2" />
-                Blog
+                Website SEAL
               </Button>
               <Button
                 variant="outline"
