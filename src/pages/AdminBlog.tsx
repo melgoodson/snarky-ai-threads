@@ -325,9 +325,9 @@ export default function AdminBlog() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
               </Button>
-              <h1 className="text-4xl font-black tracking-tighter">Blog Manager</h1>
+              <h1 className="text-4xl font-black tracking-tighter">Website SEAL Generator</h1>
               <p className="text-muted-foreground mt-2">
-                Create, edit, and manage blog posts with AI assistance
+                Create, edit, and manage website content with AI assistance
               </p>
             </div>
             
@@ -341,11 +341,11 @@ export default function AdminBlog() {
             <TabsList>
               <TabsTrigger value="posts">
                 <FileText className="h-4 w-4 mr-2" />
-                All Posts
+                All Content
               </TabsTrigger>
               <TabsTrigger value="generate">
                 <Sparkles className="h-4 w-4 mr-2" />
-                AI Generator
+                SEAL Generator
               </TabsTrigger>
             </TabsList>
 
@@ -353,9 +353,9 @@ export default function AdminBlog() {
             <TabsContent value="posts">
               <Card>
                 <CardHeader>
-                  <CardTitle>Blog Posts</CardTitle>
+                  <CardTitle>Website Content</CardTitle>
                   <CardDescription>
-                    {posts.length} total posts • {posts.filter(p => p.status === "published").length} published
+                    {posts.length} total items • {posts.filter(p => p.status === "published").length} published
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -437,10 +437,10 @@ export default function AdminBlog() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
-                    AI Blog Generator
+                    Website SEAL Generator
                   </CardTitle>
                   <CardDescription>
-                    Generate AEO-optimized blog posts with AI. The content will match your brand's snarky, irreverent tone.
+                    Generate AEO-optimized website content with AI. The content will match your brand's snarky, irreverent tone.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
