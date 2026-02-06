@@ -72,6 +72,7 @@ export default function AdminBlog() {
     status: "draft" as "draft" | "published",
   });
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -215,6 +216,46 @@ export default function AdminBlog() {
       status: "draft",
     });
     setIsDialogOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `blog-${Date.now()}.${fileExt}`;
+      const filePath = `blog-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('design-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('design-images')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, featured_image_url: publicUrl }));
+      toast.success("Image uploaded successfully");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const generateSlug = (title: string) => {
@@ -564,13 +605,39 @@ export default function AdminBlog() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="form-image">Featured Image URL</Label>
-                <Input
-                  id="form-image"
-                  value={formData.featured_image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, featured_image_url: e.target.value }))}
-                  placeholder="https://..."
-                />
+                <Label>Featured Image</Label>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input
+                      id="form-image"
+                      value={formData.featured_image_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, featured_image_url: e.target.value }))}
+                      placeholder="https://... or upload below"
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="flex-1"
+                    />
+                    {uploadingImage && (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                  {formData.featured_image_url && (
+                    <div className="relative w-32 h-20 rounded-md overflow-hidden border">
+                      <img 
+                        src={formData.featured_image_url} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
