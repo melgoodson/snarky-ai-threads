@@ -78,6 +78,7 @@ interface TrafficAnalytics {
   topPages: Array<{ page: string; views: number }>;
   deviceBreakdown: Array<{ name: string; value: number }>;
   browserBreakdown: Array<{ name: string; value: number }>;
+  countryBreakdown: Array<{ name: string; value: number }>;
   avgScrollDepth: number;
 }
 
@@ -189,6 +190,17 @@ export default function AdminDashboard() {
       });
       const browserBreakdown = Object.entries(browserCounts).map(([name, value]) => ({ name, value }));
 
+      // Country breakdown from sessions
+      const countryCounts: Record<string, number> = {};
+      sessions?.forEach(s => {
+        const country = s.country || 'XX';
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
+      });
+      const countryBreakdown = Object.entries(countryCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 15);
+
       // Average scroll depth from page views
       const scrollViews = pageViews?.filter(pv => pv.scroll_depth && pv.scroll_depth > 0) || [];
       const avgScrollDepth = scrollViews.length > 0 
@@ -204,6 +216,7 @@ export default function AdminDashboard() {
         topPages,
         deviceBreakdown,
         browserBreakdown,
+        countryBreakdown,
         avgScrollDepth,
       });
     } catch (error) {
@@ -761,6 +774,35 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Country Breakdown */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Sessions by Country</CardTitle>
+                  <CardDescription>Geographic distribution of sessions (ISO country codes)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {trafficAnalytics?.countryBreakdown && trafficAnalytics.countryBreakdown.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={trafficAnalytics.countryBreakdown}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                        />
+                        <Bar dataKey="value" fill="hsl(var(--chart-3))" name="Sessions" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No country data yet</p>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Top Pages & Engagement Metrics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
