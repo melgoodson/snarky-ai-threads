@@ -79,6 +79,8 @@ interface TrafficAnalytics {
   deviceBreakdown: Array<{ name: string; value: number }>;
   browserBreakdown: Array<{ name: string; value: number }>;
   countryBreakdown: Array<{ name: string; value: number }>;
+  osBreakdown: Array<{ name: string; value: number }>;
+  trafficSources: Array<{ name: string; value: number }>;
   avgScrollDepth: number;
 }
 
@@ -201,6 +203,22 @@ export default function AdminDashboard() {
         .sort((a, b) => b.value - a.value)
         .slice(0, 15);
 
+      // OS breakdown from sessions
+      const osCounts: Record<string, number> = {};
+      sessions?.forEach(s => {
+        const os = s.os || 'Unknown';
+        osCounts[os] = (osCounts[os] || 0) + 1;
+      });
+      const osBreakdown = Object.entries(osCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+
+      // Traffic sources from sessions
+      const sourceCounts: Record<string, number> = {};
+      sessions?.forEach(s => {
+        const source = (s as any).traffic_source_type || 'unknown';
+        sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+      });
+      const trafficSources = Object.entries(sourceCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+
       // Average scroll depth from page views
       const scrollViews = pageViews?.filter(pv => pv.scroll_depth && pv.scroll_depth > 0) || [];
       const avgScrollDepth = scrollViews.length > 0 
@@ -217,6 +235,8 @@ export default function AdminDashboard() {
         deviceBreakdown,
         browserBreakdown,
         countryBreakdown,
+        osBreakdown,
+        trafficSources,
         avgScrollDepth,
       });
     } catch (error) {
@@ -771,6 +791,75 @@ export default function AdminDashboard() {
                         <Bar dataKey="value" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* OS Breakdown & Traffic Sources */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* OS Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>OS Breakdown</CardTitle>
+                    <CardDescription>Traffic by operating system</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {trafficAnalytics?.osBreakdown && trafficAnalytics.osBreakdown.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={trafficAnalytics.osBreakdown}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={100}
+                            fill="hsl(var(--primary))"
+                            dataKey="value"
+                          >
+                            {trafficAnalytics.osBreakdown.map((_, index) => (
+                              <Cell key={`os-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No OS data yet</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Traffic Sources */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Traffic Sources</CardTitle>
+                    <CardDescription>How visitors find your site</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {trafficAnalytics?.trafficSources && trafficAnalytics.trafficSources.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={trafficAnalytics.trafficSources}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={100}
+                            fill="hsl(var(--primary))"
+                            dataKey="value"
+                          >
+                            {trafficAnalytics.trafficSources.map((_, index) => (
+                              <Cell key={`src-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No traffic source data yet</p>
+                    )}
                   </CardContent>
                 </Card>
               </div>

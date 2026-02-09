@@ -82,6 +82,45 @@ serve(async (req) => {
       countryMap[c] = (countryMap[c] || 0) + 1;
     });
 
+    // OS breakdown
+    const osMap: Record<string, number> = {};
+    sessions?.forEach(session => {
+      const o = session.os || 'Unknown';
+      osMap[o] = (osMap[o] || 0) + 1;
+    });
+
+    // Browser breakdown
+    const browserMap: Record<string, number> = {};
+    sessions?.forEach(session => {
+      const b = session.browser || 'Unknown';
+      browserMap[b] = (browserMap[b] || 0) + 1;
+    });
+
+    // Device breakdown
+    const deviceMap: Record<string, number> = {};
+    sessions?.forEach(session => {
+      const d = session.device_type || 'unknown';
+      deviceMap[d] = (deviceMap[d] || 0) + 1;
+    });
+
+    // Traffic sources
+    const sourceMap: Record<string, number> = {};
+    sessions?.forEach(session => {
+      const s = (session as any).traffic_source_type || 'unknown';
+      sourceMap[s] = (sourceMap[s] || 0) + 1;
+    });
+
+    // Top pages
+    const pageMap: Record<string, number> = {};
+    pageViews?.forEach(pv => {
+      const p = (pv as any).path || '(not set)';
+      pageMap[p] = (pageMap[p] || 0) + 1;
+    });
+    const topPages = Object.entries(pageMap)
+      .map(([key, value]) => ({ key, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 25);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -93,6 +132,14 @@ serve(async (req) => {
           pagesPerVisit,
           totalSessions,
           countries: countryMap,
+          breakdowns: {
+            countries: Object.entries(countryMap).map(([key, value]) => ({ key, value })),
+            devices: Object.entries(deviceMap).map(([key, value]) => ({ key, value })),
+            os: Object.entries(osMap).map(([key, value]) => ({ key, value })),
+            browsers: Object.entries(browserMap).map(([key, value]) => ({ key, value })),
+            sources: Object.entries(sourceMap).map(([key, value]) => ({ key, value })),
+            top_pages: topPages,
+          },
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
