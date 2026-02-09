@@ -77,6 +77,7 @@ export type Database = {
       analytics_sessions: {
         Row: {
           browser: string | null
+          country: string | null
           device_type: string | null
           ended_at: string | null
           id: string
@@ -96,6 +97,7 @@ export type Database = {
         }
         Insert: {
           browser?: string | null
+          country?: string | null
           device_type?: string | null
           ended_at?: string | null
           id?: string
@@ -115,6 +117,7 @@ export type Database = {
         }
         Update: {
           browser?: string | null
+          country?: string | null
           device_type?: string | null
           ended_at?: string | null
           id?: string

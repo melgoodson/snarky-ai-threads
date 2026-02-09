@@ -69,5 +69,8 @@ verify_jwt = false
 [functions.create-custom-printify-product]
 verify_jwt = false
 
+[functions.resolve-country]
+verify_jwt = false
+
 [functions.generate-blog]
 verify_jwt = false

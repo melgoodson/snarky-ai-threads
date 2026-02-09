@@ -75,6 +75,13 @@ serve(async (req) => {
     });
     const avgDuration = sessionsWithDuration > 0 ? Math.round(totalDuration / sessionsWithDuration / 1000) : 0;
 
+    // Country breakdown
+    const countryMap: Record<string, number> = {};
+    sessions?.forEach(session => {
+      const c = session.country || 'XX';
+      countryMap[c] = (countryMap[c] || 0) + 1;
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -85,6 +92,7 @@ serve(async (req) => {
           bounceRate,
           pagesPerVisit,
           totalSessions,
+          countries: countryMap,
         },
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 const VISITOR_ID_KEY = 'snarky_visitor_id';
 const SESSION_ID_KEY = 'snarky_session_id';
+const COUNTRY_CACHE_KEY = 'snarky_country';
+const COUNTRY_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
 function generateId(): string {
@@ -70,6 +72,37 @@ function getUtmParams(): Record<string, string | null> {
   };
 }
 
+/**
+ * Resolve visitor country via the resolve-country edge function.
+ * The edge function reads CDN geo headers (e.g. cf-ipcountry) — no IP is stored.
+ * Result is cached in localStorage for 24h to avoid repeated calls.
+ */
+async function resolveCountry(): Promise<string> {
+  try {
+    // Check localStorage cache first
+    const cached = localStorage.getItem(COUNTRY_CACHE_KEY);
+    if (cached) {
+      const { country, ts } = JSON.parse(cached);
+      if (Date.now() - ts < COUNTRY_CACHE_TTL && /^[A-Z]{2}$/.test(country)) {
+        return country;
+      }
+    }
+
+    const { data, error } = await supabase.functions.invoke('resolve-country', {
+      method: 'GET',
+    });
+
+    if (error) throw error;
+
+    const country = data?.country && /^[A-Z]{2}$/.test(data.country) ? data.country : 'XX';
+    localStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify({ country, ts: Date.now() }));
+    return country;
+  } catch (e) {
+    console.debug('Failed to resolve country:', e);
+    return 'XX';
+  }
+}
+
 export function useAnalytics() {
   const location = useLocation();
   const sessionInitialized = useRef(false);
@@ -87,6 +120,8 @@ export function useAnalytics() {
 
     const { deviceType, browser, os } = detectDevice();
     const utmParams = getUtmParams();
+    // Resolve country from edge function (no IP stored, uses CDN geo headers)
+    const country = await resolveCountry();
 
     try {
       await supabase.from('analytics_sessions').insert({
@@ -95,6 +130,7 @@ export function useAnalytics() {
         device_type: deviceType,
         browser,
         os,
+        country,
         screen_width: window.screen.width,
         screen_height: window.screen.height,
         referrer: document.referrer || null,
