@@ -72,6 +72,52 @@ function getUtmParams(): Record<string, string | null> {
   };
 }
 
+const KNOWN_SEARCH_DOMAINS = ['google.', 'bing.', 'yahoo.', 'duckduckgo.', 'baidu.', 'yandex.', 'ecosia.'];
+const KNOWN_SOCIAL_DOMAINS = ['facebook.', 'twitter.', 't.co', 'instagram.', 'linkedin.', 'reddit.', 'pinterest.', 'tiktok.', 'youtube.'];
+const KNOWN_EMAIL_DOMAINS = ['mail.google.', 'outlook.', 'mail.yahoo.', 'webmail.'];
+
+/**
+ * Classify the traffic source for this session.
+ * Attribution is determined once per session on the first pageview:
+ *   1. If UTM params exist → use utm_medium to classify (paid, email, social, or referral)
+ *   2. Else if gclid/fbclid present → "paid"
+ *   3. Else if referrer is a known search engine → "organic"
+ *   4. Else if referrer is a known social domain → "social"
+ *   5. Else if referrer is a known email domain → "email"
+ *   6. Else if referrer is present and not same-domain → "referral"
+ *   7. Else → "direct"
+ */
+function classifyTrafficSource(utmParams: Record<string, string | null>, referrer: string): string {
+  const params = new URLSearchParams(window.location.search);
+
+  // UTM-based attribution takes priority
+  if (utmParams.utm_source || utmParams.utm_medium) {
+    const medium = (utmParams.utm_medium || '').toLowerCase();
+    if (['cpc', 'ppc', 'paid', 'paidsearch', 'paidsocial', 'display', 'banner'].includes(medium)) return 'paid';
+    if (medium === 'email') return 'email';
+    if (medium === 'social') return 'social';
+    return 'referral'; // has UTM but not a specific category
+  }
+
+  // Click IDs indicate paid traffic
+  if (params.get('gclid') || params.get('fbclid') || params.get('msclkid')) return 'paid';
+
+  // Referrer-based classification
+  if (!referrer) return 'direct';
+
+  try {
+    const refHost = new URL(referrer).hostname.toLowerCase();
+    // Same-domain = direct
+    if (refHost === window.location.hostname) return 'direct';
+    if (KNOWN_SEARCH_DOMAINS.some(d => refHost.includes(d))) return 'organic';
+    if (KNOWN_SOCIAL_DOMAINS.some(d => refHost.includes(d))) return 'social';
+    if (KNOWN_EMAIL_DOMAINS.some(d => refHost.includes(d))) return 'email';
+    return 'referral';
+  } catch {
+    return 'referral';
+  }
+}
+
 /**
  * Resolve visitor country via the resolve-country edge function.
  * The edge function reads CDN geo headers (e.g. cf-ipcountry) — no IP is stored.
@@ -123,6 +169,13 @@ export function useAnalytics() {
     // Resolve country from edge function (no IP stored, uses CDN geo headers)
     const country = await resolveCountry();
 
+    // Classify traffic source once per session and lock it
+    const referrer = document.referrer || '';
+    const trafficSourceType = classifyTrafficSource(utmParams, referrer);
+
+    // Entry page path: first page of the session
+    const entryPagePath = window.location.pathname;
+
     try {
       await supabase.from('analytics_sessions').insert({
         visitor_id: visitorId.current,
@@ -133,12 +186,14 @@ export function useAnalytics() {
         country,
         screen_width: window.screen.width,
         screen_height: window.screen.height,
-        referrer: document.referrer || null,
+        referrer: referrer || null,
         utm_source: utmParams.utm_source,
         utm_medium: utmParams.utm_medium,
         utm_campaign: utmParams.utm_campaign,
         utm_term: utmParams.utm_term,
         utm_content: utmParams.utm_content,
+        traffic_source_type: trafficSourceType,
+        entry_page_path: entryPagePath,
       });
     } catch (error) {
       console.debug('Failed to init analytics session:', error);

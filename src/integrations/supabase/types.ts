@@ -80,6 +80,7 @@ export type Database = {
           country: string | null
           device_type: string | null
           ended_at: string | null
+          entry_page_path: string | null
           id: string
           is_bounce: boolean | null
           os: string | null
@@ -88,6 +89,7 @@ export type Database = {
           screen_width: number | null
           session_id: string
           started_at: string | null
+          traffic_source_type: string | null
           utm_campaign: string | null
           utm_content: string | null
           utm_medium: string | null
@@ -100,6 +102,7 @@ export type Database = {
           country?: string | null
           device_type?: string | null
           ended_at?: string | null
+          entry_page_path?: string | null
           id?: string
           is_bounce?: boolean | null
           os?: string | null
@@ -108,6 +111,7 @@ export type Database = {
           screen_width?: number | null
           session_id: string
           started_at?: string | null
+          traffic_source_type?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
@@ -120,6 +124,7 @@ export type Database = {
           country?: string | null
           device_type?: string | null
           ended_at?: string | null
+          entry_page_path?: string | null
           id?: string
           is_bounce?: boolean | null
           os?: string | null
@@ -128,6 +133,7 @@ export type Database = {
           screen_width?: number | null
           session_id?: string
           started_at?: string | null
+          traffic_source_type?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
