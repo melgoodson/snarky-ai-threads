@@ -15,8 +15,56 @@ import sasquatches from "@/assets/sasquatches.png";
 import whiteIdolMorning from "@/assets/white-idol-morning.png";
 import fathers from "@/assets/fathers.png";
 import dark from "@/assets/dark.png";
+import personalizationBlanket from "@/assets/personalization-blanket.png";
 
 const PRODUCT_DATA = {
+  "personalization-blanket": {
+    title: "Personalization Blanket – Custom Photo Blanket",
+    subtitle: "Upload Your Photos • Create a One-of-a-Kind Gift",
+    category: "PERSONALIZED GIFTS",
+    price: 49.99,
+    image: personalizationBlanket,
+    description: `Turn your favorite memories into the coziest personalized gift ever. Our Personalization Blanket lets you upload your own photos to create a custom photo blanket that's as unique as the person you're gifting it to.
+
+Why customers love it:
+Ultra-soft premium fleece on one side, cozy sherpa on the other — pure warmth and comfort.
+Vibrant, edge-to-edge photo printing that won't fade, crack, or peel.
+Multiple sizes available: 30"×40" (baby/lap), 50"×60" (throw), 60"×80" (full).
+Machine washable & dryer safe — built for everyday snuggles.
+
+The perfect personalized gift for every occasion:
+Personalized gifts for mom — Mother's Day, birthdays, or "just because."
+Personalized gifts for dad — Father's Day, retirement, or game-day couch sessions.
+Custom gifts for girlfriend or boyfriend — anniversaries, Valentine's Day, long-distance love.
+Personalized gifts with photo — weddings, graduations, memorials, new baby arrivals.
+Personalized gifts for Christmas — the gift that actually means something.
+
+How it works:
+1. Choose your blanket size.
+2. Upload your favorite photos (1–12 images).
+3. We print, quality-check, and ship your custom blanket within 5–7 business days.
+
+Every blanket is made to order with care. No generic gifts — just your memories, wrapped in softness.`,
+    fit: `Available in three sizes:
+• 30" × 40" — Perfect lap/baby blanket
+• 50" × 60" — Classic throw size for the couch
+• 60" × 80" — Full-size for the bed`,
+    care: `Machine wash cold on gentle cycle with mild detergent. Tumble dry on low heat. Do not bleach. Do not iron directly on printed area. Your photos will stay vibrant wash after wash.
+
+Pro tip: Wash inside-out to protect the print and keep colors looking fresh for years.`,
+    sizeChart: {
+      cm: [
+        { size: "30×40", length: "102", chest: "76" },
+        { size: "50×60", length: "152", chest: "127" },
+        { size: "60×80", length: "203", chest: "152" },
+      ],
+      inches: [
+        { size: "30×40", length: "40", chest: "30" },
+        { size: "50×60", length: "60", chest: "50" },
+        { size: "60×80", length: "80", chest: "60" },
+      ],
+    },
+  },
   "rbf-champion": {
     title: "RBF Champion",
     subtitle: "(I'm coming for you bitch)",
