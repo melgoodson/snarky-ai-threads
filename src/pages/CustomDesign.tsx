@@ -177,7 +177,7 @@ export default function CustomDesign() {
     const title = (product.title || '').toLowerCase();
     
     const apparelKeywords = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater', 'apparel', 'clothing'];
-    const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap'];
+    const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap', 'blanket'];
     
     // Check if it's explicitly non-apparel
     for (const keyword of nonApparelKeywords) {
