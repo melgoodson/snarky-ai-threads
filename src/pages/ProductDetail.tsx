@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 import { useCart } from "@/contexts/CartContext";
@@ -497,17 +497,24 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <Button size="xl" className="w-full group" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              ADD TO CART
-            </Button>
+            {id === "personalization-blanket" ? (
+              <Button size="xl" className="w-full group" onClick={() => navigate("/custom-design")}>
+                <Sparkles className="mr-2 h-5 w-5" />
+                DESIGN YOUR OWN BLANKET
+              </Button>
+            ) : (
+              <Button size="xl" className="w-full group" onClick={handleAddToCart}>
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                ADD TO CART
+              </Button>
+            )}
 
             <Tabs defaultValue="description" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full ${id === "personalization-blanket" ? "grid-cols-3" : "grid-cols-4"}`}>
                 <TabsTrigger value="description">Description</TabsTrigger>
                 <TabsTrigger value="size">Size Chart</TabsTrigger>
                 <TabsTrigger value="care">Care</TabsTrigger>
-                <TabsTrigger value="tryit">Try It On</TabsTrigger>
+                {id !== "personalization-blanket" && <TabsTrigger value="tryit">Try It On</TabsTrigger>}
               </TabsList>
               
               <TabsContent value="description" className="space-y-4">
@@ -594,9 +601,11 @@ const ProductDetail = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="tryit">
-                <AIMockupGenerator productImage={product.image} />
-              </TabsContent>
+              {id !== "personalization-blanket" && (
+                <TabsContent value="tryit">
+                  <AIMockupGenerator productImage={product.image} />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>
