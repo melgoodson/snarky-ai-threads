@@ -1,6 +1,35 @@
 import { Facebook, Instagram, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Footer = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await (supabase as any)
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      setIsAdmin(!!roles);
+    };
+
+    checkAdmin();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAdmin();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <footer className="border-t border-border bg-card mt-20">
       <div className="container px-4 py-12">
@@ -13,13 +42,13 @@ export const Footer = () => {
               Attitude-packed apparel for people who speak their mind.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://www.facebook.com/p/Snarky-Humans-61568754866840/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://www.instagram.com/snarkyhumans/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://x.com/SnarkyHumans" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
             </div>
@@ -29,19 +58,34 @@ export const Footer = () => {
             <h4 className="font-bold mb-4 text-foreground">SHOP</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/new-arrivals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   New Arrivals
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Best Sellers
-                </a>
+                <Link to="/designs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  All Designs
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/collections" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Collections
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link to="/shirts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Shirts
+                </Link>
+              </li>
+              <li>
+                <Link to="/hoodies" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Hoodies
+                </Link>
+              </li>
+              <li>
+                <Link to="/blankets" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Blankets
+                </Link>
               </li>
             </ul>
           </div>
@@ -50,19 +94,24 @@ export const Footer = () => {
             <h4 className="font-bold mb-4 text-foreground">SUPPORT</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Contact Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/shipping" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Shipping Info
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/returns" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Returns
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  FAQ
+                </Link>
               </li>
             </ul>
           </div>
@@ -71,20 +120,22 @@ export const Footer = () => {
             <h4 className="font-bold mb-4 text-foreground">LEGAL</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Terms of Service
-                </a>
+                </Link>
               </li>
-              <li>
-                <a href="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Admin
-                </a>
-              </li>
+              {isAdmin && (
+                <li>
+                  <Link to="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Admin
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -93,6 +144,6 @@ export const Footer = () => {
           <p>&copy; {new Date().getFullYear()} Snarky A$$ Apparel. All rights reserved.</p>
         </div>
       </div>
-    </footer>
+    </footer >
   );
 };

@@ -42,9 +42,7 @@ type CheckoutItem = CartItem;
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
-  
-  console.log('Checkout page - cart items:', items);
-  console.log('Checkout page - total price:', totalPrice);
+
   const [loading, setLoading] = useState(false);
   const [designData, setDesignData] = useState<any>(null);
   const [formData, setFormData] = useState<CheckoutForm>({
@@ -71,7 +69,7 @@ const Checkout = () => {
   const checkAuthAndLoadData = async () => {
     // Check if user is authenticated
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       toast.error('Please sign in to checkout');
       navigate('/auth');
@@ -137,17 +135,17 @@ const Checkout = () => {
     ? items
     : designData
       ? [{
-          id: `custom-${designData.productId}`,
-          productId: designData.productId,
-          title: designData.title || 'Custom T-Shirt',
-          price: getPriceFromDesign(designData),
-          size: designData.size || 'M',
-          image: designData.image || designData.mockupUrl,
-          quantity: 1,
-          printifyProductId: designData.printifyProductId,
-          variantId: undefined,
-          designImageUrl: designData.designImageUrl || designData.image || designData.mockupUrl, // Pass design artwork
-        }]
+        id: `custom-${designData.productId}`,
+        productId: designData.productId,
+        title: designData.title || 'Custom T-Shirt',
+        price: getPriceFromDesign(designData),
+        size: designData.size || 'M',
+        image: designData.image || designData.mockupUrl,
+        quantity: 1,
+        printifyProductId: designData.printifyProductId,
+        variantId: undefined,
+        designImageUrl: designData.designImageUrl || designData.image || designData.mockupUrl, // Pass design artwork
+      }]
       : [];
 
   console.log('Checkout items:', checkoutItems);
@@ -208,7 +206,7 @@ const Checkout = () => {
 
       // Get auth session for authenticated request
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         toast.error('Please sign in to checkout');
         navigate('/auth');
@@ -233,11 +231,9 @@ const Checkout = () => {
       );
 
       const checkoutData = await response.json();
-      console.log('create-checkout fetch response', { status: response.status, checkoutData });
 
       if (!response.ok) {
         const message = checkoutData?.error || 'Checkout request failed';
-        console.error('create-checkout HTTP error:', message);
         toast.error(`Checkout error: ${message}`);
         throw new Error(message);
       }
@@ -248,11 +244,9 @@ const Checkout = () => {
         setShowPopupAlert(true);
         setLoading(false);
       } else {
-        console.error('create-checkout missing URL:', checkoutData);
         throw new Error('No checkout URL returned from backend');
       }
     } catch (error) {
-      console.error('Error creating checkout:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Failed to create checkout: ${message}`);
       setLoading(false);
@@ -261,8 +255,8 @@ const Checkout = () => {
 
   const handleOpenStripeCheckout = () => {
     if (checkoutUrl) {
-      window.open(checkoutUrl, '_blank');
-      toast.success('Stripe checkout opened in new tab');
+      clearCart();
+      window.location.href = checkoutUrl;
     }
     setShowPopupAlert(false);
   };
@@ -443,27 +437,27 @@ const Checkout = () => {
               <div className="space-y-4">
                 {checkoutItems.map(item => {
                   // Handle image being either a string or object with src property
-                  const imageUrl = typeof item.image === 'string' 
-                    ? item.image 
+                  const imageUrl = typeof item.image === 'string'
+                    ? item.image
                     : (item.image as any)?.src || '/placeholder.svg';
-                  
+
                   return (
-                  <div key={item.id} className="flex gap-4">
-                    <img
-                      src={imageUrl}
-                      alt={item.title}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <p className="font-bold text-sm">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Size: {item.size} | Qty: {item.quantity}
-                      </p>
-                      <p className="text-sm font-bold mt-1">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </p>
+                    <div key={item.id} className="flex gap-4">
+                      <img
+                        src={imageUrl}
+                        alt={item.title}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <p className="font-bold text-sm">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Size: {item.size} | Qty: {item.quantity}
+                        </p>
+                        <p className="text-sm font-bold mt-1">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
                   );
                 })}
                 <div className="border-t pt-4 space-y-2">

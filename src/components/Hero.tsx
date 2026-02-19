@@ -5,7 +5,7 @@ import logoAnimation from "@/assets/logo-animation.mp4";
 
 export const Hero = () => {
   const navigate = useNavigate();
-  
+
   return (
     <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
       {/* Placeholder for hero image - will be added later */}
@@ -17,35 +17,33 @@ export const Hero = () => {
         <div className="max-w-3xl w-full space-y-8">
           {/* Animated Logo */}
           <div className="flex justify-center mb-8">
-            <video 
-              autoPlay 
-              loop 
-              muted 
+            <video
+              autoPlay
+              loop
+              muted
               playsInline
               className="w-full max-w-2xl h-auto object-contain"
             >
               <source src={logoAnimation} type="video/mp4" />
             </video>
           </div>
-          <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
+          <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-none">
             WEAR YOUR
             <span className="block text-primary mt-2">ATTITUDE</span>
           </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-2xl md:text-3xl text-primary/80 font-semibold italic tracking-wide mt-2">
+            "If you can think it, we can make it"
+          </p>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto font-medium">
             Bold designs for people who don't give a damn. Drop-shipped straight to your door.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button variant="hero" size="xl" className="group" onClick={() => {
-              const productsSection = document.getElementById('products');
-              if (productsSection) {
-                productsSection.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}>
+            <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/collections')}>
               SHOP NOW
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button variant="outline" size="xl" onClick={() => navigate('/collections')}>
-              VIEW COLLECTIONS
+            <Button variant="outline" size="xl" className="text-lg" onClick={() => navigate('/designs')}>
+              BROWSE DESIGNS
             </Button>
           </div>
         </div>

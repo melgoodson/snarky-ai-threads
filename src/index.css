@@ -1,3 +1,6 @@
+/* Import bold display font for headings */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,10 +65,31 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 800;
+  }
+}
+
+@layer components {
+
+  /* Bold callout text for emphasis */
+  .callout {
+    @apply text-3xl md:text-5xl font-black tracking-tight leading-tight;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .callout-sm {
+    @apply text-2xl md:text-3xl font-extrabold tracking-tight leading-tight;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   }
 }

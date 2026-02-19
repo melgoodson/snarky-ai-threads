@@ -29,6 +29,18 @@ import Auth from "./pages/Auth";
 import ProductManagement from "./pages/ProductManagement";
 import CreateProduct from "./pages/CreateProduct";
 import UserProfile from "./pages/UserProfile";
+import NewArrivals from "./pages/NewArrivals";
+import Contact from "./pages/Contact";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import ShippingInfo from "./pages/ShippingInfo";
+import Returns from "./pages/Returns";
+import ShirtLanding from "./pages/ShirtLanding";
+import HoodieLanding from "./pages/HoodieLanding";
+import BlanketLanding from "./pages/BlanketLanding";
+import ToteBagLanding from "./pages/ToteBagLanding";
+import MugLanding from "./pages/MugLanding";
+import GreetingCardLanding from "./pages/GreetingCardLanding";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +81,18 @@ const App = () => (
             <Route path="/product-management" element={<ProductManagement />} />
             <Route path="/create-product" element={<CreateProduct />} />
             <Route path="/profile" element={<UserProfile />} />
+            <Route path="/new-arrivals" element={<NewArrivals />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/shipping" element={<ShippingInfo />} />
+            <Route path="/returns" element={<Returns />} />
+            <Route path="/shirts" element={<ShirtLanding />} />
+            <Route path="/hoodies" element={<HoodieLanding />} />
+            <Route path="/blankets" element={<BlanketLanding />} />
+            <Route path="/tote-bags" element={<ToteBagLanding />} />
+            <Route path="/mugs" element={<MugLanding />} />
+            <Route path="/greeting-cards" element={<GreetingCardLanding />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

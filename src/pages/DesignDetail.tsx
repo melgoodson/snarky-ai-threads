@@ -7,8 +7,46 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Tag } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+
+// Color name → hex mapping for visual swatches
+const COLOR_HEX_MAP: Record<string, string> = {
+  "Black": "#000000",
+  "White": "#FFFFFF",
+  "Navy": "#1B1F3B",
+  "Red": "#C0392B",
+  "Royal Blue": "#2E5EAA",
+  "Sport Grey": "#9B9B9B",
+  "Dark Heather": "#4A4A4A",
+  "Military Green": "#4B5320",
+  "Maroon": "#6B1C23",
+  "Forest Green": "#2D572C",
+  "Sand": "#C2B280",
+  "Light Blue": "#ADD8E6",
+  "Charcoal": "#36454F",
+  "Natural": "#F5F5DC",
+  "Irish Green": "#009A44",
+  "Orange": "#FF6B35",
+  "Purple": "#6B3FA0",
+  "Light Pink": "#FFB6C1",
+  "Daisy": "#F8D568",
+  "Ash": "#B2BEB5",
+  "Gold": "#FFD700",
+  "Safety Green": "#78FF00",
+  "Antique Cherry Red": "#9B111E",
+  "Coral Silk": "#FF7F7F",
+  "Ice Grey": "#D6D6D6",
+  "Sapphire": "#0F52BA",
+  "Berry": "#8E4585",
+  "Heather Grey": "#B0B0B0",
+  "Carolina Blue": "#56A0D3",
+  "Indigo Blue": "#3F51B5",
+  "Violet": "#7F00FF",
+  "Tropical Blue": "#00CED1",
+  "Mint Green": "#98FB98",
+  "Sunset": "#FAD6A5",
+};
 
 interface Design {
   id: string;
@@ -84,36 +122,44 @@ const DesignDetail = () => {
     const product = products.find((p) => p.id === selectedProduct);
     if (!product) return;
 
+    const retailPrice = product.retail_price || 0;
+
     addItem({
       productId: product.id,
       title: `${design.title} - ${product.title}`,
-      price: product.retail_price || 0,
+      price: retailPrice,
       size: selectedVariant.title || "Default",
       image: design.image_url,
       printifyProductId: product.printify_product_id,
       variantId: selectedVariant.id,
-      designImageUrl: design.image_url, // Pass design artwork for Printify printing
+      designImageUrl: design.image_url,
     });
 
     toast.success("Added to cart!");
   };
 
+  // Get a display-friendly retail price + original price (with $20 markup)
+  const getDisplayPrice = (product: Product) => {
+    const retail = product.retail_price || 0;
+    return { price: retail, originalPrice: retail + 20 };
+  };
+
   // Parse variants to extract sizes and colors
   const getAvailableOptions = (variants: any[]) => {
     if (!variants) return { sizes: [], colors: [] };
-    
+
     // Only use enabled variants
     const enabledVariants = variants.filter((v: any) => v.is_enabled);
-    
+
     const sizes = new Set<string>();
     const colors = new Set<string>();
-    
+
     enabledVariants.forEach((variant: any) => {
       const [color, size] = variant.title.split(' / ');
       if (size) sizes.add(size.trim());
       if (color) colors.add(color.trim());
     });
-    
+
     return {
       sizes: Array.from(sizes).sort(),
       colors: Array.from(colors).sort(),
@@ -124,7 +170,7 @@ const DesignDetail = () => {
   const findMatchingVariant = (productId: string, size: string | null, color: string | null) => {
     const product = products.find((p) => p.id === productId);
     if (!product || !size || !color) return null;
-    
+
     const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
     return enabledVariants.find((v: any) => {
       const [variantColor, variantSize] = v.title.split(' / ');
@@ -178,142 +224,182 @@ const DesignDetail = () => {
     );
   }
 
+  // Get selected product details for inline display
+  const currentProduct = selectedProduct ? products.find((p) => p.id === selectedProduct) : null;
+  const currentOptions = currentProduct ? getAvailableOptions(currentProduct.variants || []) : { sizes: [], colors: [] };
+  const currentPricing = currentProduct ? getDisplayPrice(currentProduct) : null;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-6">
         <div className="max-w-6xl mx-auto">
           <Button
             variant="ghost"
             onClick={() => navigate("/designs")}
-            className="mb-6"
+            className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Designs
           </Button>
 
-          {/* Design Preview */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-              <img
-                src={design.image_url}
-                alt={design.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex flex-col justify-center">
-              <h1 className="text-4xl font-bold mb-4">{design.title}</h1>
-              <p className="text-lg text-muted-foreground mb-6">
-                {design.description}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Choose a product below to print this design on
-              </p>
-            </div>
-          </div>
-
-          {/* Product Selection */}
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Select a Product</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <Card
-                  key={product.id}
-                  className={`cursor-pointer transition-all ${
-                    selectedProduct === product.id
-                      ? "ring-2 ring-primary"
-                      : "hover:shadow-lg"
-                  }`}
-                  onClick={() => {
-                    setSelectedProduct(product.id);
-                    setSelectedSize(null);
-                    setSelectedColor(null);
-                    setSelectedVariant(null);
-                  }}
-                >
-                  <CardContent className="p-4">
-                    <div className="aspect-square bg-muted rounded-lg mb-4 overflow-hidden">
-                      {product.images && product.images[0] ? (
-                        <img
-                          src={product.images[0].src}
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-muted-foreground">
-                            No preview
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-semibold mb-2">
-                      {product.title.replace("– Placeholder Design", "").trim()}
-                    </h3>
-                    <p className="text-lg font-bold">
-                      ${(product.retail_price || 0).toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Size and Color Selection */}
-          {selectedProduct && (() => {
-            const product = products.find((p) => p.id === selectedProduct);
-            const { sizes, colors } = getAvailableOptions(product?.variants || []);
-            
-            return (
-              <div className="mt-8 space-y-6">
-                <h3 className="text-xl font-bold">Select Options</h3>
-                
-                {/* Size Selection */}
-                {sizes.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Pick Your Size</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {sizes.map((size) => (
-                        <Button
-                          key={size}
-                          variant={selectedSize === size ? "default" : "outline"}
-                          onClick={() => handleSizeChange(size)}
-                        >
-                          {size}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Color Selection */}
-                {colors.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Pick Your Color</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {colors.map((color) => (
-                        <Button
-                          key={color}
-                          variant={selectedColor === color ? "default" : "outline"}
-                          onClick={() => handleColorChange(color)}
-                        >
-                          {color}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <Button 
-                  size="lg" 
-                  onClick={handleAddToCart}
-                  disabled={!selectedSize || !selectedColor || !selectedVariant}
-                >
-                  Add to Cart
-                </Button>
+          {/* Compact 2-column layout */}
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* LEFT: Sticky design image */}
+            <div className="md:sticky md:top-4 md:self-start space-y-4">
+              <div className="aspect-square bg-muted rounded-xl overflow-hidden flex items-center justify-center">
+                <img
+                  src={design.image_url}
+                  alt={design.title}
+                  className="w-full h-full object-contain p-2"
+                />
               </div>
-            );
-          })()}
+              <div>
+                <h1 className="text-3xl font-black mb-2">{design.title}</h1>
+                {design.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {design.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT: All selections in one column */}
+            <div className="space-y-6">
+              {/* Step 1: Product type — compact horizontal strip */}
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
+                  ① Choose Product
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {products.map((product) => {
+                    const isSelected = selectedProduct === product.id;
+                    const { price } = getDisplayPrice(product);
+                    return (
+                      <button
+                        key={product.id}
+                        onClick={() => {
+                          setSelectedProduct(product.id);
+                          setSelectedSize(null);
+                          setSelectedColor(null);
+                          setSelectedVariant(null);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all duration-200 text-left ${isSelected
+                          ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                          : "border-border hover:border-foreground/40 bg-card"
+                          }`}
+                      >
+                        <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                          {product.images?.[0] ? (
+                            <img src={product.images[0].src} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">—</div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold leading-tight">
+                            {product.title.replace("– Placeholder Design", "").trim()}
+                          </p>
+                          <p className="text-sm font-black text-primary">
+                            {price ? `$${price.toFixed(2)}` : "TBD"}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Step 2 & 3: Size + Color — inline when product selected */}
+              {currentProduct && (
+                <>
+                  {/* Price summary */}
+                  {currentPricing && currentPricing.price > 0 && (
+                    <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
+                      <p className="text-2xl font-black">
+                        ${currentPricing.price.toFixed(2)}
+                      </p>
+                      <p className="text-lg text-muted-foreground line-through">
+                        ${currentPricing.originalPrice.toFixed(2)}
+                      </p>
+                      <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20">
+                        SAVE $20
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Size Selection */}
+                  {currentOptions.sizes.length > 0 && (
+                    <div>
+                      <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
+                        ② Pick Size {selectedSize && <span className="text-primary normal-case">— {selectedSize}</span>}
+                      </h2>
+                      <div className="flex flex-wrap gap-2">
+                        {currentOptions.sizes.map((size) => (
+                          <Button
+                            key={size}
+                            variant={selectedSize === size ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleSizeChange(size)}
+                          >
+                            {size}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Color Selection */}
+                  {currentOptions.colors.length > 0 && (
+                    <div>
+                      <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
+                        ③ Pick Color {selectedColor && <span className="text-primary normal-case">— {selectedColor}</span>}
+                      </h2>
+                      <div className="flex flex-wrap gap-2">
+                        {currentOptions.colors.map((color) => {
+                          const hex = COLOR_HEX_MAP[color] || "#888888";
+                          const isLight = hex === "#FFFFFF" || hex === "#F5F5DC" || hex === "#FFD700" || hex === "#F8D568";
+                          return (
+                            <button
+                              key={color}
+                              onClick={() => handleColorChange(color)}
+                              title={color}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all duration-200 ${selectedColor === color
+                                ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                                : "border-border hover:border-foreground/40 bg-card"
+                                }`}
+                            >
+                              <span
+                                className={`w-5 h-5 rounded-full border flex-shrink-0 ${isLight ? "border-gray-300" : "border-transparent"}`}
+                                style={{ backgroundColor: hex }}
+                              />
+                              <span className="text-xs font-medium">{color}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Add to Cart - always visible */}
+                  <Button
+                    size="xl"
+                    className="w-full group text-lg font-bold"
+                    onClick={handleAddToCart}
+                    disabled={!selectedSize || !selectedColor || !selectedVariant}
+                  >
+                    Add to Cart
+                  </Button>
+                </>
+              )}
+
+              {!currentProduct && (
+                <div className="text-center py-8 text-muted-foreground bg-card/50 rounded-xl border border-dashed border-border">
+                  <p className="text-sm font-medium">Pick a product above to get started</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
