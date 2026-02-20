@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
@@ -27,10 +33,10 @@ const OrderConfirmation = () => {
     const fetchOrder = async () => {
       // Wait for auth session to be ready
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       // Extract session ID from URL if it's a Stripe session ID
       let orderIdToFetch = orderId;
-      
+
       if (orderId?.startsWith('cs_')) {
         // This is a Stripe session ID, verify payment first
         try {
@@ -55,7 +61,7 @@ const OrderConfirmation = () => {
             toast.error(`Payment verification error: ${message}`);
             throw new Error(message);
           }
-          
+
           if (verifyData?.orderId) {
             orderIdToFetch = verifyData.orderId;
             // Update URL to show the actual order ID
@@ -120,6 +126,18 @@ const OrderConfirmation = () => {
 
     fetchOrder();
   }, [orderId, navigate]);
+
+  // Fire Google Ads conversion event when order is confirmed
+  useEffect(() => {
+    if (order && order.status === 'paid' && typeof window.gtag === 'function') {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-17942816999/PodlCPXCl_gbEOfR5utC',
+        'value': order.total_amount,
+        'currency': 'USD',
+        'transaction_id': order.id,
+      });
+    }
+  }, [order]);
 
   if (loading) {
     return (
