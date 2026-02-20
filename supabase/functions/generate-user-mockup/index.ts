@@ -163,7 +163,7 @@ A photorealistic mockup where the design appears TRULY PRINTED on the ${color} $
     const userImagePart = await toImagePart(userImage);
     const productImagePart = await toImagePart(productImage);
 
-    const model = "gemini-2.0-flash-exp";
+    const model = "gemini-2.0-flash-exp-image-generation";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
 
     const response = await fetch(url, {

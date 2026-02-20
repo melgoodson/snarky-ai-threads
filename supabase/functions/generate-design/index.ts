@@ -49,7 +49,7 @@ serve(async (req) => {
       }
     }
 
-    const model = "gemini-2.0-flash-exp";
+    const model = "gemini-2.0-flash-exp-image-generation";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
 
     console.log("Sending request to Gemini API with prompt:", enhancedPrompt.substring(0, 200));
