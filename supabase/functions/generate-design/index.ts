@@ -37,12 +37,12 @@ serve(async (req) => {
         role: "user",
         content: referenceImage
           ? [
-              { type: "text", text: enhancedPrompt },
-              {
-                type: "image_url",
-                image_url: { url: referenceImage },
-              },
-            ]
+            { type: "text", text: enhancedPrompt },
+            {
+              type: "image_url",
+              image_url: { url: referenceImage },
+            },
+          ]
           : enhancedPrompt,
       },
     ];
@@ -69,7 +69,7 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error("AI Gateway error status:", response.status);
       console.error("AI Gateway error body:", errorText);
-      
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
@@ -92,28 +92,77 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log("AI Gateway response structure:", JSON.stringify(data, null, 2).substring(0, 1000));
+    console.log("AI Gateway response structure:", JSON.stringify(data, null, 2).substring(0, 2000));
 
-    // Try multiple possible response structures
-    let generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    
-    // Alternative structure: directly on the message
+    let generatedImageUrl: string | null = null;
+    const message = data.choices?.[0]?.message;
+
+    if (message) {
+      console.log("Message keys:", Object.keys(message));
+      const content = message.content;
+
+      // Format 1: content is an array of parts (OpenAI multimodal format)
+      if (Array.isArray(content)) {
+        for (const part of content) {
+          console.log("Content part type:", part.type);
+          // 1a: image_url part with url (could be data:image/... base64 or https URL)
+          if (part.type === "image_url" && part.image_url?.url) {
+            generatedImageUrl = part.image_url.url;
+            break;
+          }
+          // 1b: Gemini-style inline_data (base64)
+          if (part.type === "inline_data" || part.inline_data) {
+            const inline = part.inline_data || part;
+            if (inline.data && inline.mime_type) {
+              generatedImageUrl = `data:${inline.mime_type};base64,${inline.data}`;
+              break;
+            }
+          }
+          // 1c: image part with url directly
+          if (part.type === "image" && part.url) {
+            generatedImageUrl = part.url;
+            break;
+          }
+        }
+      }
+
+      // Format 2: images array on the message object
+      if (!generatedImageUrl && Array.isArray(message.images) && message.images.length > 0) {
+        const img = message.images[0];
+        generatedImageUrl = img.image_url?.url || img.url || (typeof img === "string" ? img : null);
+        // Check for base64 data in the image object
+        if (!generatedImageUrl && img.b64_json) {
+          generatedImageUrl = `data:image/png;base64,${img.b64_json}`;
+        }
+      }
+
+      // Format 3: image_url directly on the message
+      if (!generatedImageUrl && message.image_url?.url) {
+        generatedImageUrl = message.image_url.url;
+      }
+    }
+
+    // Format 4: data.images array (some APIs return at top level)
+    if (!generatedImageUrl && Array.isArray(data.images) && data.images.length > 0) {
+      const img = data.images[0];
+      generatedImageUrl = img.url || img.image_url?.url || (typeof img === "string" ? img : null);
+      if (!generatedImageUrl && img.b64_json) {
+        generatedImageUrl = `data:image/png;base64,${img.b64_json}`;
+      }
+    }
+
+    // Format 5: data.data array (DALL-E / OpenAI images format)
+    if (!generatedImageUrl && Array.isArray(data.data) && data.data.length > 0) {
+      const img = data.data[0];
+      generatedImageUrl = img.url || (img.b64_json ? `data:image/png;base64,${img.b64_json}` : null);
+    }
+
     if (!generatedImageUrl) {
-      generatedImageUrl = data.choices?.[0]?.message?.content?.find?.((c: any) => c.type === 'image_url')?.image_url?.url;
-    }
-    
-    // Another alternative: image_url directly in images array
-    if (!generatedImageUrl && data.choices?.[0]?.message?.images?.[0]) {
-      const img = data.choices[0].message.images[0];
-      generatedImageUrl = img.url || img.image_url?.url || img;
+      console.error("Could not extract image from response. Full response:", JSON.stringify(data));
+      throw new Error("No image found in response. The model may have returned text only. Full response logged.");
     }
 
-    if (!generatedImageUrl) {
-      console.error("Full API response:", JSON.stringify(data));
-      throw new Error("No image URL in response. API may have returned text only or the model failed to generate an image.");
-    }
-
-    console.log("Successfully generated image");
+    console.log("Successfully generated image, URL length:", generatedImageUrl.length);
 
     return new Response(
       JSON.stringify({ image: generatedImageUrl }),
