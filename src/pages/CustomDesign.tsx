@@ -469,12 +469,15 @@ export default function CustomDesign() {
     if (saved) approveDesign();
   };
 
+  const [mockupError, setMockupError] = useState<string | null>(null);
+
   const generateMockup = async () => {
     if (!approvedDesign || !selectedProduct || !selectedVariant) return;
 
     const selectedColor = extractColorFromVariant(selectedVariant.title);
 
     setGeneratingMockup(true);
+    setMockupError(null);
     try {
       const { data, error } = await supabase.functions.invoke("generate-user-mockup", {
         body: {
@@ -485,7 +488,21 @@ export default function CustomDesign() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        const msg = error.message || String(error);
+        if (msg.includes("429") || msg.includes("rate") || msg.includes("non-2xx")) {
+          setMockupError("AI service is busy. Please wait 1-2 minutes and try again.");
+          toast.error("AI service is busy. Please wait and retry.", { duration: 6000 });
+          return;
+        }
+        throw error;
+      }
+
+      if (data?.error) {
+        setMockupError(data.error);
+        toast.error(data.error, { duration: 6000 });
+        return;
+      }
 
       if (data?.mockupUrl) {
         setMockupPreview(data.mockupUrl);
@@ -496,7 +513,9 @@ export default function CustomDesign() {
       }
     } catch (error: any) {
       console.error("Mockup generation error:", error);
-      toast.error(error.message || "Failed to generate mockup");
+      const msg = error.message || "Failed to generate mockup. Please try again.";
+      setMockupError(msg);
+      toast.error(msg);
     } finally {
       setGeneratingMockup(false);
     }
@@ -536,7 +555,19 @@ export default function CustomDesign() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        const msg = error.message || String(error);
+        if (msg.includes("429") || msg.includes("rate") || msg.includes("non-2xx")) {
+          toast.error("AI service is busy. Please wait 1-2 minutes and try again.", { duration: 6000 });
+          return;
+        }
+        throw error;
+      }
+
+      if (data?.error) {
+        toast.error(data.error, { duration: 6000 });
+        return;
+      }
 
       if (data?.image) {
         setTryOnMockup(data.image);
@@ -546,7 +577,7 @@ export default function CustomDesign() {
       }
     } catch (error: any) {
       console.error("Try-on generation error:", error);
-      toast.error(error.message || "Failed to generate try-on");
+      toast.error(error.message || "Failed to generate try-on. Please try again.");
     } finally {
       setGeneratingTryOn(false);
     }
@@ -1081,15 +1112,39 @@ export default function CustomDesign() {
                 <section className="space-y-8">
                   <div className="text-center">
                     <h2 className="text-3xl font-black text-foreground mb-2">Step 4: Creating Your Mockup</h2>
-                    <p className="text-muted-foreground">Generating preview of your product...</p>
+                    <p className="text-muted-foreground">
+                      {mockupError ? "Something went wrong" : "Generating preview of your product..."}
+                    </p>
                   </div>
 
-                  <div className="flex justify-center py-12">
-                    <div className="text-center space-y-4">
-                      <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-                      <p className="text-muted-foreground">Generating mockup with your design...</p>
+                  {generatingMockup ? (
+                    <div className="flex justify-center py-12">
+                      <div className="text-center space-y-4">
+                        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                        <p className="text-muted-foreground">Generating mockup with your design...</p>
+                        <p className="text-xs text-muted-foreground">This may take 15-30 seconds</p>
+                      </div>
                     </div>
-                  </div>
+                  ) : mockupError ? (
+                    <Card className="max-w-2xl mx-auto p-8 text-center space-y-4">
+                      <p className="text-destructive font-medium">{mockupError}</p>
+                      <div className="flex gap-3 justify-center">
+                        <Button size="lg" onClick={() => { setMockupError(null); generateMockup(); }}>
+                          Try Again
+                        </Button>
+                        <Button size="lg" variant="outline" onClick={() => setCurrentStep('product')}>
+                          Back to Products
+                        </Button>
+                      </div>
+                    </Card>
+                  ) : (
+                    <div className="flex justify-center py-12">
+                      <div className="text-center space-y-4">
+                        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                        <p className="text-muted-foreground">Starting mockup generation...</p>
+                      </div>
+                    </div>
+                  )}
                 </section>
               )}
 

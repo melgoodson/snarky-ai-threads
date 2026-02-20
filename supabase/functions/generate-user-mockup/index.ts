@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Comprehensive product configuration for realistic mockup generation
 const PRODUCT_CONFIG: Record<string, {
   placement: string;
   texture: string;
@@ -65,14 +64,12 @@ function getProductConfig(productTitle: string) {
   return PRODUCT_CONFIG['default'];
 }
 
-// Helper: extract base64 data and mime type from a data URL
 function parseDataUrl(dataUrl: string): { mimeType: string; data: string } | null {
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (match) return { mimeType: match[1], data: match[2] };
   return null;
 }
 
-// Helper: fetch a URL and return as base64
 async function urlToBase64(url: string): Promise<{ mimeType: string; data: string }> {
   const resp = await fetch(url);
   const buf = await resp.arrayBuffer();
@@ -84,7 +81,6 @@ async function urlToBase64(url: string): Promise<{ mimeType: string; data: strin
   return { mimeType: contentType, data: base64 };
 }
 
-// Convert image input to Gemini inlineData part
 async function toImagePart(image: string): Promise<{ inlineData: { mimeType: string; data: string } }> {
   if (image.startsWith('data:')) {
     const parsed = parseDataUrl(image);
@@ -163,71 +159,92 @@ A photorealistic mockup where the design appears TRULY PRINTED on the ${color} $
     const userImagePart = await toImagePart(userImage);
     const productImagePart = await toImagePart(productImage);
 
-    const model = "gemini-2.0-flash-exp-image-generation";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
+    const models = ["gemini-2.0-flash-exp-image-generation", "gemini-2.5-flash-image"];
+    const MAX_RETRIES = 3;
+    let lastError = "";
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: prompt },
-            userImagePart,
-            productImagePart,
-          ]
-        }],
-        generationConfig: {
-          responseModalities: ["TEXT", "IMAGE"],
-        },
-      }),
-    });
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
+      console.log(`Trying model: ${model}`);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
-      if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again in a moment.');
-      }
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        if (attempt > 0) {
+          const delay = Math.min(2000 * Math.pow(2, attempt - 1), 8000);
+          console.log(`Retry ${attempt + 1}, waiting ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+        }
 
-    const data = await response.json();
-    let generatedImageUrl: string | null = null;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                userImagePart,
+                productImagePart,
+              ]
+            }],
+            generationConfig: {
+              responseModalities: ["TEXT", "IMAGE"],
+            },
+          }),
+        });
 
-    const candidateParts = data.candidates?.[0]?.content?.parts;
-    if (Array.isArray(candidateParts)) {
-      for (const part of candidateParts) {
-        if (part.inlineData?.data && part.inlineData?.mimeType) {
-          generatedImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        if (response.status === 429) {
+          lastError = "Rate limit exceeded";
+          console.log(`Rate limited on ${model}, attempt ${attempt + 1}/${MAX_RETRIES}`);
+          continue;
+        }
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Gemini API error: ${response.status} - ${errorText}`);
+          lastError = `${response.status} - ${errorText}`;
           break;
         }
+
+        const data = await response.json();
+        let generatedImageUrl: string | null = null;
+
+        const candidateParts = data.candidates?.[0]?.content?.parts;
+        if (Array.isArray(candidateParts)) {
+          for (const part of candidateParts) {
+            if (part.inlineData?.data && part.inlineData?.mimeType) {
+              generatedImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+              break;
+            }
+          }
+        }
+
+        if (!generatedImageUrl) {
+          console.error('No image in response:', JSON.stringify(data).substring(0, 1000));
+          lastError = "No image generated";
+          break;
+        }
+
+        console.log('Mockup generated successfully');
+        return new Response(
+          JSON.stringify({
+            mockupUrl: generatedImageUrl,
+            productConfig: { placement: config.placement, printMethod: config.printMethod }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     }
 
-    if (!generatedImageUrl) {
-      console.error('No image in response:', JSON.stringify(data).substring(0, 1000));
-      throw new Error('No image generated by AI');
+    if (lastError === "Rate limit exceeded") {
+      return new Response(
+        JSON.stringify({ error: "AI service is busy. Please wait 1-2 minutes and try again." }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
-
-    console.log('Mockup generated successfully');
-
-    return new Response(
-      JSON.stringify({
-        mockupUrl: generatedImageUrl,
-        productConfig: {
-          placement: config.placement,
-          printMethod: config.printMethod
-        }
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    throw new Error(`Failed to generate mockup: ${lastError}`);
   } catch (error) {
     console.error('Error generating mockup:', error);
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'Failed to generate mockup',
-      }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Failed to generate mockup' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
