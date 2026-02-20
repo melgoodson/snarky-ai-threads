@@ -41,7 +41,7 @@ const OrderConfirmation = () => {
         // This is a Stripe session ID, verify payment first
         try {
           const response = await fetch(
-            `https://waldggnsstpxasmauwda.functions.supabase.co/verify-payment`,
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-payment`,
             {
               method: 'POST',
               headers: {
@@ -87,7 +87,7 @@ const OrderConfirmation = () => {
         // Or call a public order lookup function
         try {
           const response = await fetch(
-            `https://waldggnsstpxasmauwda.functions.supabase.co/verify-payment`,
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-payment`,
             {
               method: 'POST',
               headers: {

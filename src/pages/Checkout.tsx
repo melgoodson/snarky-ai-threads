@@ -215,7 +215,7 @@ const Checkout = () => {
 
       // Create Stripe checkout session via direct functions URL to avoid client misconfiguration issues
       const response = await fetch(
-        `https://waldggnsstpxasmauwda.functions.supabase.co/create-checkout`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
         {
           method: 'POST',
           headers: {

@@ -56,75 +56,75 @@ const TeeinblueAdmin = () => {
               </p>
             </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Product Sync</CardTitle>
-            <CardDescription>
-              Sync your products from Teeinblue to your store. This will import all
-              products with their variants, images, and pricing.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button
-              onClick={syncProducts}
-              disabled={syncingProducts}
-              className="w-full"
-            >
-              {syncingProducts ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Syncing Products...
-                </>
-              ) : (
-                "Sync Products"
-              )}
-            </Button>
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Sync</CardTitle>
+                <CardDescription>
+                  Sync your products from Teeinblue to your store. This will import all
+                  products with their variants, images, and pricing.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button
+                  onClick={syncProducts}
+                  disabled={syncingProducts}
+                  className="w-full"
+                >
+                  {syncingProducts ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Syncing Products...
+                    </>
+                  ) : (
+                    "Sync Products"
+                  )}
+                </Button>
 
-            {syncResult && (
-              <div className="p-4 bg-muted rounded-lg">
-                <h3 className="font-semibold mb-2">Sync Results</h3>
-                <pre className="text-sm overflow-auto">
-                  {JSON.stringify(syncResult, null, 2)}
-                </pre>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                {syncResult && (
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h3 className="font-semibold mb-2">Sync Results</h3>
+                    <pre className="text-sm overflow-auto">
+                      {JSON.stringify(syncResult, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Fulfillment</CardTitle>
-            <CardDescription>
-              Orders are automatically sent to Teeinblue when customers checkout.
-              You'll receive webhook updates for order status changes.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <p>✅ Automatic order creation in Teeinblue</p>
-              <p>✅ Real-time order status updates via webhooks</p>
-              <p>✅ Tracking information synced to your database</p>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Fulfillment</CardTitle>
+                <CardDescription>
+                  Orders are automatically sent to Teeinblue when customers checkout.
+                  You'll receive webhook updates for order status changes.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <p>✅ Automatic order creation in Teeinblue</p>
+                  <p>✅ Real-time order status updates via webhooks</p>
+                  <p>✅ Tracking information synced to your database</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Webhook URL</CardTitle>
-            <CardDescription>
-              Configure this URL in your Teeinblue dashboard to receive order updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <code className="block p-3 bg-muted rounded text-sm break-all">
-              https://waldggnsstpxasmauwda.supabase.co/functions/v1/teeinblue-webhook
-            </code>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-    </main>
-    <Footer />
+            <Card>
+              <CardHeader>
+                <CardTitle>Webhook URL</CardTitle>
+                <CardDescription>
+                  Configure this URL in your Teeinblue dashboard to receive order updates
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <code className="block p-3 bg-muted rounded text-sm break-all">
+                  {import.meta.env.VITE_SUPABASE_URL}/functions/v1/teeinblue-webhook
+                </code>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

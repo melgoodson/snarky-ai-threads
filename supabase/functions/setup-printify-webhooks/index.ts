@@ -12,7 +12,7 @@ serve(async (req) => {
 
   try {
     const printifyApiToken = Deno.env.get('PRINTIFY_API_TOKEN');
-    
+
     if (!printifyApiToken) {
       throw new Error('PRINTIFY_API_TOKEN not configured');
     }
@@ -32,7 +32,7 @@ serve(async (req) => {
     }
 
     const shops = await shopsResponse.json();
-    
+
     if (!shops || shops.length === 0) {
       throw new Error('No Printify shops found. Please connect a store via API first.');
     }
@@ -41,7 +41,7 @@ serve(async (req) => {
     console.log('Using shop ID:', shopId);
 
     // Webhook URL
-    const webhookUrl = `https://waldggnsstpxasmauwda.supabase.co/functions/v1/printify-webhook`;
+    const webhookUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/printify-webhook`;
 
     // Events to register (with fallback spelling for cancelled)
     const events = [
@@ -50,9 +50,9 @@ serve(async (req) => {
       'order:canceled', // we'll try 'order:cancelled' if this fails validation
     ];
 
-    const results: Array<{ event: string; status: 'success'|'exists'|'failed'; webhook_id?: string; error?: string; note?: string }> = [];
+    const results: Array<{ event: string; status: 'success' | 'exists' | 'failed'; webhook_id?: string; error?: string; note?: string }> = [];
 
-    async function registerWebhook(event: string): Promise<{ status: 'success'|'exists'|'failed'; webhook_id?: string; error?: string }> {
+    async function registerWebhook(event: string): Promise<{ status: 'success' | 'exists' | 'failed'; webhook_id?: string; error?: string }> {
       const resp = await fetch(
         `https://api.printify.com/v1/shops/${shopId}/webhooks.json`,
         {
@@ -114,9 +114,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in setup-printify-webhooks:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Unknown error'
       }),
       {
         status: 500,
