@@ -12,70 +12,66 @@ serve(async (req) => {
 
   try {
     const printifyApiToken = Deno.env.get('PRINTIFY_API_TOKEN');
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
 
     if (!printifyApiToken) {
       throw new Error('PRINTIFY_API_TOKEN not configured');
     }
 
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!googleApiKey) {
+      throw new Error('GOOGLE_AI_API_KEY not configured');
     }
 
-    console.log('Generating placeholder image with Lovable AI...');
+    console.log('Generating placeholder image with Gemini API...');
 
-    // Generate a simple transparent square placeholder using Lovable AI
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const model = "gemini-2.0-flash-exp";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleApiKey}`;
+
+    const aiResponse = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: 'Generate a completely transparent 1000x1000 pixel PNG image with no content. This is a blank placeholder for print-on-demand products.',
-          },
-        ],
-        modalities: ['image', 'text'],
+        contents: [{
+          parts: [{
+            text: 'Generate a completely transparent 1000x1000 pixel PNG image with no content. This is a blank placeholder for print-on-demand products.',
+          }],
+        }],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"],
+        },
       }),
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('Lovable AI error:', errorText);
+      console.error('Gemini API error:', errorText);
       throw new Error(`Failed to generate placeholder image: ${errorText}`);
     }
 
     const aiData = await aiResponse.json();
-    console.log('Lovable AI raw response:', JSON.stringify(aiData));
+    console.log('Gemini API response received');
 
-    // Try multiple possible locations for the image URL based on gateway format
-    let imageUrl: string | undefined;
-    const choice = aiData.choices?.[0];
+    // Extract image from Gemini native response
+    let imageBase64: string | undefined;
+    const candidateParts = aiData.candidates?.[0]?.content?.parts;
 
-    if (choice?.message?.images?.[0]?.image_url?.url) {
-      imageUrl = choice.message.images[0].image_url.url;
-    } else if (choice?.message?.content?.[0]?.image_url?.url) {
-      imageUrl = choice.message.content[0].image_url.url;
-    } else if (choice?.message?.content?.[0]?.type === 'image_url') {
-      imageUrl = choice.message.content[0].image_url?.url;
+    if (Array.isArray(candidateParts)) {
+      for (const part of candidateParts) {
+        if (part.inlineData?.data) {
+          imageBase64 = part.inlineData.data;
+          break;
+        }
+      }
     }
 
-    if (!imageUrl) {
-      throw new Error('No image generated from Lovable AI');
+    if (!imageBase64) {
+      throw new Error('No image generated from Gemini API');
     }
 
     console.log('Placeholder image generated successfully');
-
-    // Extract base64 data (remove data:image/png;base64, prefix if present)
-    const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, '');
-
     console.log('Uploading placeholder to Printify...');
 
-    // Upload to Printify using JSON body (contents should be base64 string)
+    // Upload to Printify
     const uploadResponse = await fetch('https://api.printify.com/v1/uploads/images.json', {
       method: 'POST',
       headers: {
@@ -84,7 +80,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         file_name: 'placeholder.png',
-        contents: base64Data,
+        contents: imageBase64,
       }),
     });
 
@@ -103,18 +99,13 @@ serve(async (req) => {
         imageId: uploadData.id,
         fileName: uploadData.file_name,
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error in create-printify-placeholder:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

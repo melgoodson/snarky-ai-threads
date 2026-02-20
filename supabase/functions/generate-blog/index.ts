@@ -14,7 +14,11 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY")!;
+
+    if (!googleApiKey) {
+      throw new Error("GOOGLE_AI_API_KEY not configured");
+    }
 
     // Get auth header and verify admin role
     const authHeader = req.headers.get("Authorization");
@@ -26,11 +30,10 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    // Verify user from token
+
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    
+
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
@@ -80,90 +83,52 @@ CONTENT STRUCTURE:
 - Value-first: Every section answers a question or solves a problem
 - CTA: End with action-oriented conclusion
 
-OUTPUT FORMAT - You must call the generate_blog_content function with all required fields.`;
+OUTPUT FORMAT: You MUST respond with a JSON object (no markdown wrapping) with these exact fields:
+{
+  "title": "SEO-optimized blog title (under 60 characters)",
+  "metaDescription": "Meta description for SEO (under 160 characters)",
+  "excerpt": "Short preview excerpt (2-3 sentences)",
+  "content": "Full blog post content in Markdown format with H2/H3 headings",
+  "seoKeywords": ["keyword1", "keyword2", ...],
+  "longTailQueries": ["query1", "query2", ...]
+}`;
 
     const userPrompt = `Write a comprehensive, AEO-optimized blog post about: "${topic}"
 ${additionalContext ? `\nAdditional context: ${additionalContext}` : ""}
 
-The content should be engaging, SEO-friendly, and match the snarky, irreverent tone of our brand.`;
+The content should be engaging, SEO-friendly, and match the snarky, irreverent tone of our brand.
 
-    console.log("Calling Lovable AI for blog generation...");
+IMPORTANT: Respond ONLY with a valid JSON object, no extra text.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    console.log("Calling Gemini API for blog generation...");
+
+    const model = "gemini-2.0-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleApiKey}`;
+
+    const response = await fetch(url, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+        contents: [
+          { role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "generate_blog_content",
-              description: "Generate a complete blog post with all SEO metadata",
-              parameters: {
-                type: "object",
-                properties: {
-                  title: {
-                    type: "string",
-                    description: "SEO-optimized blog title (under 60 characters)",
-                  },
-                  metaDescription: {
-                    type: "string",
-                    description: "Meta description for SEO (under 160 characters)",
-                  },
-                  excerpt: {
-                    type: "string",
-                    description: "Short preview excerpt (2-3 sentences)",
-                  },
-                  content: {
-                    type: "string",
-                    description: "Full blog post content in Markdown format with H2/H3 headings",
-                  },
-                  seoKeywords: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "5-8 SEO keywords for the post",
-                  },
-                  longTailQueries: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "3-5 long-tail search queries this post answers",
-                  },
-                },
-                required: ["title", "metaDescription", "excerpt", "content", "seoKeywords", "longTailQueries"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "generate_blog_content" } },
+        generationConfig: {
+          responseMimeType: "application/json",
+        },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI Gateway error:", response.status, errorText);
-      
+      console.error("Gemini API error:", response.status, errorText);
+
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      
+
       return new Response(JSON.stringify({ error: "AI generation failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -171,18 +136,20 @@ The content should be engaging, SEO-friendly, and match the snarky, irreverent t
     }
 
     const aiResponse = await response.json();
-    console.log("AI Response received");
+    console.log("Gemini API response received");
 
-    const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall?.function?.arguments) {
-      console.error("No tool call in response:", JSON.stringify(aiResponse));
+    // Extract text content from Gemini response
+    const textContent = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!textContent) {
+      console.error("No text in response:", JSON.stringify(aiResponse).substring(0, 1000));
       return new Response(JSON.stringify({ error: "AI did not return expected format" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const blogData = JSON.parse(toolCall.function.arguments);
+    // Parse the JSON response
+    const blogData = JSON.parse(textContent);
 
     // Generate slug from title
     const slug = blogData.title

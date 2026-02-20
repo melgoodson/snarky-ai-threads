@@ -6,6 +6,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper: extract base64 data and mime type from a data URL
+function parseDataUrl(dataUrl: string): { mimeType: string; data: string } | null {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (match) return { mimeType: match[1], data: match[2] };
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,160 +31,86 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+    if (!GOOGLE_AI_API_KEY) {
+      throw new Error("GOOGLE_AI_API_KEY is not configured");
     }
 
-    // Enhanced prompt for better print-on-demand designs
     const enhancedPrompt = `Create a high-quality, print-ready design for print-on-demand products. ${prompt}. The design should be clear, vibrant, and suitable for printing on apparel and merchandise. Use a transparent or solid background. Make the design eye-catching and professional.`;
 
-    const messages: any[] = [
-      {
-        role: "user",
-        content: referenceImage
-          ? [
-            { type: "text", text: enhancedPrompt },
-            {
-              type: "image_url",
-              image_url: { url: referenceImage },
-            },
-          ]
-          : enhancedPrompt,
-      },
-    ];
+    // Build request parts
+    const parts: any[] = [{ text: enhancedPrompt }];
 
-    console.log("Sending request to AI Gateway with prompt:", enhancedPrompt);
-
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image-preview",
-          messages,
-          modalities: ["image", "text"],
-        }),
+    // Add reference image if provided
+    if (referenceImage) {
+      const parsed = parseDataUrl(referenceImage);
+      if (parsed) {
+        parts.push({ inlineData: { mimeType: parsed.mimeType, data: parsed.data } });
       }
-    );
+    }
+
+    const model = "gemini-2.0-flash-exp";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
+
+    console.log("Sending request to Gemini API with prompt:", enhancedPrompt.substring(0, 200));
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"],
+        },
+      }),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI Gateway error status:", response.status);
-      console.error("AI Gateway error body:", errorText);
+      console.error("Gemini API error status:", response.status);
+      console.error("Gemini API error body:", errorText);
 
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log("AI Gateway response structure:", JSON.stringify(data, null, 2).substring(0, 2000));
+    console.log("Gemini API response received");
 
+    // Extract image from Gemini native response
     let generatedImageUrl: string | null = null;
-    const message = data.choices?.[0]?.message;
+    const candidateParts = data.candidates?.[0]?.content?.parts;
 
-    if (message) {
-      console.log("Message keys:", Object.keys(message));
-      const content = message.content;
-
-      // Format 1: content is an array of parts (OpenAI multimodal format)
-      if (Array.isArray(content)) {
-        for (const part of content) {
-          console.log("Content part type:", part.type);
-          // 1a: image_url part with url (could be data:image/... base64 or https URL)
-          if (part.type === "image_url" && part.image_url?.url) {
-            generatedImageUrl = part.image_url.url;
-            break;
-          }
-          // 1b: Gemini-style inline_data (base64)
-          if (part.type === "inline_data" || part.inline_data) {
-            const inline = part.inline_data || part;
-            if (inline.data && inline.mime_type) {
-              generatedImageUrl = `data:${inline.mime_type};base64,${inline.data}`;
-              break;
-            }
-          }
-          // 1c: image part with url directly
-          if (part.type === "image" && part.url) {
-            generatedImageUrl = part.url;
-            break;
-          }
+    if (Array.isArray(candidateParts)) {
+      for (const part of candidateParts) {
+        if (part.inlineData?.data && part.inlineData?.mimeType) {
+          generatedImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+          break;
         }
       }
-
-      // Format 2: images array on the message object
-      if (!generatedImageUrl && Array.isArray(message.images) && message.images.length > 0) {
-        const img = message.images[0];
-        generatedImageUrl = img.image_url?.url || img.url || (typeof img === "string" ? img : null);
-        // Check for base64 data in the image object
-        if (!generatedImageUrl && img.b64_json) {
-          generatedImageUrl = `data:image/png;base64,${img.b64_json}`;
-        }
-      }
-
-      // Format 3: image_url directly on the message
-      if (!generatedImageUrl && message.image_url?.url) {
-        generatedImageUrl = message.image_url.url;
-      }
-    }
-
-    // Format 4: data.images array (some APIs return at top level)
-    if (!generatedImageUrl && Array.isArray(data.images) && data.images.length > 0) {
-      const img = data.images[0];
-      generatedImageUrl = img.url || img.image_url?.url || (typeof img === "string" ? img : null);
-      if (!generatedImageUrl && img.b64_json) {
-        generatedImageUrl = `data:image/png;base64,${img.b64_json}`;
-      }
-    }
-
-    // Format 5: data.data array (DALL-E / OpenAI images format)
-    if (!generatedImageUrl && Array.isArray(data.data) && data.data.length > 0) {
-      const img = data.data[0];
-      generatedImageUrl = img.url || (img.b64_json ? `data:image/png;base64,${img.b64_json}` : null);
     }
 
     if (!generatedImageUrl) {
-      console.error("Could not extract image from response. Full response:", JSON.stringify(data));
-      throw new Error("No image found in response. The model may have returned text only. Full response logged.");
+      console.error("Could not extract image from response:", JSON.stringify(data).substring(0, 1000));
+      throw new Error("No image found in response. The model may have returned text only.");
     }
 
-    console.log("Successfully generated image, URL length:", generatedImageUrl.length);
+    console.log("Successfully generated design image");
 
     return new Response(
       JSON.stringify({ image: generatedImageUrl }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in generate-design function:", error);
     return new Response(
       JSON.stringify({ error: error.message || "Failed to generate design" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
