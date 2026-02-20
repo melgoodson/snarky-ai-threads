@@ -347,7 +347,21 @@ export default function CustomDesign() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if the error contains rate limit info
+        const errorMsg = error.message || String(error);
+        if (errorMsg.includes("429") || errorMsg.includes("rate") || errorMsg.includes("non-2xx")) {
+          toast.error("AI service is busy. Please wait 1-2 minutes and try again.", { duration: 6000 });
+          return;
+        }
+        throw error;
+      }
+
+      // Check for error in the response body (edge function returned JSON error)
+      if (data?.error) {
+        toast.error(data.error, { duration: 6000 });
+        return;
+      }
 
       if (data?.image) {
         setSavedDesignId(null);
@@ -365,7 +379,7 @@ export default function CustomDesign() {
       }
     } catch (error: any) {
       console.error("Design generation error:", error);
-      toast.error(error.message || "Failed to generate design");
+      toast.error(error.message || "Failed to generate design. Please try again.");
     } finally {
       setGeneratingDesign(false);
     }
