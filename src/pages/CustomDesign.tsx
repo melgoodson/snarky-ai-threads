@@ -1038,6 +1038,27 @@ export default function CustomDesign() {
                       </Button>
                     </Card>
                   )}
+
+                  {/* Fallback: Show Continue button when product selected but no variants available */}
+                  {selectedProduct && selectedProduct.variants.filter(v => v.is_enabled).length === 0 && (
+                    <Card className="max-w-2xl mx-auto p-6 text-center space-y-4">
+                      <p className="text-muted-foreground">
+                        No color/size options available for this product. You can continue directly.
+                      </p>
+                      <Button
+                        size="lg"
+                        onClick={() => {
+                          if (selectedProduct.variants.length > 0 && !selectedVariant) {
+                            setSelectedVariant(selectedProduct.variants[0]);
+                          }
+                          setCurrentStep('mockup');
+                        }}
+                        className="w-full"
+                      >
+                        Continue to Mockup
+                      </Button>
+                    </Card>
+                  )}
                 </section>
               )}
 
