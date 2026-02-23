@@ -9,7 +9,7 @@ const PRODUCT_CATEGORIES = [
         tagline: "Heavyweight cotton tees that say everything you're thinking — so you don't have to.",
         cta: "Shop Shirts",
         href: "/shirts",
-        emoji: "👕",
+        image: "/images/carousel/shirt-hero-1.png",
         gradient: "from-red-500/10 to-orange-500/10",
     },
     {
@@ -18,7 +18,7 @@ const PRODUCT_CATEGORIES = [
         tagline: "Warm, bold, and dripping with attitude. Pull it on, hood up, mic drop.",
         cta: "Shop Hoodies",
         href: "/hoodies",
-        emoji: "🧥",
+        image: "/images/hoodie-hero.png",
         gradient: "from-blue-500/10 to-indigo-500/10",
     },
     {
@@ -27,7 +27,7 @@ const PRODUCT_CATEGORIES = [
         tagline: "Your memories, printed edge-to-edge on premium fleece. The gift that actually means something.",
         cta: "Shop Blankets",
         href: "/blankets",
-        emoji: "🛏️",
+        image: "/images/carousel/rbf-champion-2.png",
         gradient: "from-purple-500/10 to-pink-500/10",
     },
     {
@@ -36,7 +36,7 @@ const PRODUCT_CATEGORIES = [
         tagline: "Carry your attitude everywhere. Durable, roomy, and judging everyone at the grocery store.",
         cta: "Shop Tote Bags",
         href: "/tote-bags",
-        emoji: "👜",
+        image: "/images/tote-hero.png",
         gradient: "from-green-500/10 to-emerald-500/10",
     },
     {
@@ -45,7 +45,7 @@ const PRODUCT_CATEGORIES = [
         tagline: "Start your morning with a hot take. Ceramic, dishwasher-safe, and brutally honest.",
         cta: "Shop Mugs",
         href: "/mugs",
-        emoji: "☕",
+        image: "/images/mug-hero.png",
         gradient: "from-amber-500/10 to-yellow-500/10",
     },
     {
@@ -54,7 +54,7 @@ const PRODUCT_CATEGORIES = [
         tagline: "For when Hallmark is too wholesome. 5×7, coated, and guaranteed to get a reaction.",
         cta: "Shop Cards",
         href: "/greeting-cards",
-        emoji: "💌",
+        image: "/images/greeting-card-hero.png",
         gradient: "from-pink-500/10 to-rose-500/10",
     },
 ];
@@ -75,24 +75,30 @@ export const ProductShowcase = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {PRODUCT_CATEGORIES.map((category, index) => (
+                    {PRODUCT_CATEGORIES.map((category) => (
                         <div
                             key={category.href}
                             className={`group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${category.gradient} hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_hsl(var(--primary)/0.2)] cursor-pointer`}
                             onClick={() => navigate(category.href)}
                         >
-                            <div className="p-8 md:p-10 flex flex-col justify-between min-h-[280px]">
-                                <div>
-                                    <span className="text-6xl mb-4 block">{category.emoji}</span>
-                                    <h3 className="text-2xl md:text-3xl font-black tracking-tight">
-                                        {category.title}{" "}
-                                        <span className="text-primary">{category.highlight}</span>
-                                    </h3>
-                                    <p className="text-muted-foreground text-sm md:text-base mt-3 leading-relaxed max-w-sm">
-                                        {category.tagline}
-                                    </p>
-                                </div>
-                                <div className="mt-6">
+                            {/* Product Photo */}
+                            <div className="aspect-[4/3] overflow-hidden">
+                                <img
+                                    src={category.image}
+                                    alt={`${category.title} ${category.highlight} — snarky product`}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                            </div>
+                            {/* Info */}
+                            <div className="p-6 md:p-8">
+                                <h3 className="text-2xl md:text-3xl font-black tracking-tight">
+                                    {category.title}{" "}
+                                    <span className="text-primary">{category.highlight}</span>
+                                </h3>
+                                <p className="text-muted-foreground text-sm md:text-base mt-3 leading-relaxed max-w-sm">
+                                    {category.tagline}
+                                </p>
+                                <div className="mt-5">
                                     <Button
                                         variant="outline"
                                         size="lg"
