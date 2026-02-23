@@ -292,7 +292,7 @@ const DesignDetail = () => {
                       >
                         <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {product.images?.[0] ? (
-                            <img src={product.images[0].src} alt="" className="w-full h-full object-cover" />
+                            <img src={typeof product.images[0] === 'string' ? product.images[0] : product.images[0].src} alt="" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">—</div>
                           )}
