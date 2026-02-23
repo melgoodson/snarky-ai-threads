@@ -39,7 +39,7 @@ const HoodieLanding = () => {
                             </div>
                             <div className="flex justify-center">
                                 <img
-                                    src="/images/hoodie-mockup.png"
+                                    src="/images/hoodie-hero.png"
                                     alt="Snarky hoodie product mockup"
                                     className="w-full max-w-md rounded-xl shadow-2xl border border-border"
                                     onError={(e) => {

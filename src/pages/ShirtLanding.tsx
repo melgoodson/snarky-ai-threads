@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Camera, Shield, Truck, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { ImageCarousel } from "@/components/ImageCarousel";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
@@ -12,6 +13,13 @@ const FEATURED_SHIRTS = [
     { id: "rbf-champion", title: "RBF Champion", price: 21.36, image: rbfChampion, category: "ATTITUDE" },
     { id: "snarky-humans", title: "Snarky Humans", price: 20.69, image: snarkyHumans, category: "SNARKY" },
     { id: "free-hugs", title: "Free Hugs", price: 21.69, image: freeHugs, category: "SARCASM" },
+];
+
+const HERO_IMAGES = [
+    "/images/carousel/shirt-hero-1.png",
+    "/images/carousel/shirt-hero-2.png",
+    "/images/carousel/shirt-hero-3.png",
+    "/images/carousel/rbf-champion-1.png",
 ];
 
 const ShirtLanding = () => {
@@ -45,18 +53,8 @@ const ShirtLanding = () => {
                                 </div>
                                 <p className="text-3xl font-black mt-6">Starting at <span className="text-primary">$15.69</span></p>
                             </div>
-                            <div className="flex justify-center">
-                                <img
-                                    src="/images/carousel/rbf-champion-1.png"
-                                    alt="Snarky t-shirt product mockup"
-                                    className="w-full max-w-md rounded-xl shadow-2xl border border-border"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        if (target.src !== rbfChampion) {
-                                            target.src = rbfChampion;
-                                        }
-                                    }}
-                                />
+                            <div className="max-w-md mx-auto w-full">
+                                <ImageCarousel images={HERO_IMAGES} alt="Snarky t-shirt collection" interval={4000} />
                             </div>
                         </div>
                     </div>
@@ -192,7 +190,7 @@ const ShirtLanding = () => {
                 </section>
             </main>
             <Footer />
-        </div>
+        </div >
     );
 };
 

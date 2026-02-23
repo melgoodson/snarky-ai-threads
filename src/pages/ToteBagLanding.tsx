@@ -38,7 +38,7 @@ const ToteBagLanding = () => {
                             </div>
                             <div className="flex justify-center">
                                 <img
-                                    src="/images/tote-mockup.png"
+                                    src="/images/tote-hero.png"
                                     alt="Canvas tote bag product mockup"
                                     className="w-full max-w-md rounded-xl shadow-2xl border border-border object-cover"
                                 />

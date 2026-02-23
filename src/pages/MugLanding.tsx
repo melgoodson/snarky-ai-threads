@@ -37,7 +37,7 @@ const MugLanding = () => {
                             </div>
                             <div className="flex justify-center">
                                 <img
-                                    src="/images/mug-mockup.png"
+                                    src="/images/mug-hero.png"
                                     alt="Ceramic coffee mug product mockup"
                                     className="w-full max-w-md rounded-xl shadow-2xl border border-border object-cover"
                                 />
