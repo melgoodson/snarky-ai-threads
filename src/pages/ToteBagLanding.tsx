@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShoppingBag, Leaf, Ruler } from "lucide-react";
+import { ArrowRight, ShoppingBag, Leaf, Ruler, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 
@@ -29,6 +29,10 @@ const ToteBagLanding = () => {
                                     <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/designs')}>
                                         BROWSE DESIGNS
                                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                    <Button variant="outline" size="xl" className="group text-lg" onClick={() => navigate('/custom-design')}>
+                                        <Sparkles className="mr-2 h-5 w-5" />
+                                        CUSTOMIZE YOUR OWN
                                     </Button>
                                 </div>
                                 <div className="mt-6 flex items-center gap-2">
