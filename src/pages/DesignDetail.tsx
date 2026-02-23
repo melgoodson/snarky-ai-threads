@@ -115,13 +115,21 @@ const DesignDetail = () => {
   };
 
   const handleAddToCart = () => {
-    if (!selectedProduct || !selectedVariant || !design) {
-      toast.error("Please select a product, size, and color");
+    if (!selectedProduct || !design) {
+      toast.error("Please select a product");
       return;
     }
 
     const product = products.find((p) => p.id === selectedProduct);
     if (!product) return;
+
+    const options = getAvailableOptions(product.variants || []);
+    const hasOptions = options.sizes.length > 0 || options.colors.length > 0;
+
+    if (hasOptions && (!selectedSize || !selectedColor || !selectedVariant)) {
+      toast.error("Please select size and color");
+      return;
+    }
 
     const retailPrice = product.retail_price || 0;
 
@@ -129,10 +137,10 @@ const DesignDetail = () => {
       productId: product.id,
       title: `${design.title} - ${product.title}`,
       price: retailPrice,
-      size: selectedVariant.title || "Default",
+      size: selectedVariant?.title || "Default",
       image: resolveDesignImage(design.image_url),
       printifyProductId: product.printify_product_id,
-      variantId: selectedVariant.id,
+      variantId: selectedVariant?.id || 0,
       designImageUrl: resolveDesignImage(design.image_url),
     });
 
@@ -387,7 +395,11 @@ const DesignDetail = () => {
                     size="xl"
                     className="w-full group text-lg font-bold"
                     onClick={handleAddToCart}
-                    disabled={!selectedSize || !selectedColor || !selectedVariant}
+                    disabled={
+                      currentOptions.sizes.length > 0 || currentOptions.colors.length > 0
+                        ? !selectedSize || !selectedColor || !selectedVariant
+                        : false
+                    }
                   >
                     Add to Cart
                   </Button>
