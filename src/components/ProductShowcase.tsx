@@ -27,7 +27,7 @@ const PRODUCT_CATEGORIES = [
         tagline: "Your memories, printed edge-to-edge on premium fleece. The gift that actually means something.",
         cta: "Shop Blankets",
         href: "/blankets",
-        image: "/images/carousel/rbf-champion-2.png",
+        image: "/images/designs/personalization-blanket.png",
         gradient: "from-purple-500/10 to-pink-500/10",
     },
     {
