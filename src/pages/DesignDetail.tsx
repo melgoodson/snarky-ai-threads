@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ArrowLeft, Tag } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { resolveDesignImage } from "@/lib/resolveDesignImage";
 
 // Color name → hex mapping for visual swatches
 const COLOR_HEX_MAP: Record<string, string> = {
@@ -129,10 +130,10 @@ const DesignDetail = () => {
       title: `${design.title} - ${product.title}`,
       price: retailPrice,
       size: selectedVariant.title || "Default",
-      image: design.image_url,
+      image: resolveDesignImage(design.image_url),
       printifyProductId: product.printify_product_id,
       variantId: selectedVariant.id,
-      designImageUrl: design.image_url,
+      designImageUrl: resolveDesignImage(design.image_url),
     });
 
     toast.success("Added to cart!");
@@ -249,7 +250,7 @@ const DesignDetail = () => {
             <div className="md:sticky md:top-4 md:self-start space-y-4">
               <div className="aspect-square bg-muted rounded-xl overflow-hidden flex items-center justify-center">
                 <img
-                  src={design.image_url}
+                  src={resolveDesignImage(design.image_url)}
                   alt={design.title}
                   className="w-full h-full object-contain p-2"
                 />

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Star } from "lucide-react";
 import personalizationBlanket from "@/assets/personalization-blanket.png";
+import { resolveDesignImage } from "@/lib/resolveDesignImage";
 
 interface Design {
   id: string;
@@ -281,7 +282,7 @@ export const ProductGrid = () => {
                   id={design.id}
                   title={design.title}
                   price={0}
-                  image={design.image_url}
+                  image={resolveDesignImage(design.image_url)}
                   category=""
                   badge="FEATURED"
                 />
@@ -307,7 +308,7 @@ export const ProductGrid = () => {
               id={design.id}
               title={design.title}
               price={0}
-              image={design.image_url}
+              image={resolveDesignImage(design.image_url)}
               category=""
             />
           ))}

@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { User, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { resolveDesignImage } from "@/lib/resolveDesignImage";
 
 interface Design {
   id: string;
@@ -57,7 +58,7 @@ const Designs = () => {
   const checkAuthAndFetchUserDesigns = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         setIsLoggedIn(false);
         setUserDesignsLoading(false);
@@ -83,7 +84,7 @@ const Designs = () => {
 
   const handleDeleteDesign = async (e: React.MouseEvent, designId: string) => {
     e.stopPropagation();
-    
+
     try {
       const { error } = await supabase
         .from("ai_generated_images")
@@ -118,7 +119,7 @@ const Designs = () => {
                 <User className="h-5 w-5 text-primary" />
                 <h2 className="text-2xl font-bold">Your Designs</h2>
               </div>
-              
+
               {userDesignsLoading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {[...Array(5)].map((_, i) => (
@@ -198,7 +199,7 @@ const Designs = () => {
                   <CardContent className="p-4">
                     <div className="aspect-square bg-muted rounded-lg mb-4 overflow-hidden">
                       <img
-                        src={design.image_url}
+                        src={resolveDesignImage(design.image_url)}
                         alt={design.title}
                         className="w-full h-full object-cover"
                       />
