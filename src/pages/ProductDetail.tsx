@@ -139,7 +139,7 @@ Pro tip: Wash inside-out to protect the print and keep colors looking fresh for 
     price: 21.36,
     originalPrice: 41.36,
     image: rbfChampion,
-    images: [rbfChampion, "/images/shirt-carousel-1.jpg", "/images/shirt-carousel-2.jpg", "/images/shirt-carousel-3.jpg"],
+    images: [rbfChampion, "/images/carousel/rbf-champion-1.png", "/images/carousel/rbf-champion-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "White", hex: "#FFFFFF" },
@@ -198,7 +198,7 @@ Snarky graphic. Bomb-proof basics. A perfect gift for the RBFer in your life—o
     price: 20.69,
     originalPrice: 40.69,
     image: snarkyHumans,
-    images: [snarkyHumans, "/images/shirt-carousel-1.jpg", "/images/shirt-carousel-2.jpg", "/images/shirt-carousel-3.jpg"],
+    images: [snarkyHumans, "/images/carousel/snarky-humans-1.png", "/images/carousel/snarky-humans-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "White", hex: "#FFFFFF" },
@@ -249,7 +249,7 @@ Store: Perfect for anyone looking for a high-quality, ethically made tee that do
     price: 21.69,
     originalPrice: 41.69,
     image: freeHugs,
-    images: [freeHugs, "/images/shirt-carousel-1.jpg", "/images/shirt-carousel-2.jpg", "/images/shirt-carousel-3.jpg"],
+    images: [freeHugs, "/images/carousel/free-hugs-1.png", "/images/carousel/free-hugs-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "Black", hex: "#000000" },
@@ -307,7 +307,7 @@ No blood, just bad decisions. Artwork is parody/fan-inspired.`,
     price: 21.69,
     originalPrice: 41.69,
     image: abductMe,
-    images: [abductMe, "/images/shirt-carousel-1.jpg", "/images/shirt-carousel-2.jpg", "/images/shirt-carousel-3.jpg"],
+    images: [abductMe, "/images/carousel/abduct-me-1.png", "/images/carousel/abduct-me-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "Black", hex: "#000000" },
@@ -357,7 +357,7 @@ Store: Perfect for anyone seeking a high-quality, ethically made tee that doesn'
     price: 21.36,
     originalPrice: 41.36,
     image: sasquatches,
-    images: [sasquatches, "/images/shirt-carousel-1.jpg", "/images/shirt-carousel-2.jpg", "/images/shirt-carousel-3.jpg"],
+    images: [sasquatches, "/images/carousel/sasquatches-1.png", "/images/carousel/sasquatches-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "Black", hex: "#000000" },
@@ -410,7 +410,7 @@ Store: Perfect for anyone who loves quality, ethical gear—and a good cryptid j
     price: 21.69,
     originalPrice: 41.69,
     image: whiteIdolMorning,
-    images: [whiteIdolMorning, "/images/shirt-carousel-1.jpg", "/images/shirt-carousel-2.jpg", "/images/shirt-carousel-3.jpg"],
+    images: [whiteIdolMorning, "/images/carousel/white-idol-morning-1.png", "/images/carousel/white-idol-morning-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "White", hex: "#FFFFFF" },
@@ -463,7 +463,7 @@ Store: Perfect for anyone who loves crisp mornings, scenic views, and a clever r
     price: 15.69,
     originalPrice: 35.69,
     image: fathers,
-    images: [fathers, "/images/shirt-carousel-1.jpg", "/images/shirt-carousel-2.jpg", "/images/shirt-carousel-3.jpg"],
+    images: [fathers, "/images/carousel/fathers-1.png", "/images/carousel/fathers-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "White", hex: "#FFFFFF" },
@@ -513,7 +513,7 @@ Dry: Tumble dry low or hang it up, just like you do with your standards.`,
     price: 15.69,
     originalPrice: 35.69,
     image: dark,
-    images: [dark],
+    images: [dark, "/images/carousel/dark-1.png", "/images/carousel/dark-2.png"],
     productType: "shirt",
     availableColors: [
       { name: "Black", hex: "#000000" },

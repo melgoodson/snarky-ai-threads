@@ -47,7 +47,7 @@ const ShirtLanding = () => {
                             </div>
                             <div className="flex justify-center">
                                 <img
-                                    src="/images/shirt-carousel-1.jpg"
+                                    src="/images/carousel/rbf-champion-1.png"
                                     alt="Snarky t-shirt product mockup"
                                     className="w-full max-w-md rounded-xl shadow-2xl border border-border"
                                     onError={(e) => {
