@@ -28,34 +28,36 @@ serve(async (req) => {
 
   try {
     console.log("Starting checkout process...");
-    
-    // Require authentication for checkout
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("Authentication required for checkout");
-    }
-    
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
-    if (authError || !user) {
-      console.error("Authentication failed:", authError);
-      throw new Error("Authentication required for checkout");
-    }
-    
-    console.log("User authenticated:", user.email);
 
-    const { cartItems, shippingAddress } = await req.json();
-    
-    if (!user.email) {
-      throw new Error("User email is required for checkout");
+    // Auth is optional — guests can checkout without signing in
+    let userId: string | null = null;
+    let userEmail: string | null = null;
+
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+
+      if (!authError && user) {
+        userId = user.id;
+        userEmail = user.email || null;
+        console.log("Authenticated user:", userEmail);
+      }
     }
-    
+
+    const { cartItems, shippingAddress, guestEmail } = await req.json();
+
+    // Use authenticated email or fall back to guest email from form
+    const email = userEmail || guestEmail;
+    if (!email) {
+      throw new Error("Email is required for checkout");
+    }
+
     if (!cartItems || cartItems.length === 0) {
       throw new Error("Cart is empty");
     }
 
-    console.log("Cart items:", cartItems);
+    console.log("Checkout email:", email, "| User ID:", userId || "GUEST");
 
     // Calculate total
     const totalAmount = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
@@ -64,8 +66,8 @@ serve(async (req) => {
     const { data: orderData, error: orderError } = await supabaseClient
       .from("orders")
       .insert({
-        user_id: user.id,
-        email: user.email,
+        user_id: userId,
+        email: email,
         total_amount: totalAmount,
         shipping_address: shippingAddress,
         status: "pending",
@@ -97,7 +99,7 @@ serve(async (req) => {
     const orderItems = cartItems.map((item: any) => {
       // Extract design image URL - ensure it's a string, not an object
       let designUrl = extractUrl(item.designImageUrl) || extractUrl(item.artworkUrl);
-      
+
       // Fallback to image if it's a valid string URL
       if (!designUrl) {
         const imageUrl = extractUrl(item.image);
@@ -105,9 +107,9 @@ serve(async (req) => {
           designUrl = imageUrl;
         }
       }
-      
+
       console.log(`Order item design URL: ${designUrl} (type: ${typeof designUrl})`);
-      
+
       return {
         order_id: orderData.id,
         product_id: item.productId,
@@ -135,7 +137,7 @@ serve(async (req) => {
     });
 
     // Check if customer exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
@@ -167,7 +169,7 @@ serve(async (req) => {
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : email,
       line_items: lineItems,
       mode: "payment",
       success_url: `${req.headers.get("origin")}/order-confirmation/{CHECKOUT_SESSION_ID}`,

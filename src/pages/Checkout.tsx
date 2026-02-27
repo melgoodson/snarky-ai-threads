@@ -67,37 +67,33 @@ const Checkout = () => {
   }, [items.length, navigate]);
 
   const checkAuthAndLoadData = async () => {
-    // Check if user is authenticated
+    // Check if user is authenticated (optional — guests can checkout too)
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-      toast.error('Please sign in to checkout');
-      navigate('/auth');
-      return;
-    }
+    if (user) {
+      setUserId(user.id);
 
-    setUserId(user.id);
+      // Load profile data for auto-fill
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-    // Load profile data for auto-fill
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (profile) {
-      setFormData(prev => ({
-        email: user.email || prev.email,
-        firstName: profile.first_name || prev.firstName,
-        lastName: profile.last_name || prev.lastName,
-        address1: profile.address1 || prev.address1,
-        address2: profile.address2 || prev.address2 || '',
-        city: profile.city || prev.city,
-        state: profile.state || prev.state,
-        zip: profile.zip || prev.zip,
-        country: profile.country || prev.country,
-        phone: profile.phone || prev.phone,
-      }));
+      if (profile) {
+        setFormData(prev => ({
+          email: user.email || prev.email,
+          firstName: profile.first_name || prev.firstName,
+          lastName: profile.last_name || prev.lastName,
+          address1: profile.address1 || prev.address1,
+          address2: profile.address2 || prev.address2 || '',
+          city: profile.city || prev.city,
+          state: profile.state || prev.state,
+          zip: profile.zip || prev.zip,
+          country: profile.country || prev.country,
+          phone: profile.phone || prev.phone,
+        }));
+      }
     }
 
     // Load custom design if exists
@@ -204,28 +200,28 @@ const Checkout = () => {
           .eq('id', userId);
       }
 
-      // Get auth session for authenticated request
+      // Get auth session if available (guests can checkout without one)
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (!session) {
-        toast.error('Please sign in to checkout');
-        navigate('/auth');
-        return;
+      // Build headers — include Authorization only for authenticated users
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
-      // Create Stripe checkout session via direct functions URL to avoid client misconfiguration issues
+      // Create Stripe checkout session via direct functions URL
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': `Bearer ${session.access_token}`,
-          },
+          headers,
           body: JSON.stringify({
             cartItems: checkoutItems,
             shippingAddress: formData,
+            guestEmail: formData.email,
           }),
         }
       );
