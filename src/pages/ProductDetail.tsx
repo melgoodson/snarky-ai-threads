@@ -707,16 +707,15 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* CTA button */}
-            {isBlanket ? (
-              <Button size="xl" className="w-full group" onClick={() => navigate("/custom-design")}>
+            {/* CTA buttons */}
+            <Button size="xl" className="w-full group" onClick={handleAddToCart}>
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              ADD TO CART
+            </Button>
+            {isBlanket && (
+              <Button size="lg" variant="outline" className="w-full group" onClick={() => navigate("/custom-design")}>
                 <Sparkles className="mr-2 h-5 w-5" />
-                DESIGN YOUR OWN BLANKET
-              </Button>
-            ) : (
-              <Button size="xl" className="w-full group" onClick={handleAddToCart}>
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                ADD TO CART
+                CUSTOMIZE WITH AI DESIGN
               </Button>
             )}
           </div>
