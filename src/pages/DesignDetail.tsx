@@ -267,7 +267,6 @@ const DesignDetail = () => {
               {/* AI Mockup Preview */}
               {currentProduct && (
                 <div className="mt-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wider mb-3">Product Preview</h3>
                   <AIMockupGenerator
                     productImage={resolveDesignImage(design.image_url)}
                     productTitle={currentProduct.title}

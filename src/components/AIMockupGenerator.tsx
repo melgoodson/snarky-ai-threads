@@ -11,6 +11,28 @@ interface AIMockupGeneratorProps {
   productColor?: string;
 }
 
+function isWearable(title: string): boolean {
+  const lower = title.toLowerCase();
+  return (
+    lower.includes('shirt') ||
+    lower.includes('tee') ||
+    lower.includes('hoodie') ||
+    lower.includes('sweatshirt') ||
+    lower.includes('jersey')
+  );
+}
+
+function getProductLabel(title: string): string {
+  const lower = title.toLowerCase();
+  if (lower.includes('mug')) return 'Mug';
+  if (lower.includes('card') || lower.includes('greeting')) return 'Card';
+  if (lower.includes('tote') || lower.includes('bag')) return 'Tote Bag';
+  if (lower.includes('blanket')) return 'Blanket';
+  if (lower.includes('candle')) return 'Candle';
+  if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'Hoodie';
+  return 'Shirt';
+}
+
 export const AIMockupGenerator = ({ productImage, productTitle, productColor }: AIMockupGeneratorProps) => {
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -18,6 +40,10 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
   const [mockupImage, setMockupImage] = useState<string | null>(null);
   const { toast } = useToast();
   const snarkyMessage = useSnarkyLoader(generating);
+
+  const title = productTitle || "T-Shirt";
+  const wearable = isWearable(title);
+  const label = getProductLabel(title);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,22 +82,28 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
         reader.readAsDataURL(blob);
       });
 
-      const { data, error } = await supabase.functions.invoke("generate-mockup", {
+      // Use different edge functions for wearable vs non-wearable products
+      const functionName = wearable ? "generate-mockup" : "generate-user-mockup";
+
+      const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           userImage,
           productImage: productImageBase64,
-          productTitle: productTitle || "T-Shirt",
+          productTitle: title,
           productColor: productColor || "White",
         },
       });
 
       if (error) throw error;
 
-      if (data?.image) {
-        setMockupImage(data.image);
+      // generate-mockup returns { image }, generate-user-mockup returns { mockupUrl }
+      const resultImage = data?.image || data?.mockupUrl;
+
+      if (resultImage) {
+        setMockupImage(resultImage);
         toast({
           title: "Success!",
-          description: "Your mockup has been generated",
+          description: wearable ? "Your try-on has been generated" : `Your ${label} mockup is ready`,
         });
       }
     } catch (error: any) {
@@ -89,9 +121,13 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-4">
-        <h3 className="text-xl font-bold text-foreground">Try It On with AI</h3>
+        <h3 className="text-xl font-bold text-foreground">
+          {wearable ? "Try It On with AI" : `Preview on ${label}`}
+        </h3>
         <p className="text-muted-foreground">
-          Upload your photo and see how this product looks on you!
+          {wearable
+            ? "Upload your photo and see how this product looks on you!"
+            : `Upload a design and see how it looks on a ${label.toLowerCase()}!`}
         </p>
 
         <div className="border-2 border-dashed border-border rounded-lg p-8 space-y-4">
@@ -107,7 +143,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
               <div className="flex flex-col items-center justify-center space-y-2">
                 <Upload className="h-12 w-12 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  Click to upload your photo
+                  {wearable ? "Click to upload your photo" : "Click to upload your design"}
                 </span>
               </div>
             </label>
@@ -115,7 +151,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
             <div className="space-y-4">
               <img
                 src={userImage}
-                alt="Your photo"
+                alt="Your upload"
                 className="max-w-full h-auto rounded-lg mx-auto max-h-96"
               />
               <div className="flex gap-2 justify-center">
@@ -130,7 +166,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
                       <span className="text-sm">{snarkyMessage}</span>
                     </>
                   ) : (
-                    "Generate Mockup"
+                    wearable ? "Generate Try-On" : `Generate ${label} Mockup`
                   )}
                 </Button>
                 <Button
@@ -150,7 +186,9 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
 
         {mockupImage && (
           <div className="mt-6 space-y-4">
-            <h4 className="text-lg font-bold text-foreground">Your Mockup</h4>
+            <h4 className="text-lg font-bold text-foreground">
+              {wearable ? "Your Try-On" : `Your ${label} Mockup`}
+            </h4>
             <img
               src={mockupImage}
               alt="Generated mockup"
