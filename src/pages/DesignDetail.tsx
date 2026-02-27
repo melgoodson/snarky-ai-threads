@@ -134,14 +134,18 @@ const DesignDetail = () => {
 
     const retailPrice = product.retail_price || 0;
 
+    // For products without variants (greeting cards, candles), use default values
+    const variantTitle = selectedVariant?.title || "Default";
+    const variantId = selectedVariant?.id || product.printify_product_id;
+
     addItem({
       productId: product.id,
       title: `${design.title} - ${product.title}`,
       price: retailPrice,
-      size: selectedVariant?.title || "Default",
+      size: variantTitle,
       image: resolveDesignImage(design.image_url),
       printifyProductId: product.printify_product_id,
-      variantId: selectedVariant?.id || 0,
+      variantId: variantId,
       designImageUrl: resolveDesignImage(design.image_url),
     });
 
@@ -416,7 +420,7 @@ const DesignDetail = () => {
                     disabled={
                       (currentOptions.sizes.length > 0 || currentOptions.colors.length > 0)
                         ? (!selectedSize || !selectedColor || !selectedVariant)
-                        : !selectedVariant
+                        : false
                     }
                   >
                     Add to Cart
