@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Tag } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
+import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 
 // Color name → hex mapping for visual swatches
 const COLOR_HEX_MAP: Record<string, string> = {
@@ -263,6 +264,17 @@ const DesignDetail = () => {
                   className="w-full h-full object-contain p-2"
                 />
               </div>
+              {/* AI Mockup Preview */}
+              {currentProduct && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-bold uppercase tracking-wider mb-3">Product Preview</h3>
+                  <AIMockupGenerator
+                    productImage={resolveDesignImage(design.image_url)}
+                    productTitle={currentProduct.title}
+                    productColor={selectedColor || "White"}
+                  />
+                </div>
+              )}
               <div>
                 <h1 className="text-3xl font-black mb-2">{design.title}</h1>
                 {design.description && (
@@ -291,7 +303,14 @@ const DesignDetail = () => {
                           setSelectedProduct(product.id);
                           setSelectedSize(null);
                           setSelectedColor(null);
-                          setSelectedVariant(null);
+                          // Auto-select variant for products without size/color options
+                          const opts = getAvailableOptions(product.variants || []);
+                          if (opts.sizes.length === 0 && opts.colors.length === 0) {
+                            const enabledVariants = (product.variants || []).filter((v: any) => v.is_enabled);
+                            setSelectedVariant(enabledVariants[0] || null);
+                          } else {
+                            setSelectedVariant(null);
+                          }
                         }}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all duration-200 text-left ${isSelected
                           ? "border-primary bg-primary/10 ring-1 ring-primary/30"
@@ -396,9 +415,9 @@ const DesignDetail = () => {
                     className="w-full group text-lg font-bold"
                     onClick={handleAddToCart}
                     disabled={
-                      currentOptions.sizes.length > 0 || currentOptions.colors.length > 0
-                        ? !selectedSize || !selectedColor || !selectedVariant
-                        : false
+                      (currentOptions.sizes.length > 0 || currentOptions.colors.length > 0)
+                        ? (!selectedSize || !selectedColor || !selectedVariant)
+                        : !selectedVariant
                     }
                   >
                     Add to Cart
