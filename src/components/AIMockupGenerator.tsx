@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useSnarkyLoader } from "@/hooks/useSnarkyLoader";
 
 interface AIMockupGeneratorProps {
   productImage: string;
@@ -16,6 +17,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
   const [userImage, setUserImage] = useState<string | null>(null);
   const [mockupImage, setMockupImage] = useState<string | null>(null);
   const { toast } = useToast();
+  const snarkyMessage = useSnarkyLoader(generating);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,7 +49,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
       const response = await fetch(productImage);
       const blob = await response.blob();
       const reader = new FileReader();
-      
+
       const productImageBase64 = await new Promise<string>((resolve, reject) => {
         reader.onloadend = () => resolve(reader.result as string);
         reader.onerror = reject;
@@ -125,7 +127,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
                   {generating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
+                      <span className="text-sm">{snarkyMessage}</span>
                     </>
                   ) : (
                     "Generate Mockup"

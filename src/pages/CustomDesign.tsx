@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Loader2, Upload, Check, Sparkles, Palette, Edit, ShoppingCart, Camera, Minus, Plus, Save } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import personalizationBlanketFallback from "@/assets/personalization-blanket.png";
+import { useSnarkyLoader } from "@/hooks/useSnarkyLoader";
 
 interface Variant {
   id: number;
@@ -113,6 +114,11 @@ export default function CustomDesign() {
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [tryOnMockup, setTryOnMockup] = useState<string | null>(null);
   const [generatingTryOn, setGeneratingTryOn] = useState(false);
+
+  // Snarky loading messages
+  const snarkyDesign = useSnarkyLoader(generatingDesign);
+  const snarkyMockup = useSnarkyLoader(generatingMockup);
+  const snarkyTryOn = useSnarkyLoader(generatingTryOn);
 
   // Checkout
   const [creatingPrintifyProduct, setCreatingPrintifyProduct] = useState(false);
@@ -824,7 +830,7 @@ export default function CustomDesign() {
                       {generatingDesign ? (
                         <>
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Generating Design...
+                          <span className="text-sm">{snarkyDesign}</span>
                         </>
                       ) : (
                         <>
@@ -1119,9 +1125,9 @@ export default function CustomDesign() {
 
                   {generatingMockup ? (
                     <div className="flex justify-center py-12">
-                      <div className="text-center space-y-4">
+                      <div className="text-center space-y-4 max-w-md">
                         <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-                        <p className="text-muted-foreground">Generating mockup with your design...</p>
+                        <p className="text-foreground font-medium italic transition-all duration-500">{snarkyMockup}</p>
                         <p className="text-xs text-muted-foreground">This may take 15-30 seconds</p>
                       </div>
                     </div>
@@ -1255,9 +1261,9 @@ export default function CustomDesign() {
                           )}
 
                           {generatingTryOn && (
-                            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              <span>Generating try-on...</span>
+                            <div className="flex flex-col items-center justify-center gap-2 text-center max-w-sm mx-auto">
+                              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                              <span className="text-sm text-foreground font-medium italic">{snarkyTryOn}</span>
                             </div>
                           )}
 
