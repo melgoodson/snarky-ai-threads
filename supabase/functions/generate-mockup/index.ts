@@ -25,6 +25,16 @@ const PRODUCT_INTEGRATION: Record<string, { placement: string; warp: string; tex
     placement: 'centered on flat front panel',
     warp: 'minimal - mostly flat with slight drape',
     texture: 'canvas weave visible through design'
+  },
+  blanket: {
+    placement: 'edge-to-edge sublimation covering entire front surface, photo collage or single large print',
+    warp: 'soft draping folds over couch or lap, gentle curves',
+    texture: 'soft fleece plush fibers on front, cozy sherpa backing at edges'
+  },
+  card: {
+    placement: 'centered on front face of folded greeting card',
+    warp: 'mostly flat, slight perspective from card standing at angle',
+    texture: 'smooth premium cardstock with matte finish'
   }
 };
 
@@ -33,6 +43,8 @@ function getProductType(title: string) {
   if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
   if (lower.includes('mug')) return 'mug';
   if (lower.includes('tote') || lower.includes('bag')) return 'tote';
+  if (lower.includes('blanket')) return 'blanket';
+  if (lower.includes('greeting') || lower.includes('card')) return 'card';
   return 'tee';
 }
 

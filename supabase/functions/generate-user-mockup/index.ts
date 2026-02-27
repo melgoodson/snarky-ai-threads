@@ -45,6 +45,22 @@ const PRODUCT_CONFIG: Record<string, {
     printMethod: 'screen print on canvas',
     surfaceEffects: 'canvas grain visible through lighter ink areas, handles cast subtle shadows'
   },
+  'blanket': {
+    placement: 'edge-to-edge sublimation covering the entire front surface of the blanket in a photo collage or large single print',
+    texture: 'soft fleece front with visible plush fibers, cozy sherpa backing visible at edges',
+    perspective: 'blanket draped naturally over a couch or bed with gentle folds and curves',
+    blending: 'full-bleed sublimation print bonded into fleece fibers, design appears embedded in the fabric',
+    printMethod: 'edge-to-edge sublimation printing',
+    surfaceEffects: 'soft fabric folds create natural shadows across the design, fleece texture visible through lighter areas, sherpa backing peeks at folded edges'
+  },
+  'card': {
+    placement: 'centered on the front face of a folded greeting card, filling most of the card surface',
+    texture: 'smooth premium cardstock with slight matte or semi-gloss finish',
+    perspective: 'card standing slightly open at an angle, showing front design clearly',
+    blending: 'high-quality digital print on cardstock, crisp clean edges, vivid colors',
+    printMethod: 'digital printing on premium cardstock',
+    surfaceEffects: 'subtle paper texture visible, slight shadow from card fold, clean white interior visible'
+  },
   'default': {
     placement: 'centered on primary visible surface',
     texture: 'appropriate material texture for the product type',
@@ -61,6 +77,7 @@ function getProductConfig(productTitle: string) {
     if (key !== 'default' && titleLower.includes(key)) return config;
   }
   if (titleLower.includes('shirt') || titleLower.includes('cotton')) return PRODUCT_CONFIG['tee'];
+  if (titleLower.includes('greeting') || titleLower.includes('card')) return PRODUCT_CONFIG['card'];
   return PRODUCT_CONFIG['default'];
 }
 
