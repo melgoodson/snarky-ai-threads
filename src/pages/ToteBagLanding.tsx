@@ -75,6 +75,27 @@ const ToteBagLanding = () => {
                     </div>
                 </section>
 
+                {/* AI Try It On */}
+                <section className="py-16 md:py-24">
+                    <div className="container px-4">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="text-center mb-8">
+                                <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+                                    PREVIEW YOUR <span className="text-primary">TOTE</span>
+                                </h2>
+                                <p className="text-muted-foreground text-lg font-medium">
+                                    Upload a design and see how it looks on a tote bag — powered by AI.
+                                </p>
+                            </div>
+                            <AIMockupGenerator
+                                productImage="/images/tote-mockup.png"
+                                productTitle="Tote Bag"
+                                productColor="Natural"
+                            />
+                        </div>
+                    </div>
+                </section>
+
                 {/* CTA */}
                 <section className="py-16 md:py-24 text-center">
                     <div className="container px-4">

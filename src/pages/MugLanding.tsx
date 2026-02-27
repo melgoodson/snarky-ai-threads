@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Coffee, Droplets, Palette, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 
 const MugLanding = () => {
     const navigate = useNavigate();
@@ -92,6 +93,27 @@ const MugLanding = () => {
                                     <p className="text-2xl font-black">{item.price}</p>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* AI Preview */}
+                <section className="py-16 md:py-24 bg-card/50">
+                    <div className="container px-4">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="text-center mb-8">
+                                <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+                                    PREVIEW YOUR <span className="text-primary">MUG</span>
+                                </h2>
+                                <p className="text-muted-foreground text-lg font-medium">
+                                    Upload a design and see how it looks on a mug — powered by AI.
+                                </p>
+                            </div>
+                            <AIMockupGenerator
+                                productImage="/images/mug-mockup.png"
+                                productTitle="Ceramic Mug"
+                                productColor="White"
+                            />
                         </div>
                     </div>
                 </section>

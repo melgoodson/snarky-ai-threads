@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Sparkles, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 
 const OCCASIONS = [
     { emoji: "🎂", title: "Birthdays", desc: "Because 'Happy Birthday' in Comic Sans just won't cut it" },
@@ -111,6 +112,27 @@ const GreetingCardLanding = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* AI Preview */}
+                <section className="py-16 md:py-24">
+                    <div className="container px-4">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="text-center mb-8">
+                                <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+                                    PREVIEW YOUR <span className="text-primary">CARD</span>
+                                </h2>
+                                <p className="text-muted-foreground text-lg font-medium">
+                                    Upload a design and see how it looks on a greeting card — powered by AI.
+                                </p>
+                            </div>
+                            <AIMockupGenerator
+                                productImage="/images/greeting-card-mockup.png"
+                                productTitle="Greeting Card"
+                                productColor="White"
+                            />
                         </div>
                     </div>
                 </section>
