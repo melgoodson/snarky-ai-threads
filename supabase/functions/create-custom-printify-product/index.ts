@@ -251,22 +251,36 @@ serve(async (req) => {
     let printProviderId: number;
     let productVariants: any[];
 
-    // Known print provider IDs for common Printify blueprints (Gildan, etc.)
-    const BLUEPRINT_PROVIDER_MAP: Record<number, number> = {
-      12: 29,    // Unisex Jersey Short Sleeve Tee (Gildan 64000) → Monster Digital
-      77: 29,    // Unisex Heavy Blend Hooded Sweatshirt (Gildan 18500) → Monster Digital
-      425: 28,   // Mug 15oz → Duplium
-      467: 28,   // Tote Bag → Duplium
-      522: 28,   // Personalization Blanket → Duplium
-      962: 28,   // Greeting Cards → Duplium
-    };
-
     if (isBlueprint) {
-      // It's a blueprint ID — use catalog API to get print areas
+      // It's a blueprint ID — look up print providers dynamically from catalog
       blueprintId = Number(printifyId);
-      printProviderId = BLUEPRINT_PROVIDER_MAP[blueprintId] || 29;
 
-      console.log(`Using blueprint ID: ${blueprintId}, print provider: ${printProviderId}`);
+      console.log(`Looking up print providers for blueprint: ${blueprintId}`);
+
+      // Fetch available print providers for this blueprint
+      const providersResponse = await fetch(
+        `https://api.printify.com/v1/catalog/blueprints/${blueprintId}/print_providers.json`,
+        {
+          headers: {
+            'Authorization': `Bearer ${printifyApiToken}`,
+          },
+        }
+      );
+
+      if (!providersResponse.ok) {
+        const errText = await providersResponse.text();
+        console.error('Failed to fetch print providers:', errText);
+        throw new Error(`Failed to fetch print providers for blueprint ${blueprintId}: ${errText}`);
+      }
+
+      const providers = await providersResponse.json();
+      if (!providers || providers.length === 0) {
+        throw new Error(`No print providers available for blueprint ${blueprintId}`);
+      }
+
+      // Use the first available print provider
+      printProviderId = providers[0].id;
+      console.log(`Using print provider: ${printProviderId} (${providers[0].title}) for blueprint ${blueprintId}`);
 
       // Fetch print provider variants for this blueprint
       const variantsResponse = await fetch(
