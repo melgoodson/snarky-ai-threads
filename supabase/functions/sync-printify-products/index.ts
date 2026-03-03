@@ -93,12 +93,73 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Successfully synced ${syncedCount} products`);
+    console.log(`Successfully synced ${syncedCount} shop products`);
+
+    // Second pass: Sync variants for blueprint-only products (those with short numeric IDs)
+    const { data: blueprintProducts } = await supabase
+      .from('products')
+      .select('id, printify_product_id, title, variants')
+      .eq('is_active', true);
+
+    let blueprintSyncCount = 0;
+    for (const bp of (blueprintProducts || [])) {
+      if (!bp.printify_product_id) continue;
+      const isBlueprint = /^\d{1,5}$/.test(String(bp.printify_product_id));
+      if (!isBlueprint) continue;
+      if (bp.variants && bp.variants.length > 0) continue; // Already has variants
+
+      console.log(`Syncing blueprint variants for: ${bp.title} (blueprint ${bp.printify_product_id})`);
+      try {
+        // Get print providers for this blueprint
+        const providersRes = await fetch(
+          `https://api.printify.com/v1/catalog/blueprints/${bp.printify_product_id}/print_providers.json`,
+          { headers: { 'Authorization': `Bearer ${printifyApiToken}` } }
+        );
+        if (!providersRes.ok) { console.error(`No providers for blueprint ${bp.printify_product_id}`); continue; }
+        const providers = await providersRes.json();
+        if (!providers || providers.length === 0) continue;
+
+        const providerId = providers[0].id;
+
+        // Get variants for this blueprint + provider
+        const variantsRes = await fetch(
+          `https://api.printify.com/v1/catalog/blueprints/${bp.printify_product_id}/print_providers/${providerId}/variants.json`,
+          { headers: { 'Authorization': `Bearer ${printifyApiToken}` } }
+        );
+        if (!variantsRes.ok) continue;
+        const variantsData = await variantsRes.json();
+        const variants = (variantsData.variants || []).map((v: any) => ({
+          id: v.id,
+          title: v.title,
+          is_enabled: true,
+          price: v.price || 0,
+          cost: v.cost || 0,
+        }));
+
+        if (variants.length > 0) {
+          const { error } = await supabase
+            .from('products')
+            .update({ variants })
+            .eq('id', bp.id);
+          if (!error) {
+            blueprintSyncCount++;
+            console.log(`  Synced ${variants.length} variants for ${bp.title}`);
+          } else {
+            console.error(`  Error updating variants for ${bp.title}:`, error);
+          }
+        }
+      } catch (e) {
+        console.error(`Error syncing blueprint ${bp.printify_product_id}:`, e);
+      }
+    }
+
+    console.log(`Blueprint sync complete: ${blueprintSyncCount} products updated`);
 
     return new Response(
       JSON.stringify({
         success: true,
         syncedCount,
+        blueprintSyncCount,
         totalProducts: products.length,
       }),
       {
