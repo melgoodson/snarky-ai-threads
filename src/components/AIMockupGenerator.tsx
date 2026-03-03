@@ -85,7 +85,12 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
       // Use different edge functions for wearable vs non-wearable products
       const functionName = wearable ? "generate-mockup" : "generate-user-mockup";
 
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      // Race between the function call and a 45-second timeout
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("AI generation timed out. Please try again.")), 45000)
+      );
+
+      const apiCall = supabase.functions.invoke(functionName, {
         body: {
           userImage,
           productImage: productImageBase64,
@@ -93,6 +98,8 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
           productColor: productColor || "White",
         },
       });
+
+      const { data, error } = await Promise.race([apiCall, timeout]);
 
       if (error) throw error;
 
@@ -105,12 +112,17 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
           title: "Success!",
           description: wearable ? "Your try-on has been generated" : `Your ${label} mockup is ready`,
         });
+      } else {
+        throw new Error("No image was generated. The AI may be busy — please try again.");
       }
     } catch (error: any) {
       console.error("Error generating mockup:", error);
+      const message = error.message?.includes("timed out")
+        ? "AI generation timed out. The service may be busy — please try again in a minute."
+        : error.message || "Failed to generate mockup. Please try again.";
       toast({
         title: "Error",
-        description: error.message || "Failed to generate mockup. Please try again.",
+        description: message,
         variant: "destructive",
       });
     } finally {

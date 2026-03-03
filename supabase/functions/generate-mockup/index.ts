@@ -135,8 +135,8 @@ A completely photorealistic image where the person from IMAGE A is wearing a ${c
     const userImagePart = await toImagePart(userImage);
     const productImagePart = await toImagePart(productImage);
 
-    const models = ["gemini-2.0-flash-exp-image-generation", "gemini-2.5-flash-image"];
-    const MAX_RETRIES = 3;
+    const models = ["gemini-2.5-flash-image", "gemini-2.0-flash-exp-image-generation"];
+    const MAX_RETRIES = 2;
     let lastError = "";
 
     for (const model of models) {
