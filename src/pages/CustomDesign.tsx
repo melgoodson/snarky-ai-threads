@@ -262,7 +262,7 @@ export default function CustomDesign() {
 
       if (error) throw error;
 
-      const formattedProducts: Product[] = (data || []).map((p) => ({
+      const allProducts: Product[] = (data || []).map((p) => ({
         id: p.id,
         title: p.title,
         printify_product_id: p.printify_product_id,
@@ -283,7 +283,56 @@ export default function CustomDesign() {
         })) : [],
       }));
 
-      setProducts(formattedProducts);
+      // For products with 0 enabled variants, try to inherit from a matching
+      // "Placeholder Design" product that has variants already configured
+      const typeKeywords = ['hoodie', 'sweatshirt', 'tee', 'shirt', 'mug', 'tote', 'bag', 'card', 'greeting', 'blanket'];
+
+      const getProductType = (title: string): string => {
+        const lower = title.toLowerCase();
+        if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
+        if (lower.includes('tee') || lower.includes('shirt')) return 'tee';
+        if (lower.includes('mug')) return 'mug';
+        if (lower.includes('tote') || lower.includes('bag')) return 'tote';
+        if (lower.includes('card') || lower.includes('greeting')) return 'card';
+        if (lower.includes('blanket')) return 'blanket';
+        return 'unknown';
+      };
+
+      // Find donor products (those with the most enabled variants per type)
+      const donorByType: Record<string, Product> = {};
+      for (const p of allProducts) {
+        const type = getProductType(p.title);
+        const enabledCount = p.variants.filter(v => v.is_enabled).length;
+        if (enabledCount > 0) {
+          const currentDonor = donorByType[type];
+          const currentDonorCount = currentDonor ? currentDonor.variants.filter(v => v.is_enabled).length : 0;
+          if (enabledCount > currentDonorCount) {
+            donorByType[type] = p;
+          }
+        }
+      }
+
+      // Inherit variants for products with none
+      for (const p of allProducts) {
+        const enabledCount = p.variants.filter(v => v.is_enabled).length;
+        if (enabledCount === 0) {
+          const type = getProductType(p.title);
+          const donor = donorByType[type];
+          if (donor) {
+            console.log(`Inheriting ${donor.variants.filter(v => v.is_enabled).length} variants from "${donor.title}" to "${p.title}"`);
+            p.variants = donor.variants;
+          }
+        }
+      }
+
+      // Filter to show only non-"Custom" and non-"Placeholder" products for selection
+      // (users should pick base product types, not individual custom products)
+      const displayProducts = allProducts.filter(p => {
+        const lower = p.title.toLowerCase();
+        return !lower.startsWith('custom ');
+      });
+
+      setProducts(displayProducts.length > 0 ? displayProducts : allProducts);
     } catch (error: any) {
       console.error("Error fetching products:", error);
       toast.error("Failed to load products");
