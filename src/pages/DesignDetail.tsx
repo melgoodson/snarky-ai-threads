@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Tag, Sparkles } from "lucide-react";
+import { ArrowLeft, Tag, Sparkles, Loader2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
@@ -79,6 +79,39 @@ const DesignDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [showTryOn, setShowTryOn] = useState(false);
+  const [mockupPreview, setMockupPreview] = useState<string | null>(null);
+  const [generatingMockup, setGeneratingMockup] = useState(false);
+
+  // Auto-generate mockup when product + color are selected
+  useEffect(() => {
+    if (!selectedProduct || !selectedColor || !design) return;
+    const product = products.find((p) => p.id === selectedProduct);
+    if (!product) return;
+
+    setMockupPreview(null);
+    setGeneratingMockup(true);
+
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Mockup timed out")), 45000)
+    );
+    const apiCall = supabase.functions.invoke("generate-user-mockup", {
+      body: {
+        userImage: resolveDesignImage(design.image_url),
+        productImage: product.images?.[0] || resolveDesignImage(design.image_url),
+        productTitle: product.title,
+        productColor: selectedColor,
+      },
+    });
+
+    Promise.race([apiCall, timeout])
+      .then(({ data, error }: any) => {
+        if (!error && data?.mockupUrl) {
+          setMockupPreview(data.mockupUrl);
+        }
+      })
+      .catch(() => { })
+      .finally(() => setGeneratingMockup(false));
+  }, [selectedProduct, selectedColor]);
 
   useEffect(() => {
     if (id) {
@@ -348,6 +381,25 @@ const DesignDetail = () => {
                   className="w-full h-full object-contain p-2"
                 />
               </div>
+
+              {/* Auto-generated mockup preview */}
+              {(generatingMockup || mockupPreview) && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-bold mb-2">Product Preview</h3>
+                  {generatingMockup ? (
+                    <div className="aspect-square bg-muted rounded-xl flex items-center justify-center">
+                      <div className="text-center space-y-2">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                        <p className="text-xs text-muted-foreground">Generating preview...</p>
+                      </div>
+                    </div>
+                  ) : mockupPreview ? (
+                    <div className="aspect-square bg-muted rounded-xl overflow-hidden">
+                      <img src={mockupPreview} alt="Product mockup" className="w-full h-full object-contain" />
+                    </div>
+                  ) : null}
+                </div>
+              )}
               {/* AI Mockup Preview — optional toggle */}
               {currentProduct && (
                 <div className="mt-4">
