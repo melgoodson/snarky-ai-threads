@@ -7,10 +7,10 @@ const corsHeaders = {
 };
 
 // Product-specific print placement configurations for realistic integration
-const PRINT_PLACEMENT_CONFIG: Record<string, { 
-  scale: number; 
-  x: number; 
-  y: number; 
+const PRINT_PLACEMENT_CONFIG: Record<string, {
+  scale: number;
+  x: number;
+  y: number;
   maxScalePercent: number;
   position: string;
 }> = {
@@ -18,25 +18,25 @@ const PRINT_PLACEMENT_CONFIG: Record<string, {
   'tee': { scale: 0.85, x: 0.5, y: 0.42, maxScalePercent: 80, position: 'front' },
   't-shirt': { scale: 0.85, x: 0.5, y: 0.42, maxScalePercent: 80, position: 'front' },
   'shirt': { scale: 0.85, x: 0.5, y: 0.42, maxScalePercent: 80, position: 'front' },
-  
+
   // Hoodies: Slightly smaller print area due to fabric thickness
   'hoodie': { scale: 0.75, x: 0.5, y: 0.40, maxScalePercent: 70, position: 'front' },
   'sweatshirt': { scale: 0.75, x: 0.5, y: 0.40, maxScalePercent: 70, position: 'front' },
-  
+
   // Mugs: Full wrap design
   'mug': { scale: 0.95, x: 0.5, y: 0.5, maxScalePercent: 90, position: 'front' },
-  
+
   // Tote bags: Centered on front panel
   'tote': { scale: 0.80, x: 0.5, y: 0.45, maxScalePercent: 75, position: 'front' },
   'bag': { scale: 0.80, x: 0.5, y: 0.45, maxScalePercent: 75, position: 'front' },
-  
+
   // Greeting cards: Full bleed design
   'card': { scale: 0.95, x: 0.5, y: 0.5, maxScalePercent: 95, position: 'front' },
   'greeting': { scale: 0.95, x: 0.5, y: 0.5, maxScalePercent: 95, position: 'front' },
-  
+
   // Candles: Wrapped design
   'candle': { scale: 0.90, x: 0.5, y: 0.5, maxScalePercent: 85, position: 'front' },
-  
+
   // Default: Standard centered placement
   'default': { scale: 0.85, x: 0.5, y: 0.45, maxScalePercent: 80, position: 'front' },
 };
@@ -44,13 +44,13 @@ const PRINT_PLACEMENT_CONFIG: Record<string, {
 // Get optimal print placement based on product type
 function getPlacementConfig(productTitle: string) {
   const titleLower = productTitle.toLowerCase();
-  
+
   for (const [key, config] of Object.entries(PRINT_PLACEMENT_CONFIG)) {
     if (key !== 'default' && titleLower.includes(key)) {
       return config;
     }
   }
-  
+
   return PRINT_PLACEMENT_CONFIG.default;
 }
 
@@ -65,11 +65,11 @@ function calculateOptimalScale(
   if (!designWidth || !designHeight) {
     return maxScalePercent / 100;
   }
-  
+
   // Calculate aspect ratios
   const designAspect = designWidth / designHeight;
   const printAreaAspect = printAreaWidth / printAreaHeight;
-  
+
   // Scale to fit within print area while maintaining aspect ratio
   let optimalScale: number;
   if (designAspect > printAreaAspect) {
@@ -79,7 +79,7 @@ function calculateOptimalScale(
     // Design is taller - scale based on height
     optimalScale = printAreaHeight / designHeight;
   }
-  
+
   // Apply max scale limit and ensure reasonable minimum
   const maxScale = maxScalePercent / 100;
   return Math.min(Math.max(optimalScale * 0.85, 0.5), maxScale);
@@ -99,7 +99,7 @@ serve(async (req) => {
       throw new Error('PRINTIFY_API_TOKEN not configured');
     }
 
-    const { 
+    const {
       designImageUrl,
       baseProductId,
       variantId,
@@ -109,11 +109,11 @@ serve(async (req) => {
       designHeight,
     } = await req.json();
 
-    console.log('Creating custom Printify product:', { 
-      designImageUrl, 
-      baseProductId, 
-      variantId, 
-      customTitle, 
+    console.log('Creating custom Printify product:', {
+      designImageUrl,
+      baseProductId,
+      variantId,
+      customTitle,
       productColor,
       designDimensions: { width: designWidth, height: designHeight }
     });
@@ -140,7 +140,7 @@ serve(async (req) => {
     }
 
     console.log('Base product:', baseProduct.title, 'Printify ID:', baseProduct.printify_product_id);
-    
+
     // Get print area dimensions from database
     const printAreaDimensions = baseProduct.print_area_dimensions || { width: 3000, height: 3500 };
     console.log('Print area dimensions:', printAreaDimensions);
@@ -171,18 +171,27 @@ serve(async (req) => {
 
     // Step 1: Upload design image to Printify
     console.log('Uploading design image to Printify...');
-    
+
     let imageData: string;
-    
+
     // Check if the design image is a URL or base64
     if (designImageUrl.startsWith('http')) {
       // Fetch the image and convert to base64
+      console.log('Fetching design image from URL:', designImageUrl.substring(0, 100));
       const imageResponse = await fetch(designImageUrl);
       if (!imageResponse.ok) {
-        throw new Error(`Failed to fetch design image: ${imageResponse.statusText}`);
+        throw new Error(`Failed to fetch design image (${imageResponse.status} ${imageResponse.statusText}): ${designImageUrl.substring(0, 100)}`);
       }
       const imageBuffer = await imageResponse.arrayBuffer();
-      imageData = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+      // Use chunk-based base64 encoding for large images (spread operator fails on large arrays)
+      const bytes = new Uint8Array(imageBuffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode(...chunk);
+      }
+      imageData = btoa(binary);
     } else if (designImageUrl.startsWith('data:')) {
       // Extract base64 from data URL
       imageData = designImageUrl.split(',')[1];
@@ -210,7 +219,7 @@ serve(async (req) => {
 
     const uploadedImage = await uploadResponse.json();
     console.log('Image uploaded to Printify:', {
-      id: uploadedImage.id, 
+      id: uploadedImage.id,
       preview_url: uploadedImage.preview_url,
       width: uploadedImage.width,
       height: uploadedImage.height
@@ -256,13 +265,13 @@ serve(async (req) => {
 
     // Step 3: Get print areas structure from original product and build optimized placement
     const originalPrintAreas = originalProduct.print_areas || [];
-    
+
     // Build new print areas with optimized placement for realistic integration
     const newPrintAreas = originalPrintAreas.map((area: any) => {
       // Get the original placeholder positions to maintain proper print zones
       const originalPlaceholders = area.placeholders || [];
       const frontPlaceholder = originalPlaceholders.find((p: any) => p.position === 'front') || originalPlaceholders[0];
-      
+
       return {
         variant_ids: area.variant_ids,
         placeholders: [{
@@ -301,7 +310,7 @@ serve(async (req) => {
 
     // Step 4: Create new product in Printify with custom design
     const productTitle = customTitle || `Custom ${baseProduct.title} - ${Date.now()}`;
-    
+
     const productData = {
       title: productTitle,
       description: `Custom design product based on ${baseProduct.title}. Design professionally integrated with product-specific placement and scaling.`,
