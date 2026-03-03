@@ -685,9 +685,15 @@ export default function CustomDesign() {
         }
       );
 
-      if (customProductError) throw customProductError;
+      if (customProductError) {
+        const errorMsg = typeof customProductError === 'object'
+          ? (customProductError as any)?.message || JSON.stringify(customProductError)
+          : String(customProductError);
+        console.error("Custom product creation error:", errorMsg);
+        throw new Error(errorMsg);
+      }
       if (!customProductData?.success || !customProductData?.printifyProductId) {
-        throw new Error(customProductData?.error || "Failed to create custom product");
+        throw new Error(customProductData?.error || "Failed to create custom product on Printify");
       }
 
       toast.success("Custom product created!");

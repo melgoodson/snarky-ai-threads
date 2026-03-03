@@ -92,16 +92,21 @@ const DesignDetail = () => {
     setGeneratingMockup(true);
 
     const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Mockup timed out")), 45000)
+      setTimeout(() => reject(new Error("Mockup generation timed out")), 45000)
     );
+
+    const productImgUrl = (() => {
+      const img = product.images?.[0];
+      if (!img) return resolveDesignImage(design.image_url);
+      return typeof img === 'string' ? img : img.src || img.url || resolveDesignImage(design.image_url);
+    })();
+
+    console.log('[Mockup] Generating for:', product.title, selectedColor, 'images:', productImgUrl);
+
     const apiCall = supabase.functions.invoke("generate-user-mockup", {
       body: {
         userImage: resolveDesignImage(design.image_url),
-        productImage: (() => {
-          const img = product.images?.[0];
-          if (!img) return resolveDesignImage(design.image_url);
-          return typeof img === 'string' ? img : img.src || img.url || resolveDesignImage(design.image_url);
-        })(),
+        productImage: productImgUrl,
         productTitle: product.title,
         productColor: selectedColor,
       },
@@ -109,11 +114,22 @@ const DesignDetail = () => {
 
     Promise.race([apiCall, timeout])
       .then(({ data, error }: any) => {
-        if (!error && data?.mockupUrl) {
+        console.log('[Mockup] Response:', { data: data ? 'received' : null, error });
+        if (error) {
+          console.error('[Mockup] Error:', error);
+          toast.error("Mockup preview failed — you can still add to cart");
+          return;
+        }
+        if (data?.mockupUrl) {
           setMockupPreview(data.mockupUrl);
+        } else {
+          console.warn('[Mockup] No mockupUrl in response:', data);
         }
       })
-      .catch(() => { })
+      .catch((err) => {
+        console.error('[Mockup] Failed:', err);
+        toast.error(err.message || "Mockup preview unavailable");
+      })
       .finally(() => setGeneratingMockup(false));
   }, [selectedProduct, selectedColor]);
 
