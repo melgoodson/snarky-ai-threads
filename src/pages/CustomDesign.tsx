@@ -359,6 +359,11 @@ export default function CustomDesign() {
         if (match) {
           console.log('Auto-selecting product from URL param:', productParam, '->', match.title);
           setSelectedProduct(match);
+          // Also auto-select first enabled variant so variant picker shows immediately
+          const enabledVariants = match.variants.filter(v => v.is_enabled);
+          if (enabledVariants.length > 0) {
+            setSelectedVariant(enabledVariants[0]);
+          }
         }
       }
     } catch (error: any) {
