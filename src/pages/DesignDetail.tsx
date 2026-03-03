@@ -107,7 +107,55 @@ const DesignDetail = () => {
         .order("title");
 
       if (productsError) throw productsError;
-      setProducts(productsData || []);
+
+      const allProducts = productsData || [];
+
+      // For products with 0 enabled variants, inherit from matching Placeholder products
+      const getProductType = (title: string): string => {
+        const lower = title.toLowerCase();
+        if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
+        if (lower.includes('tee') || lower.includes('shirt')) return 'tee';
+        if (lower.includes('mug')) return 'mug';
+        if (lower.includes('tote') || lower.includes('bag')) return 'tote';
+        if (lower.includes('card') || lower.includes('greeting')) return 'card';
+        if (lower.includes('blanket')) return 'blanket';
+        return 'unknown';
+      };
+
+      // Find donor products (with the most enabled variants per type)
+      const donorByType: Record<string, any> = {};
+      for (const p of allProducts) {
+        const type = getProductType(p.title);
+        const variants = Array.isArray(p.variants) ? p.variants : [];
+        const enabledCount = variants.filter((v: any) => v.is_enabled).length;
+        if (enabledCount > 0) {
+          const currentCount = donorByType[type]
+            ? (Array.isArray(donorByType[type].variants) ? donorByType[type].variants : []).filter((v: any) => v.is_enabled).length
+            : 0;
+          if (enabledCount > currentCount) {
+            donorByType[type] = p;
+          }
+        }
+      }
+
+      // Inherit variants and filter
+      for (const p of allProducts) {
+        const variants = Array.isArray(p.variants) ? p.variants : [];
+        if (variants.filter((v: any) => v.is_enabled).length === 0) {
+          const type = getProductType(p.title);
+          const donor = donorByType[type];
+          if (donor) {
+            p.variants = donor.variants;
+          }
+        }
+      }
+
+      // Filter out "Custom" products from display
+      const displayProducts = allProducts.filter((p: any) =>
+        !p.title.toLowerCase().startsWith('custom ')
+      );
+
+      setProducts(displayProducts.length > 0 ? displayProducts : allProducts);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load design details");

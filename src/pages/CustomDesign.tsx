@@ -534,7 +534,10 @@ export default function CustomDesign() {
     setGeneratingMockup(true);
     setMockupError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-user-mockup", {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Mockup generation timed out. Please try again.")), 45000)
+      );
+      const apiCall = supabase.functions.invoke("generate-user-mockup", {
         body: {
           userImage: approvedDesign.imageUrl,
           productImage: selectedProduct.template_image_url,
@@ -542,6 +545,7 @@ export default function CustomDesign() {
           productColor: selectedColor,
         },
       });
+      const { data, error } = await Promise.race([apiCall, timeout]);
 
       if (error) {
         const msg = error.message || String(error);
@@ -601,7 +605,10 @@ export default function CustomDesign() {
 
     setGeneratingTryOn(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-mockup", {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Try-on generation timed out. Please try again.")), 45000)
+      );
+      const apiCall = supabase.functions.invoke("generate-mockup", {
         body: {
           userImage: photo,
           productImage: mockupPreview,
@@ -609,6 +616,7 @@ export default function CustomDesign() {
           productColor: selectedColor,
         },
       });
+      const { data, error } = await Promise.race([apiCall, timeout]);
 
       if (error) {
         const msg = error.message || String(error);
