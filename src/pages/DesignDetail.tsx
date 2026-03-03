@@ -95,17 +95,26 @@ const DesignDetail = () => {
       setTimeout(() => reject(new Error("Mockup generation timed out")), 45000)
     );
 
+    // Convert relative paths to absolute URLs for the edge function
+    const toAbsoluteUrl = (path: string) => {
+      if (path.startsWith('http') || path.startsWith('data:')) return path;
+      return window.location.origin + (path.startsWith('/') ? path : '/' + path);
+    };
+
     const productImgUrl = (() => {
       const img = product.images?.[0];
-      if (!img) return resolveDesignImage(design.image_url);
-      return typeof img === 'string' ? img : img.src || img.url || resolveDesignImage(design.image_url);
+      if (!img) return toAbsoluteUrl(resolveDesignImage(design.image_url));
+      const raw = typeof img === 'string' ? img : img.src || img.url || resolveDesignImage(design.image_url);
+      return toAbsoluteUrl(raw);
     })();
 
-    console.log('[Mockup] Generating for:', product.title, selectedColor, 'images:', productImgUrl);
+    const designImgUrl = toAbsoluteUrl(resolveDesignImage(design.image_url));
+
+    console.log('[Mockup] Generating for:', product.title, selectedColor, 'designImg:', designImgUrl, 'productImg:', productImgUrl);
 
     const apiCall = supabase.functions.invoke("generate-user-mockup", {
       body: {
-        userImage: resolveDesignImage(design.image_url),
+        userImage: designImgUrl,
         productImage: productImgUrl,
         productTitle: product.title,
         productColor: selectedColor,
