@@ -1,7 +1,6 @@
-import { Search, Menu, Shield, User, X, ChevronDown, Shirt } from "lucide-react";
+import { Menu, Shield, User, X, ChevronDown, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Cart } from "@/components/Cart";
-import { SearchModal } from "@/components/SearchModal";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,7 +26,6 @@ export const Header = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
@@ -237,9 +235,6 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
-              <Search className="h-5 w-5" />
-            </Button>
             <Cart />
             <div className="hidden md:block">
               {isLoggedIn ? (
@@ -256,7 +251,6 @@ export const Header = () => {
           </div>
         </div>
       </header>
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };
