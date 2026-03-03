@@ -25,6 +25,9 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [magicLinkEmail, setMagicLinkEmail] = useState('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -64,13 +67,13 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateInputs(true)) return;
 
     setLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -103,7 +106,7 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateInputs()) return;
 
     setLoading(true);
@@ -130,9 +133,42 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      emailSchema.parse(resetEmail);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const redirectUrl = `${window.location.origin}/auth`;
+
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        setResetSent(true);
+        toast.success('Password reset link sent! Check your email.');
+      }
+    } catch (error: any) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       emailSchema.parse(magicLinkEmail);
     } catch (error) {
@@ -145,7 +181,7 @@ const Auth = () => {
     setLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signInWithOtp({
         email: magicLinkEmail,
         options: {
@@ -237,6 +273,65 @@ const Auth = () => {
                     'Sign In'
                   )}
                 </Button>
+
+                {/* Forgot Password */}
+                {!showForgotPassword ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="w-full text-center text-sm text-primary hover:underline mt-2"
+                  >
+                    Forgot your password?
+                  </button>
+                ) : resetSent ? (
+                  <div className="mt-4 p-4 bg-muted rounded-lg text-center space-y-2">
+                    <Mail className="h-8 w-8 mx-auto text-primary" />
+                    <p className="text-sm font-medium">Reset link sent!</p>
+                    <p className="text-xs text-muted-foreground">
+                      Check your email at <strong>{resetEmail}</strong> for a password reset link.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => { setResetSent(false); setShowForgotPassword(false); }}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Back to sign in
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="mt-4 p-4 bg-muted rounded-lg space-y-3">
+                    <p className="text-sm font-medium">Reset your password</p>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        className="pl-9"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" className="flex-1" disabled={loading}>
+                        {loading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          'Send Reset Link'
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowForgotPassword(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                )}
               </form>
             </TabsContent>
 
