@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Tag } from "lucide-react";
+import { ArrowLeft, Tag, Sparkles } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
@@ -78,6 +78,7 @@ const DesignDetail = () => {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [showTryOn, setShowTryOn] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -116,16 +117,24 @@ const DesignDetail = () => {
   };
 
   const handleAddToCart = () => {
+    console.log('[AddToCart] Called', { selectedProduct, design: design?.id });
+
     if (!selectedProduct || !design) {
       toast.error("Please select a product");
       return;
     }
 
     const product = products.find((p) => p.id === selectedProduct);
-    if (!product) return;
+    console.log('[AddToCart] Found product:', product?.title, product?.id);
+    if (!product) {
+      console.error('[AddToCart] Product not found in list');
+      toast.error("Product not found");
+      return;
+    }
 
     const options = getAvailableOptions(product.variants || []);
     const hasOptions = options.sizes.length > 0 || options.colors.length > 0;
+    console.log('[AddToCart] hasOptions:', hasOptions, 'sizes:', options.sizes.length, 'colors:', options.colors.length);
 
     if (hasOptions && (!selectedSize || !selectedColor || !selectedVariant)) {
       toast.error("Please select size and color");
@@ -134,11 +143,11 @@ const DesignDetail = () => {
 
     const retailPrice = product.retail_price || 0;
 
-    // For products without variants (greeting cards, candles), use default values
+    // For products without variants (greeting cards, etc.), use default values
     const variantTitle = selectedVariant?.title || "Default";
-    const variantId = selectedVariant?.id || product.printify_product_id;
+    const variantId = String(selectedVariant?.id || product.printify_product_id || "0");
 
-    addItem({
+    const cartItem = {
       productId: product.id,
       title: `${design.title} - ${product.title}`,
       price: retailPrice,
@@ -147,9 +156,17 @@ const DesignDetail = () => {
       printifyProductId: product.printify_product_id,
       variantId: variantId,
       designImageUrl: resolveDesignImage(design.image_url),
-    });
+    };
 
-    toast.success("Added to cart!");
+    console.log('[AddToCart] Adding item:', cartItem);
+
+    try {
+      addItem(cartItem);
+      toast.success("Added to cart!");
+    } catch (err) {
+      console.error('[AddToCart] Error adding item:', err);
+      toast.error("Failed to add to cart");
+    }
   };
 
   // Get a display-friendly retail price + original price (with $20 markup)
@@ -268,14 +285,31 @@ const DesignDetail = () => {
                   className="w-full h-full object-contain p-2"
                 />
               </div>
-              {/* AI Mockup Preview */}
+              {/* AI Mockup Preview — optional toggle */}
               {currentProduct && (
                 <div className="mt-4">
-                  <AIMockupGenerator
-                    productImage={resolveDesignImage(design.image_url)}
-                    productTitle={currentProduct.title}
-                    productColor={selectedColor || "White"}
-                  />
+                  {!showTryOn ? (
+                    <Button
+                      variant="outline"
+                      className="w-full group"
+                      onClick={() => setShowTryOn(true)}
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Try It On with AI
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold">AI Preview</h3>
+                        <Button variant="ghost" size="sm" onClick={() => setShowTryOn(false)}>Close</Button>
+                      </div>
+                      <AIMockupGenerator
+                        productImage={resolveDesignImage(design.image_url)}
+                        productTitle={currentProduct.title}
+                        productColor={selectedColor || "White"}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
               <div>

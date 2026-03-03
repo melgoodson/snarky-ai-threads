@@ -7,14 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Product to price mapping
-const PRODUCT_PRICES: Record<string, string> = {
-  "t-shirt": "price_1SUStmJDOzG265rpCrUfdGg4", // $39.99
-  "hoodie": "price_1SUT2AJDOzG265rpCI9semlI", // $69.99
-  "mug": "price_1SUT2oJDOzG265rpJZeCVu2p", // $19.99
-  "card": "price_1SUT3UJDOzG265rpgWPFIK8h", // $8.99
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -144,17 +136,19 @@ serve(async (req) => {
       console.log("Found existing customer:", customerId);
     }
 
-    // Convert cart items to Stripe line items
+    // Convert cart items to Stripe line items using dynamic price_data
+    // This supports all product types without needing pre-created Stripe price IDs
     const lineItems = cartItems.map((item: any) => {
-      // Determine product type from title (with safe fallback)
-      let productType = "t-shirt"; // default
-      const title = (item.title || "").toLowerCase();
-      if (title.includes("hoodie") || title.includes("sweatshirt")) productType = "hoodie";
-      else if (title.includes("mug")) productType = "mug";
-      else if (title.includes("card")) productType = "card";
+      const unitAmount = Math.round((Number(item.price) || 0) * 100); // Stripe expects cents
 
       return {
-        price: PRODUCT_PRICES[productType],
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: item.title || "Custom Product",
+          },
+          unit_amount: unitAmount,
+        },
         quantity: item.quantity,
       };
     });

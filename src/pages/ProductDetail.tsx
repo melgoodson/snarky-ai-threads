@@ -724,11 +724,11 @@ const ProductDetail = () => {
         {/* Details tabs — BELOW the purchase section */}
         <div className="mt-12 max-w-3xl">
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className={`grid w-full ${isBlanket ? "grid-cols-3" : "grid-cols-4"}`}>
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="description" className="font-bold text-xs">Description</TabsTrigger>
               <TabsTrigger value="size" className="font-bold text-xs">Size Chart</TabsTrigger>
               <TabsTrigger value="care" className="font-bold text-xs">Care</TabsTrigger>
-              {!isBlanket && <TabsTrigger value="tryit" className="font-bold text-xs">Try It On</TabsTrigger>}
+              <TabsTrigger value="tryit" className="font-bold text-xs">{isBlanket ? "Preview" : "Try It On"}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="description" className="space-y-4">
@@ -785,11 +785,13 @@ const ProductDetail = () => {
               </p>
             </TabsContent>
 
-            {!isBlanket && (
-              <TabsContent value="tryit">
-                <AIMockupGenerator productImage={product.image} />
-              </TabsContent>
-            )}
+            <TabsContent value="tryit">
+              <AIMockupGenerator
+                productImage={product.image}
+                productTitle={product.title}
+                productColor={selectedColor || "White"}
+              />
+            </TabsContent>
           </Tabs>
         </div>
       </main>
