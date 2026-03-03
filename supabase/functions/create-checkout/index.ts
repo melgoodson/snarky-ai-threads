@@ -87,6 +87,9 @@ serve(async (req) => {
       return null;
     };
 
+    // UUID v4 regex for validation
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
     // Create order items
     const orderItems = cartItems.map((item: any) => {
       // Extract design image URL - ensure it's a string, not an object
@@ -100,11 +103,14 @@ serve(async (req) => {
         }
       }
 
-      console.log(`Order item design URL: ${designUrl} (type: ${typeof designUrl})`);
+      // Validate product_id is a real UUID to avoid FK constraint failures
+      const productId = item.productId && UUID_RE.test(item.productId) ? item.productId : null;
+
+      console.log(`Order item: product_id=${productId}, design URL=${designUrl}`);
 
       return {
         order_id: orderData.id,
-        product_id: item.productId,
+        product_id: productId,
         printify_product_id: item.printifyProductId || "placeholder",
         variant_id: item.variantId || "placeholder",
         quantity: item.quantity,
@@ -118,8 +124,8 @@ serve(async (req) => {
       .insert(orderItems);
 
     if (itemsError) {
-      console.error("Failed to create order items:", itemsError);
-      throw new Error("Failed to create order items");
+      console.error("Failed to create order items:", JSON.stringify(itemsError));
+      throw new Error(`Failed to create order items: ${itemsError.message || itemsError.code}`);
     }
 
     console.log("Order items created");
