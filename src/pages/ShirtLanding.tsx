@@ -43,7 +43,7 @@ const ShirtLanding = () => {
                                     Premium heavyweight cotton tees with bold, snarky graphics. 100% preshrunk cotton, DTG-printed, built to last.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 items-start">
-                                    <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design')}>
+                                    <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design?product=tee')}>
                                         DESIGN YOUR OWN
                                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                     </Button>
@@ -178,7 +178,7 @@ const ShirtLanding = () => {
                             Life's too short for boring shirts.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design')}>
+                            <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design?product=tee')}>
                                 DESIGN YOUR OWN
                                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                             </Button>

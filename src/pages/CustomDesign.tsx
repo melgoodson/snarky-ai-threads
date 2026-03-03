@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,7 @@ type FlowStep = 'create' | 'approve' | 'product' | 'mockup' | 'review';
 export default function CustomDesign() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { addItem } = useCart();
 
   // Flow state
@@ -348,7 +349,18 @@ export default function CustomDesign() {
         }
       }
 
-      setProducts(baseProducts.length > 0 ? baseProducts : allProducts);
+      const finalProducts = baseProducts.length > 0 ? baseProducts : allProducts;
+      setProducts(finalProducts);
+
+      // Auto-select product if ?product= URL param is provided (e.g., from landing pages)
+      const productParam = searchParams.get('product');
+      if (productParam && !selectedProduct) {
+        const match = finalProducts.find(p => getProductType(p.title) === productParam.toLowerCase());
+        if (match) {
+          console.log('Auto-selecting product from URL param:', productParam, '->', match.title);
+          setSelectedProduct(match);
+        }
+      }
     } catch (error: any) {
       console.error("Error fetching products:", error);
       toast.error("Failed to load products");

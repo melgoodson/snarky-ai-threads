@@ -27,7 +27,7 @@ const HoodieLanding = () => {
                                     Premium fleece-lined hoodies with bold graphics. 50/50 cotton-poly blend, kangaroo pocket, ribbed cuffs. Because cozy and snarky aren't mutually exclusive.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 items-start">
-                                    <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design')}>
+                                    <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design?product=hoodie')}>
                                         DESIGN YOUR OWN
                                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                     </Button>
@@ -166,7 +166,7 @@ const HoodieLanding = () => {
                             Cozy never looked this dangerous.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design')}>
+                            <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design?product=hoodie')}>
                                 DESIGN YOUR OWN
                                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                             </Button>
