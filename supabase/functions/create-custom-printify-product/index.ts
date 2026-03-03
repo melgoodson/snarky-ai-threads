@@ -346,6 +346,11 @@ serve(async (req) => {
     // Step 4: Create new product in Printify with custom design
     const productTitle = customTitle || `Custom ${baseProduct.title} - ${Date.now()}`;
 
+    // Printify expects prices in cents. Use baseProduct price from Supabase.
+    // Catalog variants don't include prices, so we must set them ourselves.
+    const priceInCents = Math.round((Number(baseProduct.retail_price) || Number(baseProduct.price) || 29.99) * 100);
+    console.log('Using price per variant (cents):', priceInCents);
+
     const productData = {
       title: productTitle,
       description: `Custom design product based on ${baseProduct.title}. Design professionally integrated with product-specific placement and scaling.`,
@@ -353,7 +358,7 @@ serve(async (req) => {
       print_provider_id: printProviderId,
       variants: productVariants.map((v: any) => ({
         id: v.id,
-        price: v.price || 0,
+        price: v.price > 0 ? v.price : priceInCents,
         is_enabled: variantId ? v.id === Number(variantId) : true,
       })),
       print_areas: newPrintAreas,
