@@ -243,68 +243,103 @@ serve(async (req) => {
       height: actualDesignHeight
     });
 
-    // Step 2: Fetch the original product from Printify to get blueprint and print provider
-    const originalProductResponse = await fetch(
-      `https://api.printify.com/v1/shops/${shopId}/products/${baseProduct.printify_product_id}.json`,
-      {
-        headers: {
-          'Authorization': `Bearer ${printifyApiToken}`,
-          'Content-Type': 'application/json',
-        },
+    // Step 2: Determine if printify_product_id is a blueprint ID or a real shop product ID
+    const printifyId = baseProduct.printify_product_id;
+    const isBlueprint = /^\d{1,5}$/.test(String(printifyId)); // Blueprint IDs are short numbers like 12, 77, 425
+
+    let blueprintId: number;
+    let printProviderId: number;
+    let productVariants: any[];
+
+    // Known print provider IDs for common Printify blueprints (Gildan, etc.)
+    const BLUEPRINT_PROVIDER_MAP: Record<number, number> = {
+      12: 29,    // Unisex Jersey Short Sleeve Tee (Gildan 64000) → Monster Digital
+      77: 29,    // Unisex Heavy Blend Hooded Sweatshirt (Gildan 18500) → Monster Digital
+      425: 28,   // Mug 15oz → Duplium
+      467: 28,   // Tote Bag → Duplium
+      522: 28,   // Personalization Blanket → Duplium
+      962: 28,   // Greeting Cards → Duplium
+    };
+
+    if (isBlueprint) {
+      // It's a blueprint ID — use catalog API to get print areas
+      blueprintId = Number(printifyId);
+      printProviderId = BLUEPRINT_PROVIDER_MAP[blueprintId] || 29;
+
+      console.log(`Using blueprint ID: ${blueprintId}, print provider: ${printProviderId}`);
+
+      // Fetch print provider variants for this blueprint
+      const variantsResponse = await fetch(
+        `https://api.printify.com/v1/catalog/blueprints/${blueprintId}/print_providers/${printProviderId}/variants.json`,
+        {
+          headers: {
+            'Authorization': `Bearer ${printifyApiToken}`,
+          },
+        }
+      );
+
+      if (!variantsResponse.ok) {
+        const errText = await variantsResponse.text();
+        console.error('Failed to fetch catalog variants:', errText);
+        throw new Error(`Failed to fetch variants for blueprint ${blueprintId}: ${errText}`);
       }
-    );
 
-    if (!originalProductResponse.ok) {
-      const errorText = await originalProductResponse.text();
-      console.error('Failed to fetch original product:', errorText);
-      throw new Error(`Failed to fetch original Printify product: ${errorText}`);
+      const catalogData = await variantsResponse.json();
+      productVariants = catalogData.variants || [];
+      console.log(`Found ${productVariants.length} variants for blueprint ${blueprintId}`);
+    } else {
+      // It's a real shop product ID — fetch it to get blueprint/provider/variants
+      console.log(`Fetching shop product: ${printifyId}`);
+      const originalProductResponse = await fetch(
+        `https://api.printify.com/v1/shops/${shopId}/products/${printifyId}.json`,
+        {
+          headers: {
+            'Authorization': `Bearer ${printifyApiToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!originalProductResponse.ok) {
+        const errorText = await originalProductResponse.text();
+        console.error('Failed to fetch original product:', errorText);
+        throw new Error(`Failed to fetch Printify product: ${errorText}`);
+      }
+
+      const originalProduct = await originalProductResponse.json();
+      blueprintId = originalProduct.blueprint_id;
+      printProviderId = originalProduct.print_provider_id;
+      productVariants = originalProduct.variants || [];
+      console.log('Found shop product:', blueprintId, printProviderId, productVariants.length, 'variants');
     }
 
-    const originalProduct = await originalProductResponse.json();
-    console.log('Original product blueprint:', originalProduct.blueprint_id, 'Print provider:', originalProduct.print_provider_id);
+    // Step 3: Build print areas with optimized placement
+    // For blueprint-based creation, build a simple print area using the variant ID
+    const targetVariantId = Number(variantId);
+    const matchingVariant = productVariants.find((v: any) => v.id === targetVariantId);
 
-    // Step 3: Get print areas structure from original product and build optimized placement
-    const originalPrintAreas = originalProduct.print_areas || [];
-
-    // Build new print areas with optimized placement for realistic integration
-    const newPrintAreas = originalPrintAreas.map((area: any) => {
-      // Get the original placeholder positions to maintain proper print zones
-      const originalPlaceholders = area.placeholders || [];
-      const frontPlaceholder = originalPlaceholders.find((p: any) => p.position === 'front') || originalPlaceholders[0];
-
-      return {
-        variant_ids: area.variant_ids,
-        placeholders: [{
-          position: placementConfig.position,
-          images: [{
-            id: uploadedImage.id,
-            // Use product-specific placement with calculated scale
-            x: placementConfig.x,
-            y: placementConfig.y,
-            scale: optimalScale,
-            angle: 0,
-          }],
-        }],
-      };
-    });
-
-    // If no print areas found, create default one with optimized placement
-    if (newPrintAreas.length === 0) {
-      const variantIds = originalProduct.variants?.map((v: any) => v.id) || [];
-      newPrintAreas.push({
-        variant_ids: variantIds,
-        placeholders: [{
-          position: placementConfig.position,
-          images: [{
-            id: uploadedImage.id,
-            x: placementConfig.x,
-            y: placementConfig.y,
-            scale: optimalScale,
-            angle: 0,
-          }],
-        }],
-      });
+    if (!matchingVariant && productVariants.length === 0) {
+      throw new Error('No variants available for this product');
     }
+
+    // Use the matching variant or default to all variants
+    const variantIdsForPrint = matchingVariant
+      ? [targetVariantId]
+      : productVariants.map((v: any) => v.id);
+
+    const newPrintAreas = [{
+      variant_ids: variantIdsForPrint,
+      placeholders: [{
+        position: placementConfig.position,
+        images: [{
+          id: uploadedImage.id,
+          x: placementConfig.x,
+          y: placementConfig.y,
+          scale: optimalScale,
+          angle: 0,
+        }],
+      }],
+    }];
 
     console.log('Configured print areas with optimized placement:', JSON.stringify(newPrintAreas, null, 2));
 
@@ -314,12 +349,12 @@ serve(async (req) => {
     const productData = {
       title: productTitle,
       description: `Custom design product based on ${baseProduct.title}. Design professionally integrated with product-specific placement and scaling.`,
-      blueprint_id: originalProduct.blueprint_id,
-      print_provider_id: originalProduct.print_provider_id,
-      variants: originalProduct.variants.map((v: any) => ({
+      blueprint_id: blueprintId,
+      print_provider_id: printProviderId,
+      variants: productVariants.map((v: any) => ({
         id: v.id,
-        price: v.price,
-        is_enabled: variantId ? v.id === Number(variantId) : v.is_enabled,
+        price: v.price || 0,
+        is_enabled: variantId ? v.id === Number(variantId) : true,
       })),
       print_areas: newPrintAreas,
     };
