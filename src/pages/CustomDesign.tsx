@@ -663,7 +663,7 @@ export default function CustomDesign() {
   };
 
   const proceedToCheckout = async () => {
-    if (!selectedProduct || !approvedDesign || !selectedVariant || !mockupPreview) {
+    if (!selectedProduct || !approvedDesign || !selectedVariant) {
       toast.error("Please complete all steps before checkout");
       return;
     }
@@ -696,8 +696,8 @@ export default function CustomDesign() {
       const selectedSize = extractSizeFromVariant(selectedVariant.title);
       const selectedColor = extractColorFromVariant(selectedVariant.title);
 
-      // Use Printify's mockup if available (actual product), fallback to AI preview
-      const displayImage = customProductData.mockupImageUrl || mockupPreview;
+      // Use Printify's mockup if available, then AI preview, then design image as last fallback
+      const displayImage = customProductData.mockupImageUrl || mockupPreview || approvedDesign.imageUrl;
       // Use Printify's confirmed design URL (what will actually be printed)
       const confirmedDesignUrl = customProductData.uploadedImagePreview || approvedDesign.imageUrl;
 

@@ -97,7 +97,11 @@ const DesignDetail = () => {
     const apiCall = supabase.functions.invoke("generate-user-mockup", {
       body: {
         userImage: resolveDesignImage(design.image_url),
-        productImage: product.images?.[0] || resolveDesignImage(design.image_url),
+        productImage: (() => {
+          const img = product.images?.[0];
+          if (!img) return resolveDesignImage(design.image_url);
+          return typeof img === 'string' ? img : img.src || img.url || resolveDesignImage(design.image_url);
+        })(),
         productTitle: product.title,
         productColor: selectedColor,
       },
@@ -232,8 +236,17 @@ const DesignDetail = () => {
     const hasOptions = options.sizes.length > 0 || options.colors.length > 0;
     console.log('[AddToCart] hasOptions:', hasOptions, 'sizes:', options.sizes.length, 'colors:', options.colors.length);
 
-    if (hasOptions && (!selectedSize || !selectedColor || !selectedVariant)) {
-      toast.error("Please select size and color");
+    // Only require size/color if they exist for this product
+    if (options.sizes.length > 0 && !selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+    if (options.colors.length > 0 && !selectedColor) {
+      toast.error("Please select a color");
+      return;
+    }
+    if (hasOptions && !selectedVariant) {
+      toast.error("Please select a variant");
       return;
     }
 
