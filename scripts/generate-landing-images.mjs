@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = path.join(__dirname, "..", "public", "images");
-const API_KEY = "AIzaSyDSdT7qTiD456fW07S09IhXQidztzNCHtw";
+const API_KEY = process.env.GOOGLE_AI_API_KEY;
 const MODEL = "gemini-2.0-flash-exp-image-generation";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 

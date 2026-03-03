@@ -168,16 +168,22 @@ LIGHTING & SHADOWS:
 • The design receives the SAME lighting as the product surface
 
 COLOR ACCURACY:
-• Product must be exactly ${color.toUpperCase()}
+• The PRODUCT (garment/item) must be ${color.toUpperCase()} colored
+• Do NOT use ${color} as a background or scene color
+
+BACKGROUND:
+• Use a CLEAN, PLAIN white or very light gray studio background
+• The background must be simple and uncluttered - like a professional e-commerce product photo
+• Do NOT use colored backgrounds, fabric textures, or patterned backgrounds
 
 === OUTPUT ===
-A photorealistic mockup where the design appears TRULY PRINTED on the ${color} ${product}.`;
+A photorealistic e-commerce product mockup on a clean white studio background, where the design appears TRULY PRINTED on the ${color} ${product}.`;
 
     const userImagePart = await toImagePart(userImage);
     const productImagePart = await toImagePart(productImage);
 
-    const models = ["gemini-2.0-flash-exp-image-generation", "gemini-2.5-flash-image"];
-    const MAX_RETRIES = 3;
+    const models = ["gemini-2.5-flash-image", "gemini-2.0-flash-exp-image-generation"];
+    const MAX_RETRIES = 2;
     let lastError = "";
 
     for (const model of models) {

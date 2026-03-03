@@ -150,12 +150,27 @@ const DesignDetail = () => {
         }
       }
 
-      // Filter out "Custom" products from display
-      const displayProducts = allProducts.filter((p: any) =>
-        !p.title.toLowerCase().startsWith('custom ')
-      );
+      // Show only ONE product per type - prefer base product (not Custom/Placeholder)
+      const seenTypes = new Set<string>();
+      const baseProducts: any[] = [];
+      const sorted = [...allProducts].sort((a: any, b: any) => {
+        const aLower = a.title.toLowerCase();
+        const bLower = b.title.toLowerCase();
+        const aIsBase = !aLower.includes('placeholder') && !aLower.startsWith('custom ');
+        const bIsBase = !bLower.includes('placeholder') && !bLower.startsWith('custom ');
+        if (aIsBase && !bIsBase) return -1;
+        if (!aIsBase && bIsBase) return 1;
+        return a.title.length - b.title.length;
+      });
+      for (const p of sorted) {
+        const type = getProductType(p.title);
+        if (type !== 'unknown' && !seenTypes.has(type)) {
+          seenTypes.add(type);
+          baseProducts.push(p);
+        }
+      }
 
-      setProducts(displayProducts.length > 0 ? displayProducts : allProducts);
+      setProducts(baseProducts.length > 0 ? baseProducts : allProducts);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load design details");

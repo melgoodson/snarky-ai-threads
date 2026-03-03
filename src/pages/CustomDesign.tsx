@@ -325,14 +325,30 @@ export default function CustomDesign() {
         }
       }
 
-      // Filter to show only non-"Custom" and non-"Placeholder" products for selection
-      // (users should pick base product types, not individual custom products)
-      const displayProducts = allProducts.filter(p => {
-        const lower = p.title.toLowerCase();
-        return !lower.startsWith('custom ');
+      // Show only ONE product per type - prefer the base product (not Custom/Placeholder versions)
+      const seenTypes = new Set<string>();
+      const baseProducts: typeof allProducts = [];
+
+      // Sort: prefer products WITHOUT "placeholder" or "custom" in the name, then by shortest title
+      const sorted = [...allProducts].sort((a, b) => {
+        const aLower = a.title.toLowerCase();
+        const bLower = b.title.toLowerCase();
+        const aIsBase = !aLower.includes('placeholder') && !aLower.startsWith('custom ');
+        const bIsBase = !bLower.includes('placeholder') && !bLower.startsWith('custom ');
+        if (aIsBase && !bIsBase) return -1;
+        if (!aIsBase && bIsBase) return 1;
+        return a.title.length - b.title.length;
       });
 
-      setProducts(displayProducts.length > 0 ? displayProducts : allProducts);
+      for (const p of sorted) {
+        const type = getProductType(p.title);
+        if (type !== 'unknown' && !seenTypes.has(type)) {
+          seenTypes.add(type);
+          baseProducts.push(p);
+        }
+      }
+
+      setProducts(baseProducts.length > 0 ? baseProducts : allProducts);
     } catch (error: any) {
       console.error("Error fetching products:", error);
       toast.error("Failed to load products");
