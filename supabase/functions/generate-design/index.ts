@@ -36,7 +36,7 @@ serve(async (req) => {
       throw new Error("GOOGLE_AI_API_KEY is not configured");
     }
 
-    const enhancedPrompt = `Create a high-quality, print-ready design for print-on-demand products. ${prompt}. The design should be clear, vibrant, and suitable for printing on apparel and merchandise. Use a transparent or solid background. Make the design eye-catching and professional.`;
+    const enhancedPrompt = `Create a standalone artwork design. ${prompt}. IMPORTANT: Generate ONLY the flat design/artwork itself on a clean white or transparent background. Do NOT show the design on any product like a shirt, hoodie, mug, or any merchandise. No product mockups. Just the pure artwork/illustration/graphic by itself, high resolution, vibrant colors, clean edges, print-ready.`;
 
     // Build request parts
     const parts: any[] = [{ text: enhancedPrompt }];
