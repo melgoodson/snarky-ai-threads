@@ -196,6 +196,16 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
           )}
         </div>
 
+        {/* Privacy disclaimer */}
+        <div className="flex items-start gap-2 text-xs text-muted-foreground bg-card/50 border border-border rounded-lg px-4 py-3 text-left">
+          <span className="text-base leading-none mt-0.5">🔒</span>
+          <p>
+            <span className="font-bold text-foreground">We're Snarky. Not Shady.</span>{" "}
+            Your photo is used only for your custom design — not stored, not sold, not shared.
+            The only thing we're doing is making something awesome for you!
+          </p>
+        </div>
+
         {mockupImage && (
           <div className="mt-6 space-y-4">
             <h4 className="text-lg font-bold text-foreground">
