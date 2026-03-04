@@ -16,11 +16,15 @@ import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 const COLOR_HEX_MAP: Record<string, string> = {
   "Black": "#000000",
   "White": "#FFFFFF",
+  "Snowwhite": "#FFFAFA",
   "Navy": "#1B1F3B",
   "Red": "#C0392B",
+  "Royal": "#4169E1",
   "Royal Blue": "#2E5EAA",
+  "True Royal": "#4169E1",
   "Sport Grey": "#9B9B9B",
   "Dark Heather": "#4A4A4A",
+  "Dark Grey Heather": "#5A5A5A",
   "Military Green": "#4B5320",
   "Maroon": "#6B1C23",
   "Forest Green": "#2D572C",
@@ -36,18 +40,36 @@ const COLOR_HEX_MAP: Record<string, string> = {
   "Ash": "#B2BEB5",
   "Gold": "#FFD700",
   "Safety Green": "#78FF00",
+  "Safety Orange": "#FF6600",
+  "Safety Pink": "#FF69B4",
   "Antique Cherry Red": "#9B111E",
+  "Antique Sapphire": "#0B3D91",
   "Coral Silk": "#FF7F7F",
   "Ice Grey": "#D6D6D6",
   "Sapphire": "#0F52BA",
   "Berry": "#8E4585",
   "Heather Grey": "#B0B0B0",
+  "Athletic Heather": "#B8B8B0",
+  "Graphite Heather": "#5C5C5C",
+  "Heather Mauve": "#C4A4B0",
+  "Heather Peach": "#E8C0A8",
+  "Heather Navy": "#2C3E6B",
+  "Heather Sport Royal": "#3A5FCD",
+  "Heather Sport Dark Navy": "#1C2951",
   "Carolina Blue": "#56A0D3",
   "Indigo Blue": "#3F51B5",
   "Violet": "#7F00FF",
   "Tropical Blue": "#00CED1",
   "Mint Green": "#98FB98",
   "Sunset": "#FAD6A5",
+  "Azalea": "#F19CBB",
+  "Cardinal Red": "#C41E3A",
+  "Cherry Red": "#DE3163",
+  "Dark Chocolate": "#3C1414",
+  "Garnet": "#733635",
+  "Heliconia": "#D5006C",
+  "Kiwi": "#8EE53F",
+  "Orchid": "#DA70D6",
 };
 
 interface Design {
@@ -78,6 +100,7 @@ const DesignDetail = () => {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [showTryOn, setShowTryOn] = useState(false);
   const [mockupPreview, setMockupPreview] = useState<string | null>(null);
   const [generatingMockup, setGeneratingMockup] = useState(false);
@@ -258,20 +281,25 @@ const DesignDetail = () => {
     }
 
     const options = getAvailableOptions(product.variants || []);
-    const hasOptions = options.sizes.length > 0 || options.colors.length > 0;
-    console.log('[AddToCart] hasOptions:', hasOptions, 'sizes:', options.sizes.length, 'colors:', options.colors.length);
+    const hasOptions = options.sizes.length > 0 || options.colors.length > 0 || options.styles.length > 0;
+    console.log('[AddToCart] hasOptions:', hasOptions, 'sizes:', options.sizes.length, 'colors:', options.colors.length, 'styles:', options.styles.length);
 
-    // Only require size/color if they exist for this product
+    // Only require options that exist for this product
     if (options.sizes.length > 0 && !selectedSize) {
       toast.error("Please select a size");
+      return;
+    }
+    if (options.styles.length > 0 && !selectedStyle) {
+      toast.error("Please select a style");
       return;
     }
     if (options.colors.length > 0 && !selectedColor) {
       toast.error("Please select a color");
       return;
     }
+    // hasOptions already defined above
     if (hasOptions && !selectedVariant) {
-      toast.error("Please select a variant");
+      toast.error("Please select all options");
       return;
     }
 
@@ -312,117 +340,102 @@ const DesignDetail = () => {
   // Helper: check if a string looks like a size value
   const looksLikeSize = (val: string) => {
     const v = val.trim().toLowerCase();
-    // Matches: "15oz", "11oz", "S", "M", "L", "XL", "2XL", "3XL", etc.
-    if (/^\d+oz$/i.test(v)) return true;
-    if (/^\d*x?[sml]$/i.test(v)) return true;
-    if (/^\d+xl$/i.test(v)) return true;
-    // Common paper/card sizes like "5\"x7\""
-    if (/^\d+.*x.*\d+/.test(v)) return true;
+    if (/^\d+oz$/i.test(v)) return true;                   // 15oz, 11oz
+    if (/^\d*x?[sml]$/i.test(v)) return true;              // S, M, L, XS, XL
+    if (/^\d+xl$/i.test(v)) return true;                   // 2XL, 3XL
+    if (/^one size$/i.test(v)) return true;                 // One size
+    if (/\d+["″]?\s*[x×]\s*\d+/i.test(v)) return true;   // 30" × 40", 6.9" x 4.9", 15" x 16"
     return false;
   };
 
-  // Parse variants to extract sizes and colors
-  const getAvailableOptions = (variants: any[]) => {
-    if (!variants) return { sizes: [], colors: [] };
+  // Helper: check if a string looks like a quantity ("1 pc", "10 pcs")
+  const looksLikeQuantity = (val: string) => /^\d+\s*pcs?$/i.test(val.trim());
 
-    // Only use enabled variants
+  // Helper: check if a string looks like a style/finish (not color or size)
+  const looksLikeStyle = (val: string) => {
+    const v = val.trim().toLowerCase();
+    const styles = ['glossy', 'matte', 'coated (both sides)', 'coated (one side)', 'uncoated'];
+    return styles.includes(v);
+  };
+
+  // Parse variants to extract sizes, colors, and styles
+  const getAvailableOptions = (variants: any[]) => {
+    if (!variants) return { sizes: [] as string[], colors: [] as string[], styles: [] as string[] };
+
     const enabledVariants = variants.filter((v: any) => v.is_enabled);
 
     const sizes = new Set<string>();
     const colors = new Set<string>();
+    const styles = new Set<string>();
 
     enabledVariants.forEach((variant: any) => {
-      const parts = variant.title.split(' / ');
-      if (parts.length >= 2) {
-        // Format: "Color / Size" or "Size / Color"
-        const [first, second] = parts.map((p: string) => p.trim());
-        if (looksLikeSize(first)) {
-          sizes.add(first);
-          if (second) colors.add(second);
+      const parts = variant.title.split(' / ').map((p: string) => p.trim());
+      parts.forEach((part: string) => {
+        if (looksLikeQuantity(part)) return; // Skip quantity parts like "1 pc"
+        if (looksLikeSize(part)) {
+          sizes.add(part);
+        } else if (looksLikeStyle(part)) {
+          styles.add(part);
         } else {
-          colors.add(first);
-          if (second) sizes.add(second);
+          colors.add(part);
         }
-      } else {
-        // Single value — classify as size if it looks like one
-        const val = parts[0].trim();
-        if (looksLikeSize(val)) {
-          sizes.add(val);
-        } else {
-          colors.add(val);
-        }
-      }
+      });
     });
 
     return {
       sizes: Array.from(sizes).sort(),
       colors: Array.from(colors).sort(),
+      styles: Array.from(styles).sort(),
     };
   };
 
-  // Find variant based on selected size and color
-  const findMatchingVariant = (productId: string, size: string | null, color: string | null) => {
+  // Find variant that matches all selected attributes
+  const findMatchingVariant = (productId: string, size: string | null, color: string | null, style: string | null) => {
     const product = products.find((p) => p.id === productId);
     if (!product) return null;
 
     const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
 
-    // Size-only product (no color options)
-    if (size && !color) {
-      return enabledVariants.find((v: any) => {
-        const parts = v.title.split(' / ');
-        if (parts.length === 1) return parts[0].trim() === size;
-        return parts.some((p: string) => p.trim() === size);
-      });
-    }
+    // Collect all selected attributes
+    const selected = [size, color, style].filter(Boolean) as string[];
+    if (selected.length === 0) return null;
 
-    // Color-only product (no size options)
-    if (color && !size) {
-      return enabledVariants.find((v: any) => {
-        const parts = v.title.split(' / ');
-        if (parts.length === 1) return parts[0].trim() === color;
-        return parts.some((p: string) => p.trim() === color);
-      });
-    }
-
-    if (!size || !color) return null;
-
-    // Both size and color — match regardless of order in title
     return enabledVariants.find((v: any) => {
       const parts = v.title.split(' / ').map((p: string) => p.trim());
-      return parts.includes(size) && parts.includes(color);
+      // Filter out quantity parts for matching
+      const meaningful = parts.filter((p: string) => !looksLikeQuantity(p));
+      return selected.every((sel) => meaningful.includes(sel));
     });
   };
 
-  // Update variant when size or color changes
+  // Try to auto-resolve variant when any selection changes
+  const tryResolveVariant = (size: string | null, color: string | null, style: string | null) => {
+    if (!selectedProduct) return;
+    const opts = currentOptions;
+    const needSize = opts.sizes.length > 0;
+    const needColor = opts.colors.length > 0;
+    const needStyle = opts.styles.length > 0;
+    if ((!needSize || size) && (!needColor || color) && (!needStyle || style)) {
+      const variant = findMatchingVariant(selectedProduct, size, color, style);
+      setSelectedVariant(variant || null);
+    } else {
+      setSelectedVariant(null);
+    }
+  };
+
   const handleSizeChange = (size: string) => {
     setSelectedSize(size);
-    if (selectedProduct) {
-      const opts = currentOptions;
-      if (opts.colors.length === 0) {
-        // Size-only product — find variant by size alone
-        const variant = findMatchingVariant(selectedProduct, size, null);
-        setSelectedVariant(variant || null);
-      } else if (selectedColor) {
-        const variant = findMatchingVariant(selectedProduct, size, selectedColor);
-        setSelectedVariant(variant || null);
-      }
-    }
+    tryResolveVariant(size, selectedColor, selectedStyle);
   };
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color);
-    if (selectedProduct) {
-      const opts = currentOptions;
-      if (opts.sizes.length === 0) {
-        // Color-only product — find variant by color alone
-        const variant = findMatchingVariant(selectedProduct, null, color);
-        setSelectedVariant(variant || null);
-      } else if (selectedSize) {
-        const variant = findMatchingVariant(selectedProduct, selectedSize, color);
-        setSelectedVariant(variant || null);
-      }
-    }
+    tryResolveVariant(selectedSize, color, selectedStyle);
+  };
+
+  const handleStyleChange = (style: string) => {
+    setSelectedStyle(style);
+    tryResolveVariant(selectedSize, selectedColor, style);
   };
 
   if (loading) {
@@ -456,7 +469,7 @@ const DesignDetail = () => {
 
   // Get selected product details for inline display
   const currentProduct = selectedProduct ? products.find((p) => p.id === selectedProduct) : null;
-  const currentOptions = currentProduct ? getAvailableOptions(currentProduct.variants || []) : { sizes: [], colors: [] };
+  const currentOptions = currentProduct ? getAvailableOptions(currentProduct.variants || []) : { sizes: [], colors: [], styles: [] };
   const currentPricing = currentProduct ? getDisplayPrice(currentProduct) : null;
 
   return (
@@ -558,9 +571,10 @@ const DesignDetail = () => {
                           setSelectedProduct(product.id);
                           setSelectedSize(null);
                           setSelectedColor(null);
-                          // Auto-select variant for products without size/color options
+                          setSelectedStyle(null);
+                          // Auto-select variant for products without any options
                           const opts = getAvailableOptions(product.variants || []);
-                          if (opts.sizes.length === 0 && opts.colors.length === 0) {
+                          if (opts.sizes.length === 0 && opts.colors.length === 0 && opts.styles.length === 0) {
                             const enabledVariants = (product.variants || []).filter((v: any) => v.is_enabled);
                             setSelectedVariant(enabledVariants[0] || null);
                           } else {
@@ -632,16 +646,37 @@ const DesignDetail = () => {
                     </div>
                   )}
 
-                  {/* Color / Size-only Selection */}
+                  {/* Style Selection (Glossy / Matte etc.) */}
+                  {currentOptions.styles.length > 0 && (
+                    <div>
+                      <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
+                        {currentOptions.sizes.length > 0 ? 'â‘¢' : 'â‘¡'} Pick Style {selectedStyle && <span className="text-primary normal-case">â€” {selectedStyle}</span>}
+                      </h2>
+                      <div className="flex flex-wrap gap-2">
+                        {currentOptions.styles.map((style) => (
+                          <Button
+                            key={style}
+                            variant={selectedStyle === style ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleStyleChange(style)}
+                          >
+                            {style}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Color Selection */}
                   {currentOptions.colors.length > 0 && (
                     <div>
                       <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
-                        {currentOptions.sizes.length > 0 ? '③' : '②'} Pick Color {selectedColor && <span className="text-primary normal-case">— {selectedColor}</span>}
+                        {(() => { let step = 2; if (currentOptions.sizes.length > 0) step++; if (currentOptions.styles.length > 0) step++; return step === 2 ? 'â‘¡' : step === 3 ? 'â‘¢' : 'â‘£'; })()} Pick Color {selectedColor && <span className="text-primary normal-case">â€” {selectedColor}</span>}
                       </h2>
                       <div className="flex flex-wrap gap-2">
                         {currentOptions.colors.map((color) => {
                           const hex = COLOR_HEX_MAP[color] || "#888888";
-                          const isLight = hex === "#FFFFFF" || hex === "#F5F5DC" || hex === "#FFD700" || hex === "#F8D568";
+                          const isLight = hex === "#FFFFFF" || hex === "#FFFAFA" || hex === "#F5F5DC" || hex === "#FFD700" || hex === "#F8D568";
                           return (
                             <button
                               key={color}
@@ -670,18 +705,18 @@ const DesignDetail = () => {
                     className="w-full group text-lg font-bold"
                     onClick={handleAddToCart}
                     disabled={
-                      (currentOptions.sizes.length > 0 || currentOptions.colors.length > 0)
+                      (currentOptions.sizes.length > 0 || currentOptions.colors.length > 0 || currentOptions.styles.length > 0)
                         ? (
-                          (currentOptions.sizes.length > 0 && !selectedSize) ||
-                          (currentOptions.colors.length > 0 && !selectedColor) ||
-                          !selectedVariant
-                        )
+                            (currentOptions.sizes.length > 0 && !selectedSize) ||
+                            (currentOptions.colors.length > 0 && !selectedColor) ||
+                            (currentOptions.styles.length > 0 && !selectedStyle) ||
+                            !selectedVariant
+                          )
                         : false
                     }
                   >
                     Add to Cart
-                  </Button>
-                </>
+                  </Button>                </>
               )}
 
               {!currentProduct && (
