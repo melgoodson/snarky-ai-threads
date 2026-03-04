@@ -309,6 +309,18 @@ const DesignDetail = () => {
     return { price: retail, originalPrice: retail + 20 };
   };
 
+  // Helper: check if a string looks like a size value
+  const looksLikeSize = (val: string) => {
+    const v = val.trim().toLowerCase();
+    // Matches: "15oz", "11oz", "S", "M", "L", "XL", "2XL", "3XL", etc.
+    if (/^\d+oz$/i.test(v)) return true;
+    if (/^\d*x?[sml]$/i.test(v)) return true;
+    if (/^\d+xl$/i.test(v)) return true;
+    // Common paper/card sizes like "5\"x7\""
+    if (/^\d+.*x.*\d+/.test(v)) return true;
+    return false;
+  };
+
   // Parse variants to extract sizes and colors
   const getAvailableOptions = (variants: any[]) => {
     if (!variants) return { sizes: [], colors: [] };
@@ -320,9 +332,26 @@ const DesignDetail = () => {
     const colors = new Set<string>();
 
     enabledVariants.forEach((variant: any) => {
-      const [color, size] = variant.title.split(' / ');
-      if (size) sizes.add(size.trim());
-      if (color) colors.add(color.trim());
+      const parts = variant.title.split(' / ');
+      if (parts.length >= 2) {
+        // Format: "Color / Size" or "Size / Color"
+        const [first, second] = parts.map((p: string) => p.trim());
+        if (looksLikeSize(first)) {
+          sizes.add(first);
+          if (second) colors.add(second);
+        } else {
+          colors.add(first);
+          if (second) sizes.add(second);
+        }
+      } else {
+        // Single value — classify as size if it looks like one
+        const val = parts[0].trim();
+        if (looksLikeSize(val)) {
+          sizes.add(val);
+        } else {
+          colors.add(val);
+        }
+      }
     });
 
     return {
@@ -334,29 +363,65 @@ const DesignDetail = () => {
   // Find variant based on selected size and color
   const findMatchingVariant = (productId: string, size: string | null, color: string | null) => {
     const product = products.find((p) => p.id === productId);
-    if (!product || !size || !color) return null;
+    if (!product) return null;
 
     const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
+
+    // Size-only product (no color options)
+    if (size && !color) {
+      return enabledVariants.find((v: any) => {
+        const parts = v.title.split(' / ');
+        if (parts.length === 1) return parts[0].trim() === size;
+        return parts.some((p: string) => p.trim() === size);
+      });
+    }
+
+    // Color-only product (no size options)
+    if (color && !size) {
+      return enabledVariants.find((v: any) => {
+        const parts = v.title.split(' / ');
+        if (parts.length === 1) return parts[0].trim() === color;
+        return parts.some((p: string) => p.trim() === color);
+      });
+    }
+
+    if (!size || !color) return null;
+
+    // Both size and color — match regardless of order in title
     return enabledVariants.find((v: any) => {
-      const [variantColor, variantSize] = v.title.split(' / ');
-      return variantSize?.trim() === size && variantColor?.trim() === color;
+      const parts = v.title.split(' / ').map((p: string) => p.trim());
+      return parts.includes(size) && parts.includes(color);
     });
   };
 
   // Update variant when size or color changes
   const handleSizeChange = (size: string) => {
     setSelectedSize(size);
-    if (selectedColor && selectedProduct) {
-      const variant = findMatchingVariant(selectedProduct, size, selectedColor);
-      setSelectedVariant(variant || null);
+    if (selectedProduct) {
+      const opts = currentOptions;
+      if (opts.colors.length === 0) {
+        // Size-only product — find variant by size alone
+        const variant = findMatchingVariant(selectedProduct, size, null);
+        setSelectedVariant(variant || null);
+      } else if (selectedColor) {
+        const variant = findMatchingVariant(selectedProduct, size, selectedColor);
+        setSelectedVariant(variant || null);
+      }
     }
   };
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color);
-    if (selectedSize && selectedProduct) {
-      const variant = findMatchingVariant(selectedProduct, selectedSize, color);
-      setSelectedVariant(variant || null);
+    if (selectedProduct) {
+      const opts = currentOptions;
+      if (opts.sizes.length === 0) {
+        // Color-only product — find variant by color alone
+        const variant = findMatchingVariant(selectedProduct, null, color);
+        setSelectedVariant(variant || null);
+      } else if (selectedSize) {
+        const variant = findMatchingVariant(selectedProduct, selectedSize, color);
+        setSelectedVariant(variant || null);
+      }
     }
   };
 
@@ -567,11 +632,11 @@ const DesignDetail = () => {
                     </div>
                   )}
 
-                  {/* Color Selection */}
+                  {/* Color / Size-only Selection */}
                   {currentOptions.colors.length > 0 && (
                     <div>
                       <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
-                        ③ Pick Color {selectedColor && <span className="text-primary normal-case">— {selectedColor}</span>}
+                        {currentOptions.sizes.length > 0 ? '③' : '②'} Pick Color {selectedColor && <span className="text-primary normal-case">— {selectedColor}</span>}
                       </h2>
                       <div className="flex flex-wrap gap-2">
                         {currentOptions.colors.map((color) => {
@@ -606,7 +671,11 @@ const DesignDetail = () => {
                     onClick={handleAddToCart}
                     disabled={
                       (currentOptions.sizes.length > 0 || currentOptions.colors.length > 0)
-                        ? (!selectedSize || !selectedColor || !selectedVariant)
+                        ? (
+                          (currentOptions.sizes.length > 0 && !selectedSize) ||
+                          (currentOptions.colors.length > 0 && !selectedColor) ||
+                          !selectedVariant
+                        )
                         : false
                     }
                   >
