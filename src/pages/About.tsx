@@ -21,11 +21,12 @@ const About = () => {
             </div>
 
             <article className="space-y-8 text-lg">
-              <div className="mb-12">
-                <img 
-                  src={melFounder} 
-                  alt="Mel, founder of Snarky Humans, relaxing at home with his pets and Snarky Humans products" 
-                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
+              <div className="mb-12 overflow-hidden rounded-lg shadow-lg max-w-2xl mx-auto">
+                <img
+                  src={melFounder}
+                  alt="Mel, founder of Snarky Humans, relaxing at home with his pets and Snarky Humans products"
+                  className="w-full block"
+                  style={{ marginBottom: '-40px' }}
                 />
               </div>
 
