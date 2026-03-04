@@ -650,7 +650,7 @@ const DesignDetail = () => {
                   {currentOptions.styles.length > 0 && (
                     <div>
                       <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
-                        {currentOptions.sizes.length > 0 ? 'â‘¢' : 'â‘¡'} Pick Style {selectedStyle && <span className="text-primary normal-case">â€” {selectedStyle}</span>}
+                        {currentOptions.sizes.length > 0 ? '③' : '②'} Pick Style {selectedStyle && <span className="text-primary normal-case">— {selectedStyle}</span>}
                       </h2>
                       <div className="flex flex-wrap gap-2">
                         {currentOptions.styles.map((style) => (
@@ -671,7 +671,7 @@ const DesignDetail = () => {
                   {currentOptions.colors.length > 0 && (
                     <div>
                       <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
-                        {(() => { let step = 2; if (currentOptions.sizes.length > 0) step++; if (currentOptions.styles.length > 0) step++; return step === 2 ? 'â‘¡' : step === 3 ? 'â‘¢' : 'â‘£'; })()} Pick Color {selectedColor && <span className="text-primary normal-case">â€” {selectedColor}</span>}
+                        {(() => { let step = 2; if (currentOptions.sizes.length > 0) step++; if (currentOptions.styles.length > 0) step++; return step === 2 ? '②' : step === 3 ? '③' : '④'; })()} Pick Color {selectedColor && <span className="text-primary normal-case">— {selectedColor}</span>}
                       </h2>
                       <div className="flex flex-wrap gap-2">
                         {currentOptions.colors.map((color) => {
@@ -707,11 +707,11 @@ const DesignDetail = () => {
                     disabled={
                       (currentOptions.sizes.length > 0 || currentOptions.colors.length > 0 || currentOptions.styles.length > 0)
                         ? (
-                            (currentOptions.sizes.length > 0 && !selectedSize) ||
-                            (currentOptions.colors.length > 0 && !selectedColor) ||
-                            (currentOptions.styles.length > 0 && !selectedStyle) ||
-                            !selectedVariant
-                          )
+                          (currentOptions.sizes.length > 0 && !selectedSize) ||
+                          (currentOptions.colors.length > 0 && !selectedColor) ||
+                          (currentOptions.styles.length > 0 && !selectedStyle) ||
+                          !selectedVariant
+                        )
                         : false
                     }
                   >
