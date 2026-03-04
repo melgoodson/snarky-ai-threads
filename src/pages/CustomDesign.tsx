@@ -1072,11 +1072,12 @@ export default function CustomDesign() {
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
-                                // Try images array fallback
-                                if (product.images && product.images[0] && target.src !== product.images[0]) {
+                                // Try blanket fallback first
+                                if (product.title.toLowerCase().includes('blanket') && target.src !== personalizationBlanketFallback) {
+                                  target.src = personalizationBlanketFallback;
+                                } else if (product.images && product.images[0] && target.src !== product.images[0]) {
                                   target.src = product.images[0];
                                 } else {
-                                  // Hide broken img and show placeholder
                                   target.style.display = 'none';
                                 }
                               }}
@@ -1102,9 +1103,11 @@ export default function CustomDesign() {
                     <Card className="max-w-2xl mx-auto p-6">
                       <h3 className="text-xl font-bold mb-4">Select Options</h3>
 
-                      {/* Color Selection */}
+                      {/* Color/Option Selection */}
                       <div className="mb-6">
-                        <h4 className="font-semibold mb-3">Color</h4>
+                        <h4 className="font-semibold mb-3">
+                          {selectedProduct.variants.some(v => v.title.includes(' / ')) ? 'Color' : 'Size'}
+                        </h4>
                         <div className="flex flex-wrap gap-3">
                           {getUniqueColors(selectedProduct.variants).map((color) => {
                             const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title) === color;
@@ -1127,8 +1130,8 @@ export default function CustomDesign() {
                         </div>
                       </div>
 
-                      {/* Size Selection */}
-                      {selectedVariant && (
+                      {/* Size Selection - only for products with Color / Size format */}
+                      {selectedVariant && selectedProduct.variants.some(v => v.title.includes(' / ')) && (
                         <div className="mb-6">
                           <h4 className="font-semibold mb-3">Size</h4>
                           <div className="flex flex-wrap gap-3">
