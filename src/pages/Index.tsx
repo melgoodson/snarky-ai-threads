@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { ProductShowcase } from "@/components/ProductShowcase";
+import { UGCTestimonials } from "@/components/UGCTestimonials";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Footer } from "@/components/Footer";
 
@@ -16,6 +17,7 @@ const Index = () => {
       <main className="flex-1">
         <Hero />
         <ProductShowcase />
+        <UGCTestimonials />
         <div id="products">
           <ProductGrid />
         </div>
