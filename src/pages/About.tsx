@@ -26,7 +26,7 @@ const About = () => {
                   src={melFounder}
                   alt="Mel, founder of Snarky Humans, relaxing at home with his pets and Snarky Humans products"
                   className="w-full block"
-                  style={{ marginBottom: '-40px' }}
+                  style={{ marginBottom: '-80px' }}
                 />
               </div>
 
