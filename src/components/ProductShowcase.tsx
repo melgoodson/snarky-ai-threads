@@ -11,6 +11,7 @@ const PRODUCT_CATEGORIES = [
         href: "/shirts",
         image: "/images/carousel/shirt-hero-1.png",
         gradient: "from-red-500/10 to-orange-500/10",
+        badge: "🔥 Bestseller",
     },
     {
         title: "COZY",
@@ -47,6 +48,7 @@ const PRODUCT_CATEGORIES = [
         href: "/mugs",
         image: "/images/mug-hero.png",
         gradient: "from-amber-500/10 to-yellow-500/10",
+        badge: "⭐ Popular",
     },
     {
         title: "SNARKY",
@@ -82,12 +84,17 @@ export const ProductShowcase = () => {
                             onClick={() => navigate(category.href)}
                         >
                             {/* Product Photo */}
-                            <div className="aspect-[4/3] overflow-hidden">
+                            <div className="aspect-[4/3] overflow-hidden relative">
                                 <img
                                     src={category.image}
                                     alt={`${category.title} ${category.highlight} — snarky product`}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
+                                {category.badge && (
+                                    <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-lg">
+                                        {category.badge}
+                                    </span>
+                                )}
                             </div>
                             {/* Info */}
                             <div className="p-6 md:p-8">
