@@ -51,7 +51,10 @@ const ShirtLanding = () => {
                                         BROWSE DESIGNS
                                     </Button>
                                 </div>
-                                <p className="text-3xl font-black mt-6">Starting at <span className="text-primary">$15.69</span></p>
+                                <div className="mt-6 flex items-center gap-2">
+                                    <p className="text-3xl font-black">Starting at <span className="text-primary">$15.69</span></p>
+                                    <span className="text-lg text-muted-foreground line-through">$35.69</span>
+                                </div>
                             </div>
                             <div className="max-w-md mx-auto w-full">
                                 <ImageCarousel images={HERO_IMAGES} alt="Snarky t-shirt collection" interval={4000} />

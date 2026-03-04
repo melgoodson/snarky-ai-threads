@@ -35,7 +35,10 @@ const HoodieLanding = () => {
                                         BROWSE DESIGNS
                                     </Button>
                                 </div>
-                                <p className="text-3xl font-black mt-6">Starting at <span className="text-primary">$39.99</span></p>
+                                <div className="mt-6 flex items-center gap-2">
+                                    <p className="text-3xl font-black">Starting at <span className="text-primary">$39.99</span></p>
+                                    <span className="text-lg text-muted-foreground line-through">$59.99</span>
+                                </div>
                             </div>
                             <div className="flex justify-center">
                                 <img
