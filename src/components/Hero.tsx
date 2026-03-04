@@ -35,7 +35,7 @@ export const Hero = () => {
             "If you can think it, we can make it"
           </p>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto font-medium">
-            Bold designs for people who don't give a damn. Drop-shipped straight to your door.
+            Bold designs for people who don't give a damn. Made when you order. Delivered to your door.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/collections')}>
