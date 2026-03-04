@@ -846,6 +846,14 @@ export default function CustomDesign() {
                   <div className="text-center">
                     <h2 className="text-3xl font-black text-foreground mb-2">Step 1: Create Your Design</h2>
                     <p className="text-muted-foreground">Generate a design with AI or upload your own</p>
+                    <div className="flex items-start gap-2 text-xs text-muted-foreground bg-card/50 border border-border rounded-lg px-4 py-3 text-left max-w-lg mx-auto mt-4">
+                      <span className="text-base leading-none mt-0.5">🔒</span>
+                      <p>
+                        <span className="font-bold text-foreground">We're Snarky. Not Shady.</span>{" "}
+                        Your photo is used only for your custom design — not stored, not sold, not shared.
+                        The only thing we're doing is making something awesome for you!
+                      </p>
+                    </div>
                   </div>
 
                   {/* AI Design Creation */}
@@ -1356,6 +1364,13 @@ export default function CustomDesign() {
                               <p className="text-xs text-muted-foreground text-center mt-2">
                                 Upload your photo to see how it looks on you
                               </p>
+                              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-card/50 border border-border rounded-lg px-3 py-2 text-left mt-2">
+                                <span className="text-sm leading-none mt-0.5">🔒</span>
+                                <p>
+                                  <span className="font-bold text-foreground">We're Snarky. Not Shady.</span>{" "}
+                                  Your photo is not stored, sold, or shared.
+                                </p>
+                              </div>
                             </div>
                           )}
 
