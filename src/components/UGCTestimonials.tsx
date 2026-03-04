@@ -1,25 +1,17 @@
 import { useState, useRef } from "react";
-import { Play, Pause, Volume2, VolumeX, Star } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import tshirtVideo from "@/assets/ads_tshirt_snarkyazz_ugc.mp4";
 import tumblerVideo from "@/assets/ads_tumbler_snarkyazz_ugc landscape.mp4";
 
 const TESTIMONIALS = [
     {
         video: tshirtVideo,
-        name: "Jake M.",
-        location: "Texas",
-        quote: "Wore this to a family BBQ. My uncle laughed so hard he dropped his beer. Best purchase I've made all year.",
         product: "Snarky Tee",
-        rating: 5,
         aspect: "aspect-[9/16]",
     },
     {
         video: tumblerVideo,
-        name: "Sarah K.",
-        location: "Florida",
-        quote: "The quality is insane for the price. My coworkers keep asking where I got it. I just smile and sip.",
         product: "Snarky Tumbler",
-        rating: 5,
         aspect: "aspect-video",
     },
 ];
@@ -95,20 +87,7 @@ function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
                 </span>
             </div>
 
-            {/* Review content */}
-            <div className="mt-4 space-y-2">
-                <div className="flex items-center gap-0.5">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                    ))}
-                </div>
-                <p className="text-sm text-muted-foreground italic leading-relaxed">
-                    "{testimonial.quote}"
-                </p>
-                <p className="text-sm font-bold">
-                    {testimonial.name} <span className="text-muted-foreground font-normal">• {testimonial.location}</span>
-                </p>
-            </div>
+
         </div>
     );
 }
@@ -128,7 +107,7 @@ export const UGCTestimonials = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-start">
                     {TESTIMONIALS.map((testimonial) => (
-                        <VideoCard key={testimonial.name} testimonial={testimonial} />
+                        <VideoCard key={testimonial.product} testimonial={testimonial} />
                     ))}
                 </div>
             </div>
