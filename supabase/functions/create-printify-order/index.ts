@@ -77,6 +77,19 @@ serve(async (req) => {
       'default': 6, // Default to Gildan 5000 tee
     };
 
+    // Slug-to-product-type mapping for hardcoded pages
+    const SLUG_PRODUCT_TYPE: Record<string, string> = {
+      'personalization-blanket': 'blanket',
+      'rbf-champion': 'shirt',
+      'snarky-humans': 'shirt',
+      'free-hugs': 'shirt',
+      'abduct-me': 'shirt',
+      'sasquatches': 'shirt',
+      'white-idol-morning': 'shirt',
+      'fathers': 'shirt',
+      'dark': 'shirt',
+    };
+
     // Helper: upload an image to Printify and return the uploaded image object
     async function uploadImageToPrintify(imageUrl: string, token: string): Promise<any> {
       console.log('Uploading design image to Printify from:', imageUrl.substring(0, 100));
@@ -257,8 +270,8 @@ serve(async (req) => {
           throw new Error(`Cannot auto-create product: no design image URL available for "${printifyProductId}". The image URL must be an absolute HTTPS URL.`);
         }
 
-        // Determine product type from the order item title or slug
-        const productType = item.title || printifyProductId;
+        // Determine product type from slug mapping or title
+        const productType = SLUG_PRODUCT_TYPE[printifyProductId] || item.title || printifyProductId;
 
         // Auto-create the product in Printify, passing size hint for variant filtering
         const result = await autoCreateProduct(
