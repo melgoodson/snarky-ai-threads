@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, ArrowLeft, Sparkles, Tag, Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { ImageCarousel } from "@/components/ImageCarousel";
 import { useCart } from "@/contexts/CartContext";
 import rbfChampion from "@/assets/rbf-champion.png";
@@ -567,6 +570,51 @@ const ProductDetail = () => {
   const product = PRODUCT_DATA[id as keyof typeof PRODUCT_DATA];
   const [selectedSize, setSelectedSize] = useState<string>("M");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [mockupPreview, setMockupPreview] = useState<string | null>(null);
+  const [generatingMockup, setGeneratingMockup] = useState(false);
+
+  // Auto-generate mockup when color is selected
+  useEffect(() => {
+    if (!selectedColor || !product) return;
+
+    setMockupPreview(null);
+    setGeneratingMockup(true);
+
+    const toAbsoluteUrl = (path: string) => {
+      if (path.startsWith('http') || path.startsWith('data:')) return path;
+      return window.location.origin + (path.startsWith('/') ? path : '/' + path);
+    };
+
+    const productImgUrl = toAbsoluteUrl(product.image);
+
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Mockup generation timed out')), 45000)
+    );
+
+    const apiCall = supabase.functions.invoke('generate-user-mockup', {
+      body: {
+        userImage: productImgUrl,
+        productImage: productImgUrl,
+        productTitle: product.title,
+        productColor: selectedColor,
+      },
+    });
+
+    Promise.race([apiCall, timeout])
+      .then(({ data, error }: any) => {
+        if (error) {
+          console.error('[Mockup] Error:', error);
+          return;
+        }
+        if (data?.mockupUrl) {
+          setMockupPreview(data.mockupUrl);
+        }
+      })
+      .catch((err) => {
+        console.error('[Mockup] Failed:', err);
+      })
+      .finally(() => setGeneratingMockup(false));
+  }, [selectedColor]);
 
   if (!product) {
     navigate("/");
@@ -605,11 +653,30 @@ const ProductDetail = () => {
         {/* Compact 2-column purchase layout */}
         <div className="grid md:grid-cols-2 gap-8">
           {/* LEFT: Sticky product image */}
-          <div className="md:sticky md:top-4 md:self-start">
+          <div className="md:sticky md:top-4 md:self-start space-y-4">
             <ImageCarousel
               images={product.images}
               alt={product.title}
             />
+
+            {/* Auto-generated color mockup preview */}
+            {(generatingMockup || mockupPreview) && (
+              <div>
+                <h3 className="text-sm font-bold mb-2">Color Preview</h3>
+                {generatingMockup ? (
+                  <div className="aspect-square bg-muted rounded-xl flex items-center justify-center">
+                    <div className="text-center space-y-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                      <p className="text-xs text-muted-foreground">Generating {selectedColor} preview...</p>
+                    </div>
+                  </div>
+                ) : mockupPreview ? (
+                  <div className="aspect-square bg-muted rounded-xl overflow-hidden">
+                    <img src={mockupPreview} alt={`${product.title} in ${selectedColor}`} className="w-full h-full object-contain" />
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
 
           {/* RIGHT: Compact purchase flow */}
