@@ -123,8 +123,9 @@ serve(async (req) => {
       productType: string,
       token: string,
       sid: string,
+      sizeHint?: string,
     ): Promise<{ printifyProductId: string; variants: any[] }> {
-      console.log(`Auto-creating Printify product: "${productTitle}" (type: ${productType})`);
+      console.log(`Auto-creating Printify product: "${productTitle}" (type: ${productType}, size: ${sizeHint || 'any'})`);
 
       // 1. Upload the design image
       const uploadedImage = await uploadImageToPrintify(designImageUrl, token);
@@ -159,11 +160,32 @@ serve(async (req) => {
       );
       if (!variantsRes.ok) throw new Error(`Failed to fetch variants for blueprint ${blueprintId}`);
       const catalogData = await variantsRes.json();
-      const catalogVariants = catalogData.variants || [];
-      console.log(`Found ${catalogVariants.length} catalog variants`);
+      let catalogVariants: any[] = catalogData.variants || [];
+      console.log(`Found ${catalogVariants.length} total catalog variants`);
 
-      // 5. Create the product in Printify
+      // 5. Filter variants to stay under Printify's 100 limit
+      // If we have a size hint, only include variants matching that size
+      let enabledVariants = catalogVariants;
+      if (sizeHint && catalogVariants.length > 100) {
+        const sizeLower = sizeHint.toLowerCase().trim();
+        const sizeFiltered = catalogVariants.filter((v: any) => {
+          const title = (v.title || '').toLowerCase();
+          return title.split(/[\s\/]+/).some((part: string) => part.trim() === sizeLower);
+        });
+        if (sizeFiltered.length > 0) {
+          enabledVariants = sizeFiltered;
+          console.log(`Filtered to ${enabledVariants.length} variants matching size "${sizeHint}"`);
+        }
+      }
+      // Final cap at 100 variants
+      if (enabledVariants.length > 100) {
+        enabledVariants = enabledVariants.slice(0, 100);
+        console.log(`Capped to 100 variants`);
+      }
+
+      // 6. Create the product in Printify
       const priceInCents = 2999; // Default $29.99
+      const enabledIds = new Set(enabledVariants.map((v: any) => v.id));
       const productData = {
         title: productTitle,
         description: `Snarky A$$ Humans - ${productTitle}`,
@@ -172,10 +194,10 @@ serve(async (req) => {
         variants: catalogVariants.map((v: any) => ({
           id: v.id,
           price: priceInCents,
-          is_enabled: true,
+          is_enabled: enabledIds.has(v.id),
         })),
         print_areas: [{
-          variant_ids: catalogVariants.map((v: any) => v.id),
+          variant_ids: enabledVariants.map((v: any) => v.id),
           placeholders: [{
             position: 'front',
             images: [{
@@ -238,13 +260,14 @@ serve(async (req) => {
         // Determine product type from the order item title or slug
         const productType = item.title || printifyProductId;
 
-        // Auto-create the product in Printify
+        // Auto-create the product in Printify, passing size hint for variant filtering
         const result = await autoCreateProduct(
           designUrl,
           item.title || printifyProductId.replace(/-/g, ' '),
           productType,
           printifyApiToken!,
           String(shopId),
+          variantId && !isNumericId(variantId) ? variantId : undefined,
         );
 
         printifyProductId = result.printifyProductId;
