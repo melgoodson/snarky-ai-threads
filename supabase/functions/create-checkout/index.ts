@@ -91,6 +91,7 @@ serve(async (req) => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     // Create order items
+    const origin = req.headers.get("origin") || "https://snarkyasshumans.com";
     const orderItems = cartItems.map((item: any) => {
       // Extract design image URL - ensure it's a string, not an object
       let designUrl = extractUrl(item.designImageUrl) || extractUrl(item.artworkUrl);
@@ -101,6 +102,11 @@ serve(async (req) => {
         if (imageUrl && !imageUrl.startsWith('data:')) {
           designUrl = imageUrl;
         }
+      }
+
+      // Make relative URLs absolute so Printify can access them
+      if (designUrl && !designUrl.startsWith('http') && !designUrl.startsWith('data:')) {
+        designUrl = `${origin}${designUrl.startsWith('/') ? '' : '/'}${designUrl}`;
       }
 
       // Validate product_id is a real UUID to avoid FK constraint failures
