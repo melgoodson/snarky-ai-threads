@@ -77,3 +77,18 @@ verify_jwt = false
 
 [functions.generate-blog]
 verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.get-order-status]
+verify_jwt = false
+
+[functions.link-printify-products]
+verify_jwt = false
+
+[functions.setup-blanket-product]
+verify_jwt = false
+
+[functions.get-printify-blueprints]
+verify_jwt = false
