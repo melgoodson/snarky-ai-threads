@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, User, Package, Palette, LogOut, Save, Trash2 } from 'lucide-react';
+import { Loader2, User, Package, Palette, LogOut, Save, Trash2, Paintbrush } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,7 +86,7 @@ const UserProfile = () => {
   const checkAuth = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         toast.error('Please log in to view your profile');
         navigate('/auth');
@@ -114,7 +114,7 @@ const UserProfile = () => {
         .single();
 
       if (error) throw error;
-      
+
       setProfile(data);
       setUsername(data.username);
       setShippingInfo({
@@ -202,7 +202,7 @@ const UserProfile = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ 
+        .update({
           username,
           first_name: shippingInfo.firstName,
           last_name: shippingInfo.lastName,
@@ -217,7 +217,7 @@ const UserProfile = () => {
         .eq('id', profile.id);
 
       if (error) throw error;
-      
+
       toast.success('Profile updated successfully!');
       setProfile({ ...profile, username, ...shippingInfo });
     } catch (error: any) {
@@ -559,15 +559,26 @@ const UserProfile = () => {
                             <p className="text-white text-sm text-center mb-3">
                               {design.prompt_text}
                             </p>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => openDeleteDialog(design.id)}
-                              className="flex items-center gap-2"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              Delete
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => navigate(`/custom-design?designUrl=${encodeURIComponent(design.image_url)}`)}
+                                className="flex items-center gap-2"
+                              >
+                                <Paintbrush className="h-3 w-3" />
+                                Use
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => openDeleteDialog(design.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                Delete
+                              </Button>
+                            </div>
                           </div>
                           {design.selected && (
                             <Badge className="absolute top-2 right-2" variant="secondary">

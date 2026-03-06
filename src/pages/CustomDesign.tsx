@@ -238,6 +238,20 @@ export default function CustomDesign() {
     }
   }, [location.state]);
 
+  // Handle designUrl query param (from profile "Use" button)
+  useEffect(() => {
+    const designUrl = searchParams.get('designUrl');
+    if (designUrl && !designDraft && !approvedDesign) {
+      setDesignDraft({
+        imageUrl: designUrl,
+        promptText: "Saved design",
+        createdAt: new Date(),
+      });
+      setCurrentStep('approve');
+      toast.success("Design loaded! Review and continue.");
+    }
+  }, [searchParams]);
+
   // Fetch products when entering product step
   useEffect(() => {
     if (currentStep === 'product') {

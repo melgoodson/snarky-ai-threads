@@ -4,7 +4,7 @@ declare global {
   }
 }
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -28,14 +28,21 @@ const OrderConfirmation = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  // Track the resolved order ID so we don't re-fetch after navigate() changes the URL param
+  const resolvedOrderIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
+      // If we already resolved this order, skip (prevents double-fetch after navigate)
+      if (resolvedOrderIdRef.current && order) {
+        return;
+      }
+
       // Wait for auth session to be ready
       const { data: { session } } = await supabase.auth.getSession();
 
-      // Extract session ID from URL if it's a Stripe session ID
       let orderIdToFetch = orderId;
+      let verifiedOrder: Order | null = null;
 
       if (orderId?.startsWith('cs_')) {
         // This is a Stripe session ID, verify payment first
@@ -48,7 +55,7 @@ const OrderConfirmation = () => {
                 'Content-Type': 'application/json',
                 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
               },
-              body: JSON.stringify({ sessionId: orderId }),
+              body: JSON.stringify({ sessionId: orderId, getOrder: true }),
             }
           );
 
@@ -64,6 +71,11 @@ const OrderConfirmation = () => {
 
           if (verifyData?.orderId) {
             orderIdToFetch = verifyData.orderId;
+            resolvedOrderIdRef.current = orderIdToFetch;
+            // Capture the order from verify-payment response if available
+            if (verifyData.order) {
+              verifiedOrder = verifyData.order;
+            }
             // Update URL to show the actual order ID
             navigate(`/order-confirmation/${orderIdToFetch}`, { replace: true });
           }
@@ -81,45 +93,52 @@ const OrderConfirmation = () => {
 
       console.log('Fetching order:', orderIdToFetch, 'User authenticated:', !!session);
 
-      // Use service role via edge function if user not authenticated (coming from Stripe redirect)
-      if (!session) {
-        // Fetch order via verify-payment which already has the order data
-        // Or call a public order lookup function
-        try {
-          const response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-payment`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              },
-              body: JSON.stringify({ sessionId: orderId, getOrder: true }),
-            }
-          );
-          const data = await response.json();
-          if (data?.order) {
-            setOrder(data.order);
-          }
-        } catch (error) {
-          console.error('Error fetching order without auth:', error);
+      // If we already got the order from verify-payment, use it directly
+      if (verifiedOrder) {
+        setOrder(verifiedOrder);
+        setLoading(false);
+        return;
+      }
+
+      // For authenticated users, fetch order directly via Supabase client
+      if (session) {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderIdToFetch)
+          .maybeSingle();
+
+        console.log('Order fetch result:', { data, error });
+
+        if (error) {
+          console.error('Error fetching order:', error);
+        } else if (data) {
+          setOrder(data);
         }
         setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', orderIdToFetch)
-        .maybeSingle();
-
-      console.log('Order fetch result:', { data, error });
-
-      if (error) {
-        console.error('Error fetching order:', error);
-      } else if (data) {
-        setOrder(data);
+      // For guest users with a real order UUID (not a Stripe session ID),
+      // fetch the order via the get-order-status edge function
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-order-status`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({ orderId: orderIdToFetch }),
+          }
+        );
+        const data = await response.json();
+        if (data?.order) {
+          setOrder(data.order);
+        }
+      } catch (error) {
+        console.error('Error fetching order for guest:', error);
       }
       setLoading(false);
     };
