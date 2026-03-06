@@ -402,12 +402,25 @@ serve(async (req) => {
 
     // Convert country name to ISO code if needed
     let countryCode = shippingAddress.country;
-    const countryLower = countryCode?.toLowerCase();
+    const countryLower = countryCode?.toLowerCase()?.trim();
     if (countryLower && countryCodeMap[countryLower]) {
       countryCode = countryCodeMap[countryLower];
     } else if (countryCode && countryCode.length > 2) {
-      // If it's still a full country name and not in our map, log warning
-      console.warn(`Unknown country name: ${countryCode}, attempting to use as-is`);
+      // Try to extract a 2-letter ISO code from the start (e.g., "USUnited States" → "US")
+      const isoMatch = countryCode.match(/^([A-Z]{2})/);
+      if (isoMatch) {
+        countryCode = isoMatch[1];
+        console.log(`Extracted country code "${countryCode}" from "${shippingAddress.country}"`);
+      } else {
+        // Try the full string in the lookup map
+        const fullLower = countryCode.toLowerCase().replace(/^[a-z]{2}/, '').trim();
+        if (countryCodeMap[fullLower]) {
+          countryCode = countryCodeMap[fullLower];
+        } else {
+          console.warn(`Unknown country: ${countryCode}, defaulting to US`);
+          countryCode = 'US';
+        }
+      }
     }
 
     // Create order in Printify
