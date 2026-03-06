@@ -183,18 +183,18 @@ serve(async (req) => {
         console.log(`Capped to 100 variants`);
       }
 
-      // 6. Create the product in Printify
+      // 6. Create the product in Printify — only include filtered variants
       const priceInCents = 2999; // Default $29.99
-      const enabledIds = new Set(enabledVariants.map((v: any) => v.id));
+      console.log(`Creating product with ${enabledVariants.length} variants (filtered from ${catalogVariants.length})`);
       const productData = {
         title: productTitle,
         description: `Snarky A$$ Humans - ${productTitle}`,
         blueprint_id: blueprintId,
         print_provider_id: printProviderId,
-        variants: catalogVariants.map((v: any) => ({
+        variants: enabledVariants.map((v: any) => ({
           id: v.id,
           price: priceInCents,
-          is_enabled: enabledIds.has(v.id),
+          is_enabled: true,
         })),
         print_areas: [{
           variant_ids: enabledVariants.map((v: any) => v.id),
