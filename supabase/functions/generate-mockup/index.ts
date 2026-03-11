@@ -7,33 +7,33 @@ const corsHeaders = {
 
 const PRODUCT_INTEGRATION: Record<string, { placement: string; warp: string; texture: string }> = {
   tee: {
-    placement: 'centered on chest, 10-12 inches wide',
-    warp: 'subtle chest curvature, follows torso contour',
+    placement: 'centered on chest, 10-12 inches wide, below the collar',
+    warp: 'subtle chest curvature, follows torso contour naturally',
     texture: 'cotton jersey - visible weave, soft shadows in folds'
   },
   hoodie: {
-    placement: 'centered on chest, 8-10 inches wide',
-    warp: 'thicker material with more pronounced folds',
-    texture: 'fleece - fuzzy surface, deeper shadows in creases'
+    placement: 'centered on chest, 8-10 inches wide, between collar and kangaroo pocket',
+    warp: 'thicker fleece material with more pronounced folds and volume',
+    texture: 'heavy fleece - fuzzy surface, deeper shadows in creases'
   },
   mug: {
-    placement: 'wrapped around cylinder',
-    warp: 'cylindrical distortion - compressed at edges',
-    texture: 'glossy ceramic with reflections'
+    placement: 'wrapped around cylinder center, visible from front',
+    warp: 'cylindrical distortion - design compresses slightly at edges',
+    texture: 'glossy ceramic with subtle specular highlights'
   },
   tote: {
-    placement: 'centered on flat front panel',
-    warp: 'minimal - mostly flat with slight drape',
-    texture: 'canvas weave visible through design'
+    placement: 'centered on flat front panel, 8-10 inches wide',
+    warp: 'minimal warp - mostly flat with slight canvas drape',
+    texture: 'natural canvas weave visible through lighter design areas'
   },
   blanket: {
-    placement: 'edge-to-edge sublimation covering entire front surface, photo collage or single large print',
-    warp: 'soft draping folds over couch or lap, gentle curves',
-    texture: 'soft fleece plush fibers on front, cozy sherpa backing at edges'
+    placement: 'edge-to-edge sublimation across the entire front face',
+    warp: 'soft natural draping folds, gentle curves from weight of fabric',
+    texture: 'soft fleece plush fibers on front, cozy sherpa backing visible at folded edges'
   },
   card: {
     placement: 'centered on front face of folded greeting card',
-    warp: 'mostly flat, slight perspective from card standing at angle',
+    warp: 'mostly flat, slight perspective from card standing upright',
     texture: 'smooth premium cardstock with matte finish'
   }
 };
@@ -41,7 +41,7 @@ const PRODUCT_INTEGRATION: Record<string, { placement: string; warp: string; tex
 function getProductType(title: string) {
   const lower = title.toLowerCase();
   if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
-  if (lower.includes('mug')) return 'mug';
+  if (lower.includes('mug') || lower.includes('cup')) return 'mug';
   if (lower.includes('tote') || lower.includes('bag')) return 'tote';
   if (lower.includes('blanket')) return 'blanket';
   if (lower.includes('greeting') || lower.includes('card')) return 'card';
@@ -56,13 +56,14 @@ function parseDataUrl(dataUrl: string): { mimeType: string; data: string } | nul
 
 async function urlToBase64(url: string): Promise<{ mimeType: string; data: string }> {
   const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Failed to fetch image: ${resp.status} ${resp.statusText} — URL: ${url}`);
   const buf = await resp.arrayBuffer();
   const bytes = new Uint8Array(buf);
   let binary = '';
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
   const base64 = btoa(binary);
-  const contentType = resp.headers.get('content-type') || 'image/png';
-  return { mimeType: contentType, data: base64 };
+  const contentType = resp.headers.get('content-type') || 'image/jpeg';
+  return { mimeType: contentType.split(';')[0], data: base64 };
 }
 
 async function toImagePart(image: string): Promise<{ inlineData: { mimeType: string; data: string } }> {
@@ -74,8 +75,16 @@ async function toImagePart(image: string): Promise<{ inlineData: { mimeType: str
     const fetched = await urlToBase64(image);
     return { inlineData: fetched };
   }
+  // Raw base64 fallback
   return { inlineData: { mimeType: 'image/jpeg', data: image } };
 }
+
+// Models in priority order. gemini-2.0-flash-preview-image-generation is the confirmed
+// working image-generation model. gemini-2.0-flash-exp-image-generation is the fallback.
+const MODELS = [
+  "gemini-2.0-flash-preview-image-generation",
+  "gemini-2.0-flash-exp-image-generation",
+];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -83,11 +92,30 @@ serve(async (req) => {
   }
 
   try {
-    const { userImage, productImage, productTitle, productColor } = await req.json();
-    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+    const body = await req.json();
+    const { userImage, productImage, productTitle, productColor } = body;
 
+    // Validate required fields
+    if (!userImage) {
+      return new Response(
+        JSON.stringify({ error: "Missing required field: userImage (person photo)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (!productImage) {
+      return new Response(
+        JSON.stringify({ error: "Missing required field: productImage (product template URL or image)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!GOOGLE_AI_API_KEY) {
-      throw new Error("GOOGLE_AI_API_KEY is not configured");
+      console.error("GOOGLE_AI_API_KEY environment variable is not set");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error: AI API key not configured. Please contact support." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const color = productColor || "White";
@@ -95,58 +123,64 @@ serve(async (req) => {
     const productType = getProductType(product);
     const config = PRODUCT_INTEGRATION[productType] || PRODUCT_INTEGRATION.tee;
 
-    console.log(`Generating virtual try-on for ${product} in ${color}`);
+    console.log(`[generate-mockup] Try-on request: product="${product}" color="${color}" type="${productType}"`);
+    console.log(`[generate-mockup] userImage type: ${userImage.startsWith('data:') ? 'base64 data-url' : 'url'} (~${Math.round(userImage.length / 1024)}KB)`);
+    console.log(`[generate-mockup] productImage type: ${productImage.startsWith('data:') ? 'base64 data-url' : 'url'}`);
 
-    const prompt = `Create a PHOTOREALISTIC virtual try-on image with the design NATURALLY INTEGRATED into the garment.
+    const prompt = `You are a professional virtual clothing try-on AI.
 
-=== INPUTS ===
-• IMAGE A (FIRST): Photo of the person wearing the product
-• IMAGE B (SECOND): ${product} mockup - extract the DESIGN ONLY from this
+TASK: Show the person from Image 1 wearing a ${color.toUpperCase()} ${product} with the custom design applied to it.
 
-=== TASK ===
-Show the person from IMAGE A wearing a ${color.toUpperCase()} ${product} with the EXACT design from IMAGE B printed on it.
+INPUTS:
+- Image 1 = The person's photo. Keep the person's face, body, background, and overall scene intact.
+- Image 2 = The product template. Use it to understand: (a) what the blank ${product} looks like, and (b) where the design artwork is printed on it.
 
-=== CRITICAL: NATURAL DESIGN INTEGRATION ===
+WHAT TO DO:
+1. Replace only the clothing the person is wearing with a ${color.toUpperCase()} ${product}.
+2. Apply the design from Image 2 onto the new garment in the correct position: ${config.placement}
+3. The design must follow the body's natural ${config.warp}
+4. The garment fabric must show realistic ${config.texture}
+5. The rest of the image (face, hair, background, hands, etc.) must remain UNCHANGED.
 
-COLOR ACCURACY:
-• The ${product} MUST be ${color.toUpperCase()} color
-• IGNORE the garment color from IMAGE B - use ${color} instead
+STRICT RULES:
+- Do NOT alter the person's face, skin tone, or body.
+- The garment color MUST be ${color.toUpperCase()}.
+- The design must appear PRINTED on fabric — not floating or pasted on top.
+- Preserve the design artwork exactly — do not add, remove, or alter any design elements.
+- Output ONE image only — no collages, no split views, no before/after.
 
-DESIGN EXTRACTION & APPLICATION:
-• Extract ONLY the graphic/artwork from IMAGE B (ignore model/mannequin)
-• Preserve the design EXACTLY - no alterations, cropping, or distortion
-• Placement: ${config.placement}
+OUTPUT: A single photorealistic image of the person wearing the ${color} ${product} with the design printed on it.`;
 
-PERSPECTIVE & WARP:
-• ${config.warp}
-• Design must follow the person's body contours in IMAGE A
+    // Convert images in parallel to save time
+    let userImagePart: { inlineData: { mimeType: string; data: string } };
+    let productImagePart: { inlineData: { mimeType: string; data: string } };
+    try {
+      [userImagePart, productImagePart] = await Promise.all([
+        toImagePart(userImage),
+        toImagePart(productImage),
+      ]);
+    } catch (fetchErr) {
+      console.error("[generate-mockup] Failed to load input images:", fetchErr);
+      return new Response(
+        JSON.stringify({ error: `Failed to load input images: ${fetchErr instanceof Error ? fetchErr.message : String(fetchErr)}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-MATERIAL INTEGRATION:
-• ${config.texture}
-• Design should appear PRINTED on fabric - NOT pasted/floating
+    console.log(`[generate-mockup] Images loaded. userImage: ~${Math.round(userImagePart.inlineData.data.length / 1024)}KB b64, productImage: ~${Math.round(productImagePart.inlineData.data.length / 1024)}KB b64`);
 
-REALISTIC EFFECTS:
-• Wrinkles and folds in IMAGE A's clothing MUST distort the design
-• Shadows on fabric should darken the design proportionally
-
-=== OUTPUT ===
-A completely photorealistic image where the person from IMAGE A is wearing a ${color} ${product} with the design naturally printed on it.`;
-
-    const userImagePart = await toImagePart(userImage);
-    const productImagePart = await toImagePart(productImage);
-
-    const models = ["gemini-2.5-flash-image", "gemini-2.0-flash-exp-image-generation"];
-    const MAX_RETRIES = 2;
     let lastError = "";
+    let lastStatus = 0;
 
-    for (const model of models) {
+    for (const model of MODELS) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
-      console.log(`Trying model: ${model}`);
+      console.log(`[generate-mockup] Calling model: ${model}`);
 
+      const MAX_RETRIES = 2;
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         if (attempt > 0) {
-          const delay = Math.min(2000 * Math.pow(2, attempt - 1), 8000);
-          console.log(`Retry ${attempt + 1}, waiting ${delay}ms...`);
+          const delay = 3000 * attempt;
+          console.log(`[generate-mockup] Retry ${attempt}/${MAX_RETRIES - 1}, waiting ${delay}ms...`);
           await new Promise(r => setTimeout(r, delay));
         }
 
@@ -167,17 +201,25 @@ A completely photorealistic image where the person from IMAGE A is wearing a ${c
           }),
         });
 
+        lastStatus = response.status;
+
         if (response.status === 429) {
           lastError = "Rate limit exceeded";
-          console.log(`Rate limited on ${model}, attempt ${attempt + 1}/${MAX_RETRIES}`);
-          continue;
+          console.warn(`[generate-mockup] Rate limited on ${model} (attempt ${attempt + 1})`);
+          continue; // retry
+        }
+
+        if (response.status === 404) {
+          lastError = `Model not found: ${model}`;
+          console.error(`[generate-mockup] Model 404: ${model}`);
+          break; // try next model
         }
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`Gemini API error: ${response.status} - ${errorText}`);
-          lastError = `${response.status} - ${errorText}`;
-          break;
+          lastError = `HTTP ${response.status}: ${errorText.substring(0, 300)}`;
+          console.error(`[generate-mockup] Gemini API error on ${model}: ${lastError}`);
+          break; // try next model
         }
 
         const data = await response.json();
@@ -194,12 +236,15 @@ A completely photorealistic image where the person from IMAGE A is wearing a ${c
         }
 
         if (!generatedImage) {
-          console.error("No image in response:", JSON.stringify(data).substring(0, 1000));
-          lastError = "No image generated";
-          break;
+          // Log what Gemini did return so we can debug
+          const finishReason = data.candidates?.[0]?.finishReason;
+          const textParts = candidateParts?.filter((p: any) => p.text)?.map((p: any) => p.text).join(' ');
+          lastError = `No image generated. finishReason=${finishReason ?? 'unknown'}${textParts ? ` modelSaid="${textParts.substring(0, 200)}"` : ''}`;
+          console.error(`[generate-mockup] ${lastError}`);
+          break; // try next model — no point retrying same model if it refused
         }
 
-        console.log("Virtual try-on mockup generated successfully");
+        console.log(`[generate-mockup] Success via ${model}`);
         return new Response(
           JSON.stringify({ image: generatedImage }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -207,17 +252,32 @@ A completely photorealistic image where the person from IMAGE A is wearing a ${c
       }
     }
 
+    // All models/retries exhausted — return a clear diagnostic error
+    console.error(`[generate-mockup] All models failed. lastStatus=${lastStatus} lastError=${lastError}`);
+
     if (lastError === "Rate limit exceeded") {
       return new Response(
-        JSON.stringify({ error: "AI service is busy. Please wait 1-2 minutes and try again." }),
+        JSON.stringify({ error: "AI service is currently overloaded. Please wait 1–2 minutes and try again." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    throw new Error(`Failed to generate try-on: ${lastError}`);
-  } catch (error) {
-    console.error("Error in generate-mockup function:", error);
+
+    if (lastError.includes("No image generated")) {
+      return new Response(
+        JSON.stringify({ error: "The AI declined to generate this try-on. This can happen with certain photo angles or content. Try a different photo." }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: `Try-on generation failed: ${lastError}` }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
+  } catch (error) {
+    console.error("[generate-mockup] Unhandled error:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "An unexpected error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

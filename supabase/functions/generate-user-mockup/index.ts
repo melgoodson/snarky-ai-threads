@@ -167,7 +167,10 @@ OUTPUT: One square-format photorealistic ${color} ${product} on a white backgrou
     const userImagePart = await toImagePart(userImage);
     const productImagePart = await toImagePart(productImage);
 
-    const models = ["gemini-2.5-flash-image", "gemini-2.0-flash-exp-image-generation"];
+    // Models in priority order. gemini-2.0-flash-preview-image-generation is the confirmed
+    // working image-generation model. gemini-2.0-flash-exp-image-generation is the fallback.
+    const models = ["gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-exp-image-generation"];
+
     const MAX_RETRIES = 2;
     let lastError = "";
 

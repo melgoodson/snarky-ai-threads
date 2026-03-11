@@ -716,6 +716,24 @@ export default function CustomDesign() {
     }
   };
 
+  // Compress an image data-URL to keep payloads small for the edge function.
+  // Resizes to max 1024px and re-encodes as JPEG at 80% quality.
+  const compressImage = (dataUrl: string, maxPx = 1024, quality = 0.8): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(dataUrl); // fallback: send as-is
+      img.src = dataUrl;
+    });
+
   const handleUserPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -726,17 +744,25 @@ export default function CustomDesign() {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const photoData = event.target?.result as string;
-      setUserPhoto(photoData);
+    reader.onload = async (event) => {
+      const rawPhoto = event.target?.result as string;
+      setUserPhoto(rawPhoto);
       toast.success("Photo uploaded! Generating try-on preview...");
-      // Use the AI mockup as the product reference if available, else fall back to the approved design
-      const productRef = mockupPreview || approvedDesign?.imageUrl || null;
-      if (!productRef) {
-        toast.error("No product preview available to compose try-on against.");
+
+      // Always use the product template URL (string) for the reference image — 
+      // sending large base64 blobs as both inputs causes >10MB payloads that crash the edge function.
+      const productTemplateUrl =
+        selectedProduct?.template_image_url ||
+        (selectedProduct?.title?.toLowerCase().includes('blanket') ? personalizationBlanketFallback : null);
+
+      if (!productTemplateUrl) {
+        toast.error("No product template available for try-on.");
         return;
       }
-      generateTryOnMockup(photoData, productRef);
+
+      // Compress user photo to ~1024px JPEG to keep total payload well under limits
+      const compressedPhoto = await compressImage(rawPhoto);
+      generateTryOnMockup(compressedPhoto, productTemplateUrl);
     };
     reader.readAsDataURL(file);
   };
@@ -749,7 +775,7 @@ export default function CustomDesign() {
     setGeneratingTryOn(true);
     try {
       const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Try-on generation timed out. Please try again.")), 45000)
+        setTimeout(() => reject(new Error("Try-on generation timed out after 60 seconds. Please try again.")), 60000)
       );
       const apiCall = supabase.functions.invoke("generate-mockup", {
         body: {
@@ -762,16 +788,24 @@ export default function CustomDesign() {
       const { data, error } = await Promise.race([apiCall, timeout]);
 
       if (error) {
-        const msg = error.message || String(error);
-        if (msg.includes("429") || msg.includes("rate") || msg.includes("non-2xx")) {
-          toast.error("AI service is busy. Please wait 1-2 minutes and try again.", { duration: 6000 });
-          return;
+        // Supabase wraps HTTP errors with the status code in the message.
+        // Parse it so we can give the user an accurate message.
+        const msg = (error.message || String(error)).toLowerCase();
+        if (msg.includes('413') || msg.includes('payload') || msg.includes('too large')) {
+          toast.error("Your photo is too large. Please try a smaller image (under 5MB).", { duration: 8000 });
+        } else if (msg.includes('429') || msg.includes('rate limit')) {
+          toast.error("AI service is busy. Please wait 1–2 minutes and try again.", { duration: 8000 });
+        } else if (msg.includes('timed out')) {
+          toast.error("Try-on took too long. Please try again.", { duration: 6000 });
+        } else {
+          toast.error(`Try-on failed: ${error.message || 'Unknown error'}`, { duration: 8000 });
         }
-        throw error;
+        return;
       }
 
       if (data?.error) {
-        toast.error(data.error, { duration: 6000 });
+        // Edge function returned a structured error — surface it directly
+        toast.error(data.error, { duration: 8000 });
         return;
       }
 
@@ -779,11 +813,16 @@ export default function CustomDesign() {
         setTryOnMockup(data.image);
         toast.success("Virtual try-on generated!");
       } else {
-        throw new Error("Failed to generate try-on");
+        toast.error("Try-on returned no image. Please try again.");
       }
     } catch (error: any) {
       console.error("Try-on generation error:", error);
-      toast.error(error.message || "Failed to generate try-on. Please try again.");
+      const msg = (error.message || '').toLowerCase();
+      if (msg.includes('timed out')) {
+        toast.error("Try-on took too long. Please try a smaller photo and retry.", { duration: 8000 });
+      } else {
+        toast.error(error.message || "Failed to generate try-on. Please try again.");
+      }
     } finally {
       setGeneratingTryOn(false);
     }
