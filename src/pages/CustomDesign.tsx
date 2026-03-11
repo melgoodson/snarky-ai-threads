@@ -96,6 +96,8 @@ export default function CustomDesign() {
   const [savingDesign, setSavingDesign] = useState(false);
   const [savedDesignId, setSavedDesignId] = useState<string | null>(null);
   const [designDraft, setDesignDraft] = useState<DesignDraft | null>(null);
+  const [userDesigns, setUserDesigns] = useState<any[]>([]);
+  const [loadingDesigns, setLoadingDesigns] = useState(false);
 
   // Step 2: Approved Design
   const [approvedDesign, setApprovedDesign] = useState<ApprovedDesign | null>(null);
@@ -211,17 +213,91 @@ export default function CustomDesign() {
       setAuthChecking(true);
       const { data: { user } } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
+
+      if (user) {
+        setLoadingDesigns(true);
+        try {
+          const { data, error } = await supabase
+            .from('ai_generated_images')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          setUserDesigns(data || []);
+        } catch (error) {
+          console.error("Error fetching user designs:", error);
+        } finally {
+          setLoadingDesigns(false);
+        }
+      }
+
+      // Restore session state if returning from Auth
+      const savedState = sessionStorage.getItem('customDesignState');
+      if (savedState) {
+        try {
+          const state = JSON.parse(savedState);
+          if (state.designDraft) setDesignDraft(state.designDraft);
+          if (state.approvedDesign) setApprovedDesign(state.approvedDesign);
+          if (state.currentStep) setCurrentStep(state.currentStep);
+          if (state.selectedProduct) setSelectedProduct(state.selectedProduct);
+          if (state.selectedVariant) setSelectedVariant(state.selectedVariant);
+          if (state.quantity) setQuantity(state.quantity);
+          if (state.savedDesignId) setSavedDesignId(state.savedDesignId);
+          if (state.mockupPreview) setMockupPreview(state.mockupPreview);
+
+          // Clear it after using
+          sessionStorage.removeItem('customDesignState');
+
+          // Auto-save if it was pending
+          const pendingAction = sessionStorage.getItem('customDesignPendingAction');
+          if (pendingAction === 'save' && state.designDraft) {
+            sessionStorage.removeItem('customDesignPendingAction');
+            // We can't easily wait for this without making useEffect messy, 
+            // but the state is restored so they are on exactly the step they left.
+            toast.success("State restored! You can now click save or checkout.");
+          } else if (pendingAction === 'checkout') {
+            sessionStorage.removeItem('customDesignPendingAction');
+            toast.success("State restored! You can now continue to checkout.");
+          }
+        } catch (e) {
+          console.error("Failed to parse restored state", e);
+        }
+      }
+
       setAuthChecking(false);
     };
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session?.user);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const authed = !!session?.user;
+      setIsAuthenticated(authed);
+      if (session?.user) {
+        fetchUserDesigns(session.user.id);
+      } else {
+        setUserDesigns([]);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserDesigns = async (userId: string) => {
+    setLoadingDesigns(true);
+    try {
+      const { data, error } = await supabase
+        .from('ai_generated_images')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setUserDesigns(data || []);
+    } catch (error) {
+      console.error("Error fetching user designs:", error);
+    } finally {
+      setLoadingDesigns(false);
+    }
+  };
 
   // Handle existing design from navigation state
   useEffect(() => {
@@ -522,7 +598,11 @@ export default function CustomDesign() {
 
       if (!user) {
         toast.error("Please sign in to save designs");
-        navigate("/auth");
+        sessionStorage.setItem('customDesignState', JSON.stringify({
+          designDraft, approvedDesign, currentStep, selectedProduct, selectedVariant, quantity, savedDesignId, mockupPreview, uploadedDesign
+        }));
+        sessionStorage.setItem('customDesignPendingAction', 'save');
+        navigate("/auth", { state: { returnTo: '/custom-design' } });
         return false;
       }
 
@@ -578,16 +658,25 @@ export default function CustomDesign() {
 
     const selectedColor = extractColorFromVariant(selectedVariant.title);
 
+    // For blanket, ensure we have a valid product image to send
+    const productImageStr = selectedProduct.template_image_url ||
+      (selectedProduct.title.toLowerCase().includes('blanket') ? personalizationBlanketFallback : '');
+
+    if (!productImageStr) {
+      toast.error("No product template available. Please choose a different product.");
+      return;
+    }
+
     setGeneratingMockup(true);
     setMockupError(null);
     try {
       const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Mockup generation timed out. Please try again.")), 45000)
+        setTimeout(() => reject(new Error("Mockup generation timed out. Please try again.")), 60000)
       );
       const apiCall = supabase.functions.invoke("generate-user-mockup", {
         body: {
           userImage: approvedDesign.imageUrl,
-          productImage: selectedProduct.template_image_url,
+          productImage: productImageStr,
           productTitle: selectedProduct.title,
           productColor: selectedColor,
         },
@@ -638,15 +727,22 @@ export default function CustomDesign() {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      setUserPhoto(event.target?.result as string);
-      toast.success("Photo uploaded! Generating try-on...");
-      generateTryOnMockup(event.target?.result as string);
+      const photoData = event.target?.result as string;
+      setUserPhoto(photoData);
+      toast.success("Photo uploaded! Generating try-on preview...");
+      // Use the AI mockup as the product reference if available, else fall back to the approved design
+      const productRef = mockupPreview || approvedDesign?.imageUrl || null;
+      if (!productRef) {
+        toast.error("No product preview available to compose try-on against.");
+        return;
+      }
+      generateTryOnMockup(photoData, productRef);
     };
     reader.readAsDataURL(file);
   };
 
-  const generateTryOnMockup = async (photo: string) => {
-    if (!mockupPreview || !selectedProduct || !selectedVariant) return;
+  const generateTryOnMockup = async (photo: string, productRefImage: string) => {
+    if (!selectedProduct || !selectedVariant) return;
 
     const selectedColor = extractColorFromVariant(selectedVariant.title);
 
@@ -658,7 +754,7 @@ export default function CustomDesign() {
       const apiCall = supabase.functions.invoke("generate-mockup", {
         body: {
           userImage: photo,
-          productImage: mockupPreview,
+          productImage: productRefImage,
           productTitle: selectedProduct.title,
           productColor: selectedColor,
         },
@@ -696,6 +792,16 @@ export default function CustomDesign() {
   const proceedToCheckout = async () => {
     if (!selectedProduct || !approvedDesign || !selectedVariant) {
       toast.error("Please complete all steps before checkout");
+      return;
+    }
+
+    if (!isAuthenticated) {
+      toast.error("Please sign in to complete your checkout");
+      sessionStorage.setItem('customDesignState', JSON.stringify({
+        designDraft, approvedDesign, currentStep, selectedProduct, selectedVariant, quantity, savedDesignId, mockupPreview, uploadedDesign
+      }));
+      sessionStorage.setItem('customDesignPendingAction', 'checkout');
+      navigate("/auth", { state: { returnTo: '/custom-design' } });
       return;
     }
 
@@ -795,30 +901,8 @@ export default function CustomDesign() {
             </div>
           )}
 
-          {/* Sign-In Required Prompt */}
-          {!authChecking && !isAuthenticated && (
-            <Card className="max-w-2xl mx-auto p-8 text-center space-y-6">
-              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-                <Save className="h-8 w-8 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">Sign In to Create Designs</h2>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                To ensure your designs are saved and never lost, please sign in or create an account first.
-                Your designs will be saved to your profile (up to 10 designs).
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" onClick={() => navigate('/auth')}>
-                  Sign In / Create Account
-                </Button>
-                <Button size="lg" variant="outline" onClick={() => navigate('/')}>
-                  Back to Home
-                </Button>
-              </div>
-            </Card>
-          )}
-
-          {/* Main Content - Only show when authenticated */}
-          {!authChecking && isAuthenticated && (
+          {/* Main Content - Always show, but Auth Check for saves */}
+          {!authChecking && (
             <>
               {/* Header */}
               <Card className="max-w-4xl mx-auto p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
@@ -983,6 +1067,50 @@ export default function CustomDesign() {
                       />
                     </label>
                   </Card>
+
+                  {/* Option C: Choose Saved Design */}
+                  {userDesigns.length > 0 && (
+                    <>
+                      <div className="text-center text-muted-foreground font-medium">— OR —</div>
+                      <Card className="max-w-3xl mx-auto p-8">
+                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                          <Check className="h-5 w-5 text-primary" />
+                          Option C: Choose From Your Saved Designs
+                        </h3>
+                        {loadingDesigns ? (
+                          <div className="flex justify-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {userDesigns.map((design) => (
+                              <button
+                                key={design.id}
+                                onClick={() => {
+                                  setSavedDesignId(design.id);
+                                  setDesignDraft({
+                                    imageUrl: design.image_url,
+                                    promptText: design.prompt_text || "Saved design",
+                                    createdAt: new Date(),
+                                  });
+                                  toast.success("Saved design loaded! Review and continue.");
+                                  setCurrentStep('approve');
+                                }}
+                                className="group relative rounded-lg overflow-hidden border-2 border-border hover:border-primary/50 transition-all aspect-square"
+                              >
+                                <img src={design.image_url} alt={design.prompt_text} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                                  <span className="text-white text-xs font-medium text-center line-clamp-3">
+                                    {design.prompt_text || "Select"}
+                                  </span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </Card>
+                    </>
+                  )}
                 </section>
               )}
 
@@ -1276,7 +1404,7 @@ export default function CustomDesign() {
               )}
 
               {/* Step 5: Review & Order */}
-              {currentStep === 'review' && mockupPreview && selectedProduct && selectedVariant && (
+              {currentStep === 'review' && approvedDesign && selectedProduct && selectedVariant && (
                 <section className="space-y-8">
                   <div className="text-center">
                     <h2 className="text-3xl font-black text-foreground mb-2">Step 5: Review Your Product</h2>
@@ -1289,11 +1417,33 @@ export default function CustomDesign() {
                       {/* Product Mockup - This is what will be in the order */}
                       <div>
                         <p className="text-sm font-semibold text-muted-foreground mb-2">Product Preview</p>
-                        <img
-                          src={mockupPreview}
-                          alt="Product mockup"
-                          className="w-full rounded-lg border border-border"
-                        />
+
+                        <div className="relative aspect-square rounded-lg border border-border overflow-hidden bg-secondary">
+                          {mockupPreview ? (
+                            <img
+                              src={mockupPreview}
+                              alt="Product mockup"
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            // Fallback: CSS composite — design overlaid on product template
+                            // Only used if AI generation was skipped or failed
+                            <>
+                              <img
+                                src={selectedProduct.template_image_url || (selectedProduct.title.toLowerCase().includes('blanket') ? personalizationBlanketFallback : '')}
+                                alt="Product template"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center p-12">
+                                <img
+                                  src={approvedDesign.imageUrl}
+                                  className="max-w-[70%] max-h-[70%] object-contain opacity-90"
+                                  style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground mt-2 text-center">
                           This is how your product will look
                         </p>

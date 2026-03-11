@@ -49,10 +49,10 @@ const Contact = () => {
                 <Mail className="h-8 w-8 mx-auto mb-4 text-primary" />
                 <h3 className="font-bold mb-2">Email Us</h3>
                 <a
-                  href="mailto:support@snarkyassthreads.com"
+                  href="mailto:support@snarkyhumans.com"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  support@snarkyassthreads.com
+                  support@snarkyhumans.com
                 </a>
               </Card>
 

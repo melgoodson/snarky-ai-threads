@@ -80,8 +80,8 @@ const TermsOfService = () => {
                                         our contact page
                                     </Link>{" "}
                                     or email{" "}
-                                    <a href="mailto:support@snarkyassthreads.com" className="text-primary hover:underline">
-                                        support@snarkyassthreads.com
+                                    <a href="mailto:support@snarkyhumans.com" className="text-primary hover:underline">
+                                        support@snarkyhumans.com
                                     </a>
                                 </p>
                             </section>

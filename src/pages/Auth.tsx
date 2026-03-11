@@ -1,143 +1,45 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Sparkles, ArrowRight } from 'lucide-react';
 import { z } from 'zod';
 
-const emailSchema = z.string().email('Invalid email address');
-const passwordSchema = z.string()
-  .min(6, 'Password must be at least 6 characters')
-  .regex(/^(?=.*[a-zA-Z])/, 'Password must contain at least one letter');
-const usernameSchema = z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be less than 20 characters').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores');
+const emailSchema = z.string().email('Please enter a valid email address');
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = (location.state as any)?.returnTo || '/';
+  const getRedirectUrl = () => `${window.location.origin}${returnTo}`;
+
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [magicLinkEmail, setMagicLinkEmail] = useState('');
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetSent, setResetSent] = useState(false);
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate('/');
-      }
+      if (session) navigate(returnTo);
     };
     checkUser();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate('/');
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) navigate(returnTo);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, returnTo]);
 
-  const validateInputs = (includeUsername = false) => {
+  const handleSendLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     try {
       emailSchema.parse(email);
-      passwordSchema.parse(password);
-      if (includeUsername) {
-        usernameSchema.parse(username);
-      }
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
-      }
-      return false;
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateInputs(true)) return;
-
-    setLoading(true);
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            username: username,
-          },
-        },
-      });
-
-      if (error) {
-        if (error.message.includes('already registered')) {
-          toast.error('This email is already registered. Please sign in instead.');
-        } else {
-          toast.error(error.message);
-        }
-      } else {
-        toast.success('Account created successfully!');
-        setEmail('');
-        setPassword('');
-        setUsername('');
-      }
-    } catch (error: any) {
-      toast.error('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateInputs()) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid email or password');
-        } else {
-          toast.error(error.message);
-        }
-      } else {
-        toast.success('Successfully signed in!');
-        navigate('/');
-      }
-    } catch (error: any) {
-      toast.error('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      emailSchema.parse(resetEmail);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -147,338 +49,124 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}/auth`;
-
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: redirectUrl,
-      });
-
-      if (error) {
-        toast.error(error.message);
-      } else {
-        setResetSent(true);
-        toast.success('Password reset link sent! Check your email.');
-      }
-    } catch (error: any) {
-      toast.error('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      emailSchema.parse(magicLinkEmail);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
-      }
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-
       const { error } = await supabase.auth.signInWithOtp({
-        email: magicLinkEmail,
+        email,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: getRedirectUrl(),
         },
       });
 
       if (error) {
         toast.error(error.message);
       } else {
-        setMagicLinkSent(true);
-        toast.success('Magic link sent! Check your email to sign in.');
+        setSent(true);
       }
-    } catch (error: any) {
-      toast.error('An unexpected error occurred');
+    } catch {
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-black">
-            <span className="text-primary">SNARKY A$$</span> HUMANS
-          </CardTitle>
-          <CardDescription>Sign in to manage your orders and checkout</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="magic">Magic Link</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/50 p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-4xl font-black tracking-tight">
+            <span className="text-primary">SNARKY</span> HUMANS
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Sign in to save designs, track orders, and check out
+          </p>
+        </div>
 
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
+        <Card className="border-border/60">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold">
+              {sent ? 'Check your inbox' : 'Sign in with Magic Link'}
+            </CardTitle>
+            <CardDescription>
+              {sent
+                ? `We sent a sign-in link to ${email}`
+                : "No password needed — we'll email you a one-click sign-in link"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {sent ? (
+              <div className="space-y-6 text-center py-4">
+                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                  <Mail className="h-8 w-8 text-primary" />
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <p className="font-medium text-foreground">Magic link sent!</p>
+                  <p className="text-sm text-muted-foreground">
+                    Click the link in your email to sign in instantly. Check your spam folder if you don't see it.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setSent(false);
+                    setEmail('');
+                  }}
+                >
+                  Use a different email
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSendLink} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="auth-email">Email address</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="signin-email"
+                      id="auth-email"
                       type="email"
-                      placeholder="your@email.com"
+                      placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-9"
                       required
                       disabled={loading}
+                      autoFocus
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signin-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-9 pr-9"
-                      required
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
+                      Sending link...
                     </>
                   ) : (
-                    'Sign In'
-                  )}
-                </Button>
-
-                {/* Forgot Password */}
-                {!showForgotPassword ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="w-full text-center text-sm text-primary hover:underline mt-2"
-                  >
-                    Forgot your password?
-                  </button>
-                ) : resetSent ? (
-                  <div className="mt-4 p-4 bg-muted rounded-lg text-center space-y-2">
-                    <Mail className="h-8 w-8 mx-auto text-primary" />
-                    <p className="text-sm font-medium">Reset link sent!</p>
-                    <p className="text-xs text-muted-foreground">
-                      Check your email at <strong>{resetEmail}</strong> for a password reset link.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => { setResetSent(false); setShowForgotPassword(false); }}
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Back to sign in
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleForgotPassword} className="mt-4 p-4 bg-muted rounded-lg space-y-3">
-                    <p className="text-sm font-medium">Reset your password</p>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="email"
-                        placeholder="your@email.com"
-                        value={resetEmail}
-                        onChange={(e) => setResetEmail(e.target.value)}
-                        className="pl-9"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" size="sm" className="flex-1" disabled={loading}>
-                        {loading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          'Send Reset Link'
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowForgotPassword(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </form>
-            </TabsContent>
-
-            <TabsContent value="magic">
-              {magicLinkSent ? (
-                <div className="space-y-4 text-center py-8">
-                  <Mail className="h-16 w-16 mx-auto text-primary" />
-                  <div>
-                    <h3 className="text-lg font-bold mb-2">Check your email!</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      We've sent a magic link to <strong>{magicLinkEmail}</strong>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Click the link in the email to sign in. You can close this page.
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setMagicLinkSent(false);
-                      setMagicLinkEmail('');
-                    }}
-                    className="mt-4"
-                  >
-                    Send another link
-                  </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleMagicLink} className="space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Enter your email and we'll send you a magic link to sign in instantly - no password needed!
-                    </p>
-                    <Label htmlFor="magic-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="magic-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={magicLinkEmail}
-                        onChange={(e) => setMagicLinkEmail(e.target.value)}
-                        className="pl-9"
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Sending magic link...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="mr-2 h-4 w-4" />
-                        Send Magic Link
-                      </>
-                    )}
-                  </Button>
-                </form>
-              )}
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-username">Username</Label>
-                  <Input
-                    id="signup-username"
-                    type="text"
-                    placeholder="cooluser123"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    disabled={loading}
-                    minLength={3}
-                    maxLength={20}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    3-20 characters, letters, numbers, and underscores only
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-9"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signup-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-9 pr-9"
-                      required
-                      disabled={loading}
-                      minLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Must be at least 6 characters, including letters. Numbers and special characters allowed.
-                  </p>
-                </div>
-
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
+                      Send Magic Link
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </>
-                  ) : (
-                    'Create Account'
                   )}
                 </Button>
+
+                <p className="text-xs text-center text-muted-foreground">
+                  New here? Just enter your email — we'll create your account automatically.
+                </p>
               </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-xs text-muted-foreground">
+          By signing in, you agree to our{' '}
+          <a href="/terms" className="text-primary hover:underline">Terms of Service</a>{' '}
+          and{' '}
+          <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+        </p>
+      </div>
     </div>
   );
 };

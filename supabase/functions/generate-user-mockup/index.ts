@@ -133,51 +133,36 @@ serve(async (req) => {
 
     console.log(`Generating realistic mockup for ${product} in ${color}`);
 
-    const prompt = `Create a PHOTOREALISTIC e-commerce product mockup with the design NATURALLY INTEGRATED into the product.
+    const prompt = `You are a professional product mockup generator for an e-commerce store.
 
-=== PRODUCT DETAILS ===
-• Product: ${product}
-• Color: ${color.toUpperCase()}
-• Material: ${config.texture}
-• Print Method: ${config.printMethod}
+TASK: Produce a single photorealistic e-commerce product image of a ${color.toUpperCase()} ${product} with the custom artwork applied to it.
 
-=== INPUT IMAGES ===
-IMAGE 1 (Design): The exact artwork to be printed - preserve every detail
-IMAGE 2 (Template): Product shape reference only - IGNORE its color
+INPUT IMAGES:
+- Image 1 = The artwork/design to print. Reproduce it EXACTLY — same colors, same shapes, no alterations.
+- Image 2 = The product template. Use it ONLY to understand the product shape and proportions. Ignore its existing color and any existing text or graphics on it.
 
-=== CRITICAL: NATURAL DESIGN INTEGRATION ===
+PRODUCT SPECIFICATIONS:
+- Product: ${product}
+- Product color: ${color.toUpperCase()} (the garment/item must be this color)
+- Print method: ${config.printMethod}
+- Material: ${config.texture}
 
-PLACEMENT & SCALE:
-• ${config.placement}
-• Scale the design proportionally
+DESIGN PLACEMENT:
+- ${config.placement}
+- ${config.perspective}
+- ${config.blending}
+- ${config.surfaceEffects}
 
-PERSPECTIVE & WARP:
-• ${config.perspective}
-• Design edges should follow product contours exactly
+STRICT RULES:
+1. The product MUST appear as a ${color.toUpperCase()} colored item. Do not change or reinterpret the product color.
+2. The artwork from Image 1 must appear EXACTLY as-is — do not alter, crop, mirror, add text, or hallucinate new design elements.
+3. The design must look PRINTED/APPLIED to the product surface — it must follow fabric folds, curves, and texture naturally.
+4. Background: clean white studio background, no props, no models, no shadows extending to edges.
+5. Output a single product photo only. No before/after, no collage, no multiple angles.
+6. Do NOT invent any text, logos, or new design elements not present in Image 1.
 
-MATERIAL BLENDING:
-• ${config.blending}
-• Design should NOT look "pasted on" - it must appear PRINTED
+OUTPUT: One square-format photorealistic ${color} ${product} on a white background with the artwork printed on it.`;
 
-SURFACE EFFECTS:
-• ${config.surfaceEffects}
-• Wrinkles and folds MUST affect the design
-
-LIGHTING & SHADOWS:
-• Soft studio lighting from upper-left
-• The design receives the SAME lighting as the product surface
-
-COLOR ACCURACY:
-• The PRODUCT (garment/item) must be ${color.toUpperCase()} colored
-• Do NOT use ${color} as a background or scene color
-
-BACKGROUND:
-• Use a CLEAN, PLAIN white or very light gray studio background
-• The background must be simple and uncluttered - like a professional e-commerce product photo
-• Do NOT use colored backgrounds, fabric textures, or patterned backgrounds
-
-=== OUTPUT ===
-A photorealistic e-commerce product mockup on a clean white studio background, where the design appears TRULY PRINTED on the ${color} ${product}.`;
 
     const userImagePart = await toImagePart(userImage);
     const productImagePart = await toImagePart(productImage);
