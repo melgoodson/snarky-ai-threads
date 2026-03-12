@@ -2,6 +2,7 @@ import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { EmailCapture } from "@/components/EmailCapture";
 
 export const Footer = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -51,14 +52,19 @@ export const Footer = () => {
               <a href="https://x.com/SnarkyHumans" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="https://www.tiktok.com/@snarkyhumans" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://www.tiktok.com/@headsnarky69" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tiktok">
                   <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
                 </svg>
               </a>
-              <a href="https://www.youtube.com/@snarkyhumans" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://www.youtube.com/@TheSnarkyHumans" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Youtube className="h-5 w-5" />
               </a>
+            </div>
+
+            {/* Email capture — always-present low-friction placement */}
+            <div className="pt-2">
+              <EmailCapture variant="footer" source="footer" />
             </div>
           </div>
 

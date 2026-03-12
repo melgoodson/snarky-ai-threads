@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Calendar, User, Clock, Loader2 } from "lucide-react";
+import { EmailCapture } from "@/components/EmailCapture";
+
 
 interface BlogPost {
   id: string;
@@ -71,7 +73,7 @@ export default function BlogPostDynamic() {
         .maybeSingle();
 
       if (error) throw error;
-      
+
       if (!data) {
         setNotFound(true);
         return;
@@ -181,7 +183,7 @@ export default function BlogPostDynamic() {
           <meta name="keywords" content={post.seo_keywords.join(", ")} />
         )}
         <link rel="canonical" href={`${window.location.origin}/blog/${post.slug}`} />
-        
+
         {/* Open Graph */}
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.meta_description || post.excerpt || ""} />
@@ -190,12 +192,12 @@ export default function BlogPostDynamic() {
         {post.featured_image_url && (
           <meta property="og:image" content={post.featured_image_url} />
         )}
-        
+
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.meta_description || post.excerpt || ""} />
-        
+
         {/* Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify(blogPostSchema)}
@@ -208,8 +210,8 @@ export default function BlogPostDynamic() {
         <article className="container px-4 py-12">
           <div className="max-w-3xl mx-auto">
             {/* Back link */}
-            <Link 
-              to="/blog" 
+            <Link
+              to="/blog"
               className="inline-flex items-center text-muted-foreground hover:text-foreground mb-8"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -230,7 +232,7 @@ export default function BlogPostDynamic() {
               <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">
                 {post.title}
               </h1>
-              
+
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 {post.author_name && (
                   <span className="flex items-center gap-1">
@@ -267,23 +269,23 @@ export default function BlogPostDynamic() {
             </header>
 
             {/* Content */}
-            <div 
+            <div
               className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-p:text-muted-foreground prose-a:text-primary"
-              dangerouslySetInnerHTML={{ 
-                __html: `<p class="mb-4">${renderMarkdown(post.content || "")}</p>` 
+              dangerouslySetInnerHTML={{
+                __html: `<p class="mb-4">${renderMarkdown(post.content || "")}</p>`
               }}
             />
 
-            {/* CTA */}
-            <div className="mt-12 p-8 bg-primary/5 rounded-lg text-center">
-              <h3 className="text-xl font-bold mb-2">Ready to wear your snark?</h3>
-              <p className="text-muted-foreground mb-4">
-                Check out our collection of snarky apparel and express yourself.
-              </p>
+            {/* Email capture — contextual, high-engagement placement at end of article */}
+            <EmailCapture variant="blog" source="blog_article" />
+
+            {/* Shop CTA */}
+            <div className="mt-8 text-center">
               <Button asChild>
-                <Link to="/#products">Shop Now</Link>
+                <Link to="/#products">Shop Snarky Apparel</Link>
               </Button>
             </div>
+
           </div>
         </article>
 
@@ -311,7 +313,7 @@ export default function BlogPostDynamic() {
                       <p className="text-muted-foreground line-clamp-2 mb-4">
                         {relatedPost.excerpt}
                       </p>
-                      <Link 
+                      <Link
                         to={`/blog/${relatedPost.slug}`}
                         className="text-primary font-medium hover:underline"
                       >

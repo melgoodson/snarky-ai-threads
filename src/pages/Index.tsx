@@ -4,6 +4,7 @@ import { ProductShowcase } from "@/components/ProductShowcase";
 import { UGCTestimonials } from "@/components/UGCTestimonials";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Footer } from "@/components/Footer";
+import { EmailCapture } from "@/components/EmailCapture";
 
 const Index = () => {
   return (
@@ -18,6 +19,8 @@ const Index = () => {
         <Hero />
         <ProductShowcase />
         <UGCTestimonials />
+        {/* Email capture — placed after social proof, before product grid for max conversion */}
+        <EmailCapture variant="homepage" source="homepage_banner" />
         <div id="products">
           <ProductGrid />
         </div>
