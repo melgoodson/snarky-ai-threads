@@ -74,6 +74,7 @@ function sendTrackingEvent(): void {
         // Fallback: non-blocking fetch
         fetch(TRACKING_ENDPOINT, {
             method: 'POST',
+            credentials: 'omit',
             headers,
             body: payload,
             keepalive: true,
