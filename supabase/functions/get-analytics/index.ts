@@ -15,7 +15,7 @@ serve(async (req) => {
     // Validate API key
     const apiKey = req.headers.get('x-api-key');
     const expectedApiKey = Deno.env.get('ANALYTICS_API_KEY');
-    
+
     if (expectedApiKey && apiKey !== expectedApiKey) {
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
@@ -23,7 +23,19 @@ serve(async (req) => {
       );
     }
 
-    const { startDate, endDate } = await req.json();
+    // Support both GET (query params) and POST (JSON body)
+    let startDate: string | null = null;
+    let endDate: string | null = null;
+
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      startDate = url.searchParams.get('startDate');
+      endDate = url.searchParams.get('endDate');
+    } else {
+      const body = await req.json();
+      startDate = body.startDate;
+      endDate = body.endDate;
+    }
 
     if (!startDate || !endDate) {
       return new Response(
@@ -74,6 +86,47 @@ serve(async (req) => {
       }
     });
     const avgDuration = sessionsWithDuration > 0 ? Math.round(totalDuration / sessionsWithDuration / 1000) : 0;
+
+    // Average scroll depth from page views
+    const scrollViews = pageViews?.filter(pv => pv.scroll_depth && pv.scroll_depth > 0) || [];
+    const avgScrollDepth = scrollViews.length > 0
+      ? Math.round(scrollViews.reduce((acc: number, pv: any) => acc + (pv.scroll_depth || 0), 0) / scrollViews.length)
+      : 0;
+
+    // --- Daily time-series breakdown ---
+    const dailySessionsMap: Record<string, Set<string>> = {};   // date → unique visitor_ids
+    const dailyPageViewsMap: Record<string, number> = {};        // date → count
+    const dailySessionCountMap: Record<string, number> = {};     // date → session count
+
+    sessions?.forEach(session => {
+      if (session.started_at) {
+        const day = session.started_at.substring(0, 10); // YYYY-MM-DD
+        if (!dailySessionsMap[day]) dailySessionsMap[day] = new Set();
+        dailySessionsMap[day].add(session.visitor_id);
+        dailySessionCountMap[day] = (dailySessionCountMap[day] || 0) + 1;
+      }
+    });
+
+    pageViews?.forEach(pv => {
+      if (pv.viewed_at) {
+        const day = pv.viewed_at.substring(0, 10);
+        dailyPageViewsMap[day] = (dailyPageViewsMap[day] || 0) + 1;
+      }
+    });
+
+    // Merge all dates and sort chronologically
+    const allDates = new Set([
+      ...Object.keys(dailySessionsMap),
+      ...Object.keys(dailyPageViewsMap),
+    ]);
+    const dailyTimeSeries = Array.from(allDates)
+      .sort()
+      .map(date => ({
+        date,
+        visitors: dailySessionsMap[date]?.size || 0,
+        pageViews: dailyPageViewsMap[date] || 0,
+        sessions: dailySessionCountMap[date] || 0,
+      }));
 
     // Country breakdown
     const countryMap: Record<string, number> = {};
@@ -130,8 +183,10 @@ serve(async (req) => {
           avgDuration,
           bounceRate,
           pagesPerVisit,
+          avgScrollDepth,
           totalSessions,
           countries: countryMap,
+          dailyTimeSeries,
           breakdowns: {
             countries: Object.entries(countryMap).map(([key, value]) => ({ key, value })),
             devices: Object.entries(deviceMap).map(([key, value]) => ({ key, value })),

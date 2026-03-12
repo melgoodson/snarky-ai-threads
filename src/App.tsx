@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { CartProvider } from "./contexts/CartContext";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useExternalTracking } from "@/hooks/useExternalTracking";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Collections from "./pages/Collections";
@@ -46,7 +46,7 @@ import GreetingCardLanding from "./pages/GreetingCardLanding";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  useAnalytics();
+  useExternalTracking();
   return null;
 };
 
