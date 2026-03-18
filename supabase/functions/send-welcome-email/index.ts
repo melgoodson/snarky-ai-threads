@@ -33,8 +33,8 @@ serve(async (req) => {
         const resend = new Resend(RESEND_API_KEY);
 
         const { data, error } = await resend.emails.send({
-            from: "Snarky Humans <hello@snarkyhumans.com>",
-            replyTo: "support@snarkyhumans.com",
+            from: "Snarky Humans <hello@snarkyazzhumans.com>",
+            replyTo: "support@snarkyazzhumans.com",
             to: [email],
             subject: "You're officially one of us. Here's what happens next. 😈",
             html: `<!DOCTYPE html>
@@ -112,12 +112,12 @@ serve(async (req) => {
           <tr>
             <td style="padding:0 40px 40px;text-align:center;">
               <p style="margin:0 0 20px;font-size:15px;color:#aaaaaa;">In the meantime, go make something ridiculous:</p>
-              <a href="https://snarkyhumans.com/custom-design"
+              <a href="https://snarkyazzhumans.com/custom-design"
                  style="display:inline-block;background:#7C3AED;color:#ffffff;font-size:14px;font-weight:900;letter-spacing:0.05em;text-decoration:none;padding:14px 28px;border-radius:8px;margin-bottom:12px;">
                 → DESIGN SOMETHING CUSTOM
               </a>
               <br />
-              <a href="https://snarkyhumans.com/collections"
+              <a href="https://snarkyazzhumans.com/collections"
                  style="display:inline-block;color:#7C3AED;font-size:14px;font-weight:700;text-decoration:none;padding:8px 0;">
                 Or browse what's already killing it →
               </a>
@@ -137,9 +137,9 @@ serve(async (req) => {
           <tr>
             <td style="padding:20px 40px;background:#0d0d0d;text-align:center;">
               <p style="margin:0;font-size:12px;color:#444444;line-height:1.6;">
-                You signed up at SnarkyHumans.com.<br />
+                You signed up at SnarkyAzzHumans.com.<br />
                 If someone signed you up as a prank — honestly, fair play.<br />
-                <a href="https://snarkyhumans.com/unsubscribe" style="color:#555555;">Unsubscribe here</a>
+                <a href="https://snarkyazzhumans.com/unsubscribe" style="color:#555555;">Unsubscribe here</a>
               </p>
             </td>
           </tr>
