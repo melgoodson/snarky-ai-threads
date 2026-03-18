@@ -104,6 +104,7 @@ const DesignDetail = () => {
   const [showTryOn, setShowTryOn] = useState(false);
   const [mockupPreview, setMockupPreview] = useState<string | null>(null);
   const [generatingMockup, setGeneratingMockup] = useState(false);
+  const [mockupError, setMockupError] = useState(false);
 
   // Auto-generate mockup when product + color are selected
   useEffect(() => {
@@ -112,6 +113,7 @@ const DesignDetail = () => {
     if (!product) return;
 
     setMockupPreview(null);
+    setMockupError(false);
     setGeneratingMockup(true);
 
     const timeout = new Promise<never>((_, reject) =>
@@ -149,18 +151,19 @@ const DesignDetail = () => {
         console.log('[Mockup] Response:', { data: data ? 'received' : null, error });
         if (error) {
           console.error('[Mockup] Error:', error);
-          toast.error("Mockup preview failed — you can still add to cart");
+          setMockupError(true);
           return;
         }
         if (data?.mockupUrl) {
           setMockupPreview(data.mockupUrl);
         } else {
           console.warn('[Mockup] No mockupUrl in response:', data);
+          setMockupError(true);
         }
       })
       .catch((err) => {
         console.error('[Mockup] Failed:', err);
-        toast.error(err.message || "Mockup preview unavailable");
+        setMockupError(true);
       })
       .finally(() => setGeneratingMockup(false));
   }, [selectedProduct, selectedColor]);
@@ -499,7 +502,7 @@ const DesignDetail = () => {
               </div>
 
               {/* Auto-generated mockup preview */}
-              {(generatingMockup || mockupPreview) && (
+              {(generatingMockup || mockupPreview || mockupError) && (
                 <div className="mt-4">
                   <h3 className="text-sm font-bold mb-2">Product Preview</h3>
                   {generatingMockup ? (
@@ -513,36 +516,74 @@ const DesignDetail = () => {
                     <div className="aspect-square bg-muted rounded-xl overflow-hidden">
                       <img src={mockupPreview} alt="Product mockup" className="w-full h-full object-contain" />
                     </div>
+                  ) : mockupError && design ? (
+                    <div className="space-y-2">
+                      <div className="relative aspect-square bg-muted rounded-xl overflow-hidden">
+                        {(() => {
+                          const product = products.find((p) => p.id === selectedProduct);
+                          const productImg = product?.images?.[0];
+                          const productSrc = productImg
+                            ? (typeof productImg === 'string' ? productImg : productImg.src || productImg.url)
+                            : null;
+                          return productSrc ? (
+                            <>
+                              <img src={productSrc} alt="Product" className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 flex items-center justify-center p-8">
+                                <img
+                                  src={resolveDesignImage(design.image_url)}
+                                  alt="Design"
+                                  className="max-w-[65%] max-h-[65%] object-contain opacity-90"
+                                  style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.2))" }}
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={resolveDesignImage(design.image_url)}
+                              alt="Design preview"
+                              className="w-full h-full object-contain p-4"
+                            />
+                          );
+                        })()}
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center">
+                        AI preview unavailable — showing approximate preview
+                      </p>
+                    </div>
                   ) : null}
                 </div>
               )}
-              {/* AI Mockup Preview — optional toggle */}
-              {currentProduct && (
-                <div className="mt-4">
-                  {!showTryOn ? (
-                    <Button
-                      variant="outline"
-                      className="w-full group"
-                      onClick={() => setShowTryOn(true)}
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Try It On with AI
-                    </Button>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-bold">AI Preview</h3>
-                        <Button variant="ghost" size="sm" onClick={() => setShowTryOn(false)}>Close</Button>
+              {/* AI Mockup Preview — optional toggle (apparel only) */}
+              {currentProduct && (() => {
+                const t = currentProduct.title.toLowerCase();
+                const isWearable = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater'].some(k => t.includes(k));
+                return isWearable;
+              })() && (
+                  <div className="mt-4">
+                    {!showTryOn ? (
+                      <Button
+                        variant="outline"
+                        className="w-full group"
+                        onClick={() => setShowTryOn(true)}
+                      >
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Try It On with AI
+                      </Button>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-bold">AI Preview</h3>
+                          <Button variant="ghost" size="sm" onClick={() => setShowTryOn(false)}>Close</Button>
+                        </div>
+                        <AIMockupGenerator
+                          productImage={resolveDesignImage(design.image_url)}
+                          productTitle={currentProduct.title}
+                          productColor={selectedColor || "White"}
+                        />
                       </div>
-                      <AIMockupGenerator
-                        productImage={resolveDesignImage(design.image_url)}
-                        productTitle={currentProduct.title}
-                        productColor={selectedColor || "White"}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
               <div>
                 <h1 className="text-3xl font-black mb-2">{design.title}</h1>
                 {design.description && (

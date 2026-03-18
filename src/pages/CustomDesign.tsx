@@ -112,6 +112,7 @@ export default function CustomDesign() {
   // Step 4 & 5: Mockup
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [mockupPreview, setMockupPreview] = useState<string | null>(null);
+  const [mockupTimeout, setMockupTimeout] = useState(false);
 
   // Virtual Try-On
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -161,7 +162,8 @@ export default function CustomDesign() {
       if (isSize(parts[1])) return parts[1];
       return parts[1];
     }
-    return 'M';
+    // Don't fabricate a size — return the raw title so callers can detect "no real size"
+    return variantTitle;
   };
 
   const getUniqueColors = (variants: Variant[]): string[] => {
@@ -187,7 +189,7 @@ export default function CustomDesign() {
     const title = (product.title || '').toLowerCase();
 
     const apparelKeywords = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater', 'apparel', 'clothing'];
-    const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap', 'blanket'];
+    const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap', 'blanket', 'card', 'greeting'];
 
     // Check if it's explicitly non-apparel
     for (const keyword of nonApparelKeywords) {
@@ -203,8 +205,8 @@ export default function CustomDesign() {
       }
     }
 
-    // Default to true for unknown categories (safer for apparel-focused store)
-    return true;
+    // Default to false for unknown categories — only show try-on for confirmed apparel
+    return false;
   };
 
   // Check auth state - show prompt instead of redirecting
@@ -341,6 +343,16 @@ export default function CustomDesign() {
       generateMockup();
     }
   }, [currentStep, approvedDesign, selectedProduct, selectedVariant]);
+
+  // Show "Skip" button after 5 seconds on the mockup step
+  useEffect(() => {
+    if (currentStep !== 'mockup' || !generatingMockup) {
+      setMockupTimeout(false);
+      return;
+    }
+    const timer = setTimeout(() => setMockupTimeout(true), 5000);
+    return () => clearTimeout(timer);
+  }, [currentStep, generatingMockup]);
 
   const fetchProducts = async () => {
     setLoadingProducts(true);
@@ -656,14 +668,28 @@ export default function CustomDesign() {
   const generateMockup = async () => {
     if (!approvedDesign || !selectedProduct || !selectedVariant) return;
 
+    // Blanket uses edge-to-edge sublimation — CSS overlay is the correct preview.
+    // Skip AI mockup entirely to avoid "AI busy" errors.
+    if (selectedProduct.title.toLowerCase().includes('blanket')) {
+      setMockupPreview(null);
+      setMockupError(null);
+      setCurrentStep('review');
+      return;
+    }
+
     const selectedColor = extractColorFromVariant(selectedVariant.title);
 
-    // For blanket, ensure we have a valid product image to send
-    const productImageStr = selectedProduct.template_image_url ||
-      (selectedProduct.title.toLowerCase().includes('blanket') ? personalizationBlanketFallback : '');
+    // Build a product reference image: template_image_url → catalog images[0]
+    const rawImg = selectedProduct.images?.[0];
+    const catalogImgUrl = rawImg ? (typeof rawImg === 'string' ? rawImg : (rawImg as any).src || (rawImg as any).url || '') : '';
+    const productImageStr = selectedProduct.template_image_url || catalogImgUrl;
 
     if (!productImageStr) {
-      toast.error("No product template available. Please choose a different product.");
+      // No reference image at all — skip AI mockup, go straight to review with CSS fallback
+      setMockupPreview(null);
+      setMockupError(null);
+      toast.info("AI mockup unavailable for this product — showing design preview.");
+      setCurrentStep('review');
       return;
     }
 
@@ -686,8 +712,9 @@ export default function CustomDesign() {
       if (error) {
         const msg = error.message || String(error);
         if (msg.includes("429") || msg.includes("rate") || msg.includes("non-2xx")) {
-          setMockupError("AI service is busy. Please wait 1-2 minutes and try again.");
-          toast.error("AI service is busy. Please wait and retry.", { duration: 6000 });
+          // Auto-advance to review with CSS fallback instead of blocking
+          toast.info("AI preview unavailable — showing design preview.");
+          setCurrentStep('review');
           return;
         }
         throw error;
@@ -1417,14 +1444,35 @@ export default function CustomDesign() {
                         <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
                         <p className="text-foreground font-medium italic transition-all duration-500">{snarkyMockup}</p>
                         <p className="text-xs text-muted-foreground">This may take 15-30 seconds</p>
+                        {mockupTimeout && (
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={() => {
+                              setGeneratingMockup(false);
+                              setMockupPreview(null);
+                              setCurrentStep('review');
+                              toast.info("Skipped AI mockup — showing design preview.");
+                            }}
+                          >
+                            Skip to Preview →
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ) : mockupError ? (
                     <Card className="max-w-2xl mx-auto p-8 text-center space-y-4">
                       <p className="text-destructive font-medium">{mockupError}</p>
-                      <div className="flex gap-3 justify-center">
+                      <div className="flex gap-3 justify-center flex-wrap">
                         <Button size="lg" onClick={() => { setMockupError(null); generateMockup(); }}>
                           Try Again
+                        </Button>
+                        <Button size="lg" variant="outline" onClick={() => {
+                          setMockupError(null);
+                          setCurrentStep('review');
+                          toast.info("Skipped AI mockup — showing design preview.");
+                        }}>
+                          Continue to Review
                         </Button>
                         <Button size="lg" variant="outline" onClick={() => setCurrentStep('product')}>
                           Back to Products
@@ -1468,23 +1516,46 @@ export default function CustomDesign() {
                             // Fallback: CSS composite — design overlaid on product template
                             // Only used if AI generation was skipped or failed
                             <>
-                              <img
-                                src={selectedProduct.template_image_url || (selectedProduct.title.toLowerCase().includes('blanket') ? personalizationBlanketFallback : '')}
-                                alt="Product template"
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center p-12">
-                                <img
-                                  src={approvedDesign.imageUrl}
-                                  className="max-w-[70%] max-h-[70%] object-contain opacity-90"
-                                  style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
-                                />
-                              </div>
+                              {(() => {
+                                const rawImg = selectedProduct.images?.[0];
+                                const catalogUrl = rawImg ? (typeof rawImg === 'string' ? rawImg : (rawImg as any).src || (rawImg as any).url || '') : '';
+                                const fallbackImg = selectedProduct.template_image_url ||
+                                  (selectedProduct.title.toLowerCase().includes('blanket') ? personalizationBlanketFallback : '') ||
+                                  catalogUrl;
+                                return fallbackImg ? (
+                                  <>
+                                    <img
+                                      src={fallbackImg}
+                                      alt="Product template"
+                                      className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center p-12">
+                                      <img
+                                        src={approvedDesign.imageUrl}
+                                        alt="Your design"
+                                        className="max-w-[70%] max-h-[70%] object-contain opacity-90"
+                                        style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                      />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <img
+                                    src={approvedDesign.imageUrl}
+                                    alt="Your design"
+                                    className="w-full h-full object-contain p-4"
+                                  />
+                                );
+                              })()}
                             </>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-2 text-center">
-                          This is how your product will look
+                          {mockupPreview
+                            ? "This is how your product will look"
+                            : selectedProduct.template_image_url || selectedProduct.images?.[0]
+                              ? "Approximate preview — AI mockup was unavailable"
+                              : "Design preview — product mockup unavailable"
+                          }
                         </p>
 
                         {/* Virtual Try-On Preview (if generated) */}
@@ -1509,7 +1580,13 @@ export default function CustomDesign() {
 
                         <div className="space-y-2">
                           <p><span className="font-semibold">Color:</span> {extractColorFromVariant(selectedVariant.title)}</p>
-                          <p><span className="font-semibold">Size:</span> {extractSizeFromVariant(selectedVariant.title)}</p>
+                          {(() => {
+                            const size = extractSizeFromVariant(selectedVariant.title);
+                            // Only show Size if a real size was extracted (not just the raw title echoed back)
+                            return size !== selectedVariant.title ? (
+                              <p><span className="font-semibold">Size:</span> {size}</p>
+                            ) : null;
+                          })()}
                           <p><span className="font-semibold">Quantity:</span> {quantity}</p>
                         </div>
 

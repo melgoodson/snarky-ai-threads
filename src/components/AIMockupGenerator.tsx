@@ -38,6 +38,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
   const [generating, setGenerating] = useState(false);
   const [userImage, setUserImage] = useState<string | null>(null);
   const [mockupImage, setMockupImage] = useState<string | null>(null);
+  const [mockupError, setMockupError] = useState(false);
   const { toast } = useToast();
   const snarkyMessage = useSnarkyLoader(generating);
 
@@ -62,6 +63,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
     reader.onloadend = () => {
       setUserImage(reader.result as string);
       setMockupImage(null);
+      setMockupError(false);
     };
     reader.readAsDataURL(file);
   };
@@ -70,6 +72,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
     if (!userImage) return;
 
     setGenerating(true);
+    setMockupError(false);
     try {
       // Convert product image URL to base64
       const response = await fetch(productImage);
@@ -117,6 +120,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
       }
     } catch (error: any) {
       console.error("Error generating mockup:", error);
+      setMockupError(true);
       const message = error.message?.includes("timed out")
         ? "AI generation timed out. The service may be busy — please try again in a minute."
         : error.message || "Failed to generate mockup. Please try again.";
@@ -186,6 +190,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
                   onClick={() => {
                     setUserImage(null);
                     setMockupImage(null);
+                    setMockupError(false);
                   }}
                   disabled={generating}
                 >
@@ -206,6 +211,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
           </p>
         </div>
 
+        {/* AI-generated mockup (success) */}
         {mockupImage && (
           <div className="mt-6 space-y-4">
             <h4 className="text-lg font-bold text-foreground">
@@ -218,7 +224,40 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
             />
           </div>
         )}
+
+        {/* Fallback composite preview (AI failed) */}
+        {mockupError && userImage && !mockupImage && (
+          <div className="mt-6 space-y-4">
+            <h4 className="text-lg font-bold text-foreground">Approximate Preview</h4>
+            <p className="text-sm text-muted-foreground">
+              AI preview couldn't be generated — here's an approximate look.
+            </p>
+            <div className="relative max-w-md mx-auto rounded-lg border border-border overflow-hidden bg-secondary">
+              <img
+                src={productImage}
+                alt="Product"
+                className="w-full h-auto"
+              />
+              <div className="absolute inset-0 flex items-center justify-center p-8">
+                <img
+                  src={userImage}
+                  alt="Your design"
+                  className="max-w-[60%] max-h-[60%] object-contain opacity-85"
+                  style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.25))" }}
+                />
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={generateMockup}
+            >
+              Try Again
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
