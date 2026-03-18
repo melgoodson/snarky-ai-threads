@@ -57,6 +57,29 @@ serve(async (req) => {
           .eq('id', printifyOrder.order_id);
 
         console.log('Order status updated to shipped');
+
+        // Send shipping notification email
+        try {
+          const { data: order } = await supabase
+            .from('orders')
+            .select('email, id')
+            .eq('id', printifyOrder.order_id)
+            .single();
+
+          if (order?.email) {
+            await supabase.functions.invoke('send-shipping-notification', {
+              body: {
+                email: order.email,
+                orderId: order.id,
+                trackingNumber,
+                trackingUrl,
+              },
+            });
+            console.log('Shipping notification email sent to', order.email);
+          }
+        } catch (emailError) {
+          console.error('Failed to send shipping notification email:', emailError);
+        }
       }
     } else if (type === 'order:shipment:delivered') {
       // Order has been delivered
@@ -82,6 +105,27 @@ serve(async (req) => {
           .eq('id', printifyOrder.order_id);
 
         console.log('Order status updated to delivered');
+
+        // Send delivery notification email
+        try {
+          const { data: order } = await supabase
+            .from('orders')
+            .select('email, id')
+            .eq('id', printifyOrder.order_id)
+            .single();
+
+          if (order?.email) {
+            await supabase.functions.invoke('send-delivery-notification', {
+              body: {
+                email: order.email,
+                orderId: order.id,
+              },
+            });
+            console.log('Delivery notification email sent to', order.email);
+          }
+        } catch (emailError) {
+          console.error('Failed to send delivery notification email:', emailError);
+        }
       }
     } else if (type === 'order:canceled' || type === 'order:cancelled') {
       // Order was canceled
