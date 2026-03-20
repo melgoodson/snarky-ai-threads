@@ -54,7 +54,7 @@ serve(async (req) => {
 
           <!-- Header -->
           <tr>
-            <td style="background:#7C3AED;padding:32px 40px;text-align:center;">
+            <td style="background:#C0392B;padding:32px 40px;text-align:center;">
               <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.2em;color:rgba(255,255,255,0.6);text-transform:uppercase;">Snarky A$$ Apparel</p>
               <h1 style="margin:12px 0 0;font-size:32px;font-weight:900;color:#ffffff;letter-spacing:-0.03em;line-height:1.1;">WEAR YOUR ATTITUDE</h1>
             </td>
@@ -78,7 +78,7 @@ serve(async (req) => {
             <td style="padding:0 40px 32px;">
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
                 <tr><td style="padding:24px 24px 8px;">
-                  <p style="margin:0 0 16px;font-size:13px;font-weight:700;letter-spacing:0.15em;color:#7C3AED;text-transform:uppercase;">What being on the list actually means</p>
+                  <p style="margin:0 0 16px;font-size:13px;font-weight:700;letter-spacing:0.15em;color:#C0392B;text-transform:uppercase;">What being on the list actually means</p>
                 </td></tr>
                 <tr><td style="padding:0 24px 12px;">
                   <p style="margin:0;font-size:15px;color:#cccccc;line-height:1.5;">🔥 <strong style="color:#ffffff;">First look at new drops</strong> — before anyone else sees them</p>
@@ -113,12 +113,12 @@ serve(async (req) => {
             <td style="padding:0 40px 40px;text-align:center;">
               <p style="margin:0 0 20px;font-size:15px;color:#aaaaaa;">In the meantime, go make something ridiculous:</p>
               <a href="https://snarkyazzhumans.com/custom-design"
-                 style="display:inline-block;background:#7C3AED;color:#ffffff;font-size:14px;font-weight:900;letter-spacing:0.05em;text-decoration:none;padding:14px 28px;border-radius:8px;margin-bottom:12px;">
+                 style="display:inline-block;background:#C0392B;color:#ffffff;font-size:14px;font-weight:900;letter-spacing:0.05em;text-decoration:none;padding:14px 28px;border-radius:8px;margin-bottom:12px;">
                 → DESIGN SOMETHING CUSTOM
               </a>
               <br />
               <a href="https://snarkyazzhumans.com/collections"
-                 style="display:inline-block;color:#7C3AED;font-size:14px;font-weight:700;text-decoration:none;padding:8px 0;">
+                 style="display:inline-block;color:#C0392B;font-size:14px;font-weight:700;text-decoration:none;padding:8px 0;">
                 Or browse what's already killing it →
               </a>
             </td>
