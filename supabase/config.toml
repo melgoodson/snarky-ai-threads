@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.get-printify-blueprints]
 verify_jwt = false
+
+[functions.auto-blog]
+verify_jwt = false
