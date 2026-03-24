@@ -711,7 +711,8 @@ IMPORTANT: Respond ONLY with a valid JSON object, no extra text or markdown wrap
             ],
             generationConfig: {
               temperature: 0.8,
-              maxOutputTokens: 4096,
+              maxOutputTokens: 8192,
+              responseMimeType: "application/json",
             },
           }),
         });
@@ -746,10 +747,74 @@ IMPORTANT: Respond ONLY with a valid JSON object, no extra text or markdown wrap
       throw new Error("Gemini did not return expected format");
     }
 
-    // Strip markdown code fences if present
-    textContent = textContent.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    // ── Robust JSON extraction ──
+    // 1. Strip markdown code fences & surrounding text
+    textContent = textContent
+      .replace(/^[\s\S]*?```json\s*/i, "")
+      .replace(/^[\s\S]*?```\s*/i, "")
+      .replace(/\s*```[\s\S]*$/i, "")
+      .trim();
 
-    const blogData = JSON.parse(textContent);
+    // 2. If there's still non-JSON wrapping, extract the outermost { ... }
+    if (!textContent.startsWith("{")) {
+      const firstBrace = textContent.indexOf("{");
+      if (firstBrace !== -1) {
+        textContent = textContent.substring(firstBrace);
+      }
+    }
+    // Trim anything after the last closing brace
+    const lastBrace = textContent.lastIndexOf("}");
+    if (lastBrace !== -1 && lastBrace < textContent.length - 1) {
+      textContent = textContent.substring(0, lastBrace + 1);
+    }
+
+    let blogData: any;
+    try {
+      blogData = JSON.parse(textContent);
+    } catch (parseErr) {
+      console.log("First JSON.parse failed, attempting sanitization...");
+      // 3. Sanitize unescaped control characters inside string values
+      const sanitized = textContent.replace(
+        /("(?:[^"\\]|\\.)*")/g,
+        (match: string) => {
+          return match
+            .replace(/(?<!\\)\n/g, "\\n")
+            .replace(/(?<!\\)\r/g, "\\r")
+            .replace(/(?<!\\)\t/g, "\\t");
+        }
+      );
+      try {
+        blogData = JSON.parse(sanitized);
+      } catch (parseErr2) {
+        console.log("Sanitized JSON.parse failed, attempting regex extraction...");
+        // 4. Fallback: regex extract individual fields
+        const extractField = (name: string, isArray = false): string | string[] | null => {
+          if (isArray) {
+            const m = textContent.match(new RegExp(`"${name}"\\s*:\\s*(\\[[^\\]]*\\])`, "s"));
+            if (m) try { return JSON.parse(m[1]); } catch { return []; }
+            return [];
+          }
+          const m = textContent.match(new RegExp(`"${name}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+          return m ? m[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : null;
+        };
+
+        // For the long content field, use a greedy approach
+        const contentMatch = textContent.match(/"content"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"(?:seoKeywords|longTailQueries)|"\s*})/);
+        const contentValue = contentMatch
+          ? contentMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"')
+          : `# ${selectedTopic.topic}\n\nContent generation encountered a formatting issue. Please regenerate.`;
+
+        blogData = {
+          title: extractField("title") || selectedTopic.topic,
+          metaDescription: extractField("metaDescription") || "",
+          excerpt: extractField("excerpt") || "",
+          content: contentValue,
+          seoKeywords: extractField("seoKeywords", true) || selectedTopic.targetKeywords,
+          longTailQueries: extractField("longTailQueries", true) || [],
+        };
+        console.log("Recovered blog data via regex fallback");
+      }
+    }
 
     // ── Generate slug ──
     let slug = (blogData.title || selectedTopic.topic)
