@@ -649,33 +649,93 @@ Focus on providing genuine value while being entertaining. Make sure to include 
 
 IMPORTANT: Respond ONLY with a valid JSON object, no extra text or markdown wrapping.`;
 
-    const model = "gemini-2.0-flash";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleApiKey}`;
+    // ── Auto-discover available models via ListModels API ──
+    console.log("Discovering available Gemini models...");
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: systemPrompt + "\n\n" + userPrompt }],
-          },
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
-      }),
+    let availableModels: string[] = [];
+    for (const apiVersion of ["v1beta", "v1"]) {
+      try {
+        const listRes = await fetch(
+          `https://generativelanguage.googleapis.com/${apiVersion}/models?key=${googleApiKey}`
+        );
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          const textModels = (listData.models || [])
+            .filter((m: any) =>
+              m.supportedGenerationMethods?.includes("generateContent") &&
+              !m.name.includes("image") &&
+              !m.name.includes("embedding") &&
+              !m.name.includes("aqa")
+            )
+            .map((m: any) => ({ name: m.name.replace("models/", ""), api: apiVersion }));
+          availableModels.push(...textModels.map((m: any) => `${m.api}/${m.name}`));
+          console.log(`Found ${textModels.length} text models on ${apiVersion}: ${textModels.map((m: any) => m.name).join(", ")}`);
+          if (textModels.length > 0) break; // Use first API version that has models
+        }
+      } catch (err) {
+        console.log(`ListModels (${apiVersion}) error:`, err);
+      }
+    }
+
+    if (availableModels.length === 0) {
+      throw new Error("No Gemini text generation models found for this API key. Check GOOGLE_AI_API_KEY.");
+    }
+
+    // Prefer flash models (faster), then pro
+    const preferOrder = ["flash", "pro"];
+    availableModels.sort((a, b) => {
+      const aIdx = preferOrder.findIndex(p => a.includes(p));
+      const bIdx = preferOrder.findIndex(p => b.includes(p));
+      return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+    let response: Response | null = null;
+    let lastError = "";
+
+    for (const modelPath of availableModels) {
+      const [apiVersion, ...modelParts] = modelPath.split("/");
+      const modelName = modelParts.join("/");
+      const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent?key=${googleApiKey}`;
+      console.log(`Trying model: ${modelName} on ${apiVersion}...`);
+
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: systemPrompt + "\n\n" + userPrompt }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.8,
+              maxOutputTokens: 4096,
+            },
+          }),
+        });
+
+        if (res.ok) {
+          console.log(`Success with model: ${modelName} on ${apiVersion}`);
+          response = res;
+          break;
+        }
+
+        lastError = await res.text();
+        console.log(`Model ${modelName} (${apiVersion}) failed: ${res.status}`);
+      } catch (err) {
+        console.log(`Model ${modelName} (${apiVersion}) fetch error:`, err);
+        lastError = String(err);
+      }
+    }
+
+    if (!response) {
+      throw new Error(`All discovered models failed. Models tried: ${availableModels.join(", ")}. Last error: ${lastError.substring(0, 200)}`);
     }
 
     const aiResponse = await response.json();
-    const textContent =
+    let textContent =
       aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!textContent) {
@@ -685,6 +745,9 @@ IMPORTANT: Respond ONLY with a valid JSON object, no extra text or markdown wrap
       );
       throw new Error("Gemini did not return expected format");
     }
+
+    // Strip markdown code fences if present
+    textContent = textContent.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
 
     const blogData = JSON.parse(textContent);
 
