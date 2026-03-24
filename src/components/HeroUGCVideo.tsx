@@ -28,7 +28,7 @@ export const HeroUGCVideo = () => {
         <section className="py-10 md:py-16 bg-background">
             <div className="container px-4">
                 <div
-                    className="relative max-w-3xl mx-auto aspect-video rounded-2xl overflow-hidden border border-border bg-black cursor-pointer shadow-2xl"
+                    className="relative max-w-sm mx-auto aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black cursor-pointer shadow-2xl"
                     onClick={togglePlay}
                 >
                     <video
