@@ -2,17 +2,11 @@ import { useState, useRef } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import tshirtVideo from "@/assets/ads_tshirt_snarkyazz_ugc.mp4";
 import tumblerVideo from "@/assets/ads_tumbler_snarkyazz_ugc landscape.mp4";
-import ugcVideo440 from "@/assets/ugc_440.mp4";
 
 const TESTIMONIALS = [
     {
         video: tshirtVideo,
         product: "Snarky Tee",
-        aspect: "aspect-[9/16]",
-    },
-    {
-        video: ugcVideo440,
-        product: "Snarky Style",
         aspect: "aspect-[9/16]",
     },
     {
@@ -111,7 +105,7 @@ export const UGCTestimonials = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-start">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-start">
                     {TESTIMONIALS.map((testimonial) => (
                         <VideoCard key={testimonial.product} testimonial={testimonial} />
                     ))}

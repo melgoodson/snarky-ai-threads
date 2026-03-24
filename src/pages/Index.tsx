@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
+import { HeroUGCVideo } from "@/components/HeroUGCVideo";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { UGCTestimonials } from "@/components/UGCTestimonials";
 import { ProductGrid } from "@/components/ProductGrid";
@@ -17,8 +18,9 @@ const Index = () => {
       </div>
       <main className="flex-1">
         <Hero />
-        <UGCTestimonials />
+        <HeroUGCVideo />
         <ProductShowcase />
+        <UGCTestimonials />
         {/* Email capture — placed after social proof, before product grid for max conversion */}
         <EmailCapture variant="homepage" source="homepage_banner" />
         <div id="products">
