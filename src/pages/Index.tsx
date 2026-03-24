@@ -17,8 +17,8 @@ const Index = () => {
       </div>
       <main className="flex-1">
         <Hero />
-        <ProductShowcase />
         <UGCTestimonials />
+        <ProductShowcase />
         {/* Email capture — placed after social proof, before product grid for max conversion */}
         <EmailCapture variant="homepage" source="homepage_banner" />
         <div id="products">
