@@ -397,7 +397,7 @@ export default function CustomDesign() {
         if (lower.includes('mug')) return 'mug';
         if (lower.includes('tote') || lower.includes('bag')) return 'tote';
         if (lower.includes('card') || lower.includes('greeting')) return 'card';
-        if (lower.includes('blanket')) return 'blanket';
+        if (lower.includes('blanket')) return 'unknown'; // HIDDEN: investigating print quality
         return 'unknown';
       };
 

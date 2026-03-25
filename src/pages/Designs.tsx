@@ -197,11 +197,11 @@ const Designs = () => {
                   onClick={() => navigate(`/designs/${design.id}`)}
                 >
                   <CardContent className="p-4">
-                    <div className="aspect-square bg-secondary rounded-lg mb-4 overflow-hidden flex items-center justify-center">
+                    <div className="aspect-square bg-white rounded-lg mb-4 overflow-hidden flex items-center justify-center">
                       <img
                         src={resolveDesignImage(design.image_url)}
                         alt={design.title}
-                        className="w-full h-full object-contain p-2"
+                        className="w-full h-full object-contain p-4"
                       />
                     </div>
                     <h3 className="font-semibold text-lg mb-1">{design.title}</h3>

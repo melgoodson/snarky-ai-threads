@@ -207,7 +207,7 @@ export const ProductGrid = () => {
   return (
     <section id="products" className="py-16 md:py-24">
       <div className="container px-4">
-        {/* Featured Personalization Blanket Section */}
+        {/* HIDDEN: investigating print quality
         <div className="mb-20">
           <div className="text-center mb-8">
             <span className="text-sm font-bold text-primary uppercase tracking-widest">NEW • HIGH DEMAND</span>
@@ -241,6 +241,7 @@ export const ProductGrid = () => {
             </div>
           </div>
         </div>
+        */}
 
         {/* Featured This Month — SEO-optimized monthly rotation */}
         {featuredDesigns.length > 0 && (

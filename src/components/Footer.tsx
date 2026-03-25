@@ -96,11 +96,13 @@ export const Footer = () => {
                   Hoodies
                 </Link>
               </li>
+              {/* HIDDEN: investigating print quality
               <li>
                 <Link to="/blankets" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Blankets
                 </Link>
               </li>
+              */}
             </ul>
           </div>
 

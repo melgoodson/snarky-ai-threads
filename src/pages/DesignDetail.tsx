@@ -105,62 +105,121 @@ const DesignDetail = () => {
   const [mockupPreview, setMockupPreview] = useState<string | null>(null);
   const [generatingMockup, setGeneratingMockup] = useState(false);
   const [mockupError, setMockupError] = useState(false);
+  // Convert an image URL to base64 data URL (in the browser)
+  const imageToBase64 = (src: string): Promise<string> =>
+    new Promise((resolve, reject) => {
+      if (src.startsWith('data:')) { resolve(src); return; }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = src;
+    });
 
-  // Auto-generate mockup when product + color are selected
+  // Auto-generate mockup when product is selected (with or without color)
   useEffect(() => {
-    if (!selectedProduct || !selectedColor || !design) return;
+    if (!selectedProduct || !design) return;
     const product = products.find((p) => p.id === selectedProduct);
     if (!product) return;
+
+    // Check if this product has color options
+    const opts = (() => {
+      const enabledVariants = (product.variants || []).filter((v: any) => v.is_enabled);
+      const colors = new Set<string>();
+      enabledVariants.forEach((variant: any) => {
+        const parts = variant.title.split(' / ').map((p: string) => p.trim());
+        parts.forEach((part: string) => {
+          const v = part.trim().toLowerCase();
+          const isSize = /^\d+oz$/i.test(v) || /^\d*x?[sml]$/i.test(v) || /^\d+xl$/i.test(v) || /^one size$/i.test(v) || /\d+["″]?\s*[x×]\s*\d+/i.test(v);
+          const isQty = /^\d+\s*pcs?$/i.test(v);
+          const isStyle = ['glossy', 'matte', 'coated (both sides)', 'coated (one side)', 'uncoated'].includes(v);
+          if (!isSize && !isQty && !isStyle) colors.add(part);
+        });
+      });
+      return { hasColors: colors.size > 0 };
+    })();
+
+    // If product has colors, wait for color selection
+    if (opts.hasColors && !selectedColor) return;
+
+    const colorForMockup = selectedColor || 'Default';
 
     setMockupPreview(null);
     setMockupError(false);
     setGeneratingMockup(true);
 
     const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Mockup generation timed out")), 45000)
+      setTimeout(() => reject(new Error("Mockup generation timed out")), 60000)
     );
 
-    // Convert relative paths to absolute URLs for the edge function
-    const toAbsoluteUrl = (path: string) => {
-      if (path.startsWith('http') || path.startsWith('data:')) return path;
-      return window.location.origin + (path.startsWith('/') ? path : '/' + path);
-    };
-
-    const productImgUrl = (() => {
+    // Resolve the design image path
+    const designSrc = resolveDesignImage(design.image_url);
+    // Resolve the product reference image (Printify catalog URL — already public)
+    const productImgRaw = (() => {
       const img = product.images?.[0];
-      if (!img) return toAbsoluteUrl(resolveDesignImage(design.image_url));
-      const raw = typeof img === 'string' ? img : img.src || img.url || resolveDesignImage(design.image_url);
-      return toAbsoluteUrl(raw);
+      if (!img) return '';
+      return typeof img === 'string' ? img : img.src || img.url || '';
     })();
 
-    const designImgUrl = toAbsoluteUrl(resolveDesignImage(design.image_url));
+    // Convert the design image to base64 in the browser so the edge function can access it
+    // Product images from Printify are already public URLs
+    const generateAsync = async () => {
+      let designBase64: string;
+      try {
+        designBase64 = await imageToBase64(designSrc.startsWith('http') ? designSrc : window.location.origin + (designSrc.startsWith('/') ? designSrc : '/' + designSrc));
+      } catch (e) {
+        console.error('[Mockup] Failed to convert design to base64:', e);
+        setMockupError(true);
+        setGeneratingMockup(false);
+        return;
+      }
 
-    console.log('[Mockup] Generating for:', product.title, selectedColor, 'designImg:', designImgUrl, 'productImg:', productImgUrl);
-
-    const apiCall = supabase.functions.invoke("generate-user-mockup", {
-      body: {
-        userImage: designImgUrl,
-        productImage: productImgUrl,
-        productTitle: product.title,
-        productColor: selectedColor,
-      },
-    });
-
-    Promise.race([apiCall, timeout])
-      .then(({ data, error }: any) => {
-        console.log('[Mockup] Response:', { data: data ? 'received' : null, error });
-        if (error) {
-          console.error('[Mockup] Error:', error);
-          setMockupError(true);
-          return;
+      // Use the product image URL as-is if it's a public URL, otherwise convert too
+      let productImageForApi = productImgRaw;
+      if (productImageForApi && !productImageForApi.startsWith('http')) {
+        try {
+          productImageForApi = await imageToBase64(window.location.origin + (productImageForApi.startsWith('/') ? productImageForApi : '/' + productImageForApi));
+        } catch (e) {
+          // Fall back to design image if product image can't be loaded
+          productImageForApi = designBase64;
         }
-        if (data?.mockupUrl) {
-          setMockupPreview(data.mockupUrl);
-        } else {
-          console.warn('[Mockup] No mockupUrl in response:', data);
-          setMockupError(true);
-        }
-      })
+      }
+      if (!productImageForApi) productImageForApi = designBase64;
+
+      console.log('[Mockup] Generating for:', product.title, colorForMockup, 'designBase64:', designBase64.substring(0, 50) + '...', 'productImg:', productImageForApi.substring(0, 80) + '...');
+
+      const apiCall = supabase.functions.invoke("generate-user-mockup", {
+        body: {
+          userImage: designBase64,
+          productImage: productImageForApi,
+          productTitle: product.title,
+          productColor: colorForMockup,
+        },
+      });
+
+      const { data, error } = await Promise.race([apiCall, timeout]) as any;
+      console.log('[Mockup] Response:', { data: data ? 'received' : null, error });
+      if (error) {
+        console.error('[Mockup] Error:', error);
+        setMockupError(true);
+        return;
+      }
+      if (data?.mockupUrl) {
+        setMockupPreview(data.mockupUrl);
+      } else {
+        console.warn('[Mockup] No mockupUrl in response:', data);
+        setMockupError(true);
+      }
+    };
+
+    generateAsync()
       .catch((err) => {
         console.error('[Mockup] Failed:', err);
         setMockupError(true);
@@ -206,7 +265,7 @@ const DesignDetail = () => {
         if (lower.includes('mug')) return 'mug';
         if (lower.includes('tote') || lower.includes('bag')) return 'tote';
         if (lower.includes('card') || lower.includes('greeting')) return 'card';
-        if (lower.includes('blanket')) return 'blanket';
+        if (lower.includes('blanket')) return 'unknown'; // HIDDEN: investigating print quality
         return 'unknown';
       };
 
@@ -490,80 +549,92 @@ const DesignDetail = () => {
           </Button>
 
           {/* Compact 2-column layout */}
-          <div className="grid md:grid-cols-2 gap-8">
+           <div className="grid md:grid-cols-2 gap-8">
             {/* LEFT: Sticky design image */}
             <div className="md:sticky md:top-4 md:self-start space-y-4">
-              <div className="aspect-square bg-muted rounded-xl overflow-hidden flex items-center justify-center">
+              <div className="aspect-square bg-white rounded-xl overflow-hidden flex items-center justify-center border border-border">
                 <img
                   src={resolveDesignImage(design.image_url)}
                   alt={design.title}
-                  className="w-full h-full object-contain p-2"
+                  className="w-full h-full object-contain p-4"
                 />
               </div>
 
-              {/* Auto-generated mockup preview */}
-              {(generatingMockup || mockupPreview || mockupError) && (
-                <div className="mt-4">
-                  <h3 className="text-sm font-bold mb-2">Product Preview</h3>
-                  {generatingMockup ? (
-                    <div className="aspect-square bg-muted rounded-xl flex items-center justify-center">
-                      <div className="text-center space-y-2">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-                        <p className="text-xs text-muted-foreground">Generating preview...</p>
-                      </div>
+              {/* Mockup Preview Section — always visible */}
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Product Preview
+                </h3>
+
+                {!selectedProduct ? (
+                  <div className="aspect-video bg-muted/50 rounded-lg flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground text-center px-4">
+                      Select a product to see your design on it
+                    </p>
+                  </div>
+                ) : mockupPreview ? (
+                  /* AI mockup is ready — show it */
+                  <div className="aspect-square bg-muted rounded-lg overflow-hidden">
+                    <img src={mockupPreview} alt="Product mockup" className="w-full h-full object-contain" />
+                  </div>
+                ) : (
+                  /* CSS overlay: design on product (immediate + loading state) */
+                  <div className="space-y-2">
+                    <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
+                      {(() => {
+                        const product = products.find((p) => p.id === selectedProduct);
+                        const productImg = product?.images?.[0];
+                        const productSrc = productImg
+                          ? (typeof productImg === 'string' ? productImg : productImg.src || productImg.url)
+                          : null;
+                        return productSrc ? (
+                          <>
+                            <img src={productSrc} alt="Product" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 flex items-center justify-center p-8">
+                              <img
+                                src={resolveDesignImage(design.image_url)}
+                                alt="Design on product"
+                                className="max-w-[60%] max-h-[60%] object-contain opacity-90"
+                                style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.3))" }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <img
+                            src={resolveDesignImage(design.image_url)}
+                            alt="Design preview"
+                            className="w-full h-full object-contain p-4"
+                          />
+                        );
+                      })()}
+                      {/* Loading spinner overlay while AI generates */}
+                      {generatingMockup && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
+                          <div className="text-center space-y-2">
+                            <Loader2 className="h-8 w-8 animate-spin text-white mx-auto" />
+                            <p className="text-xs text-white font-medium">Generating AI preview...</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ) : mockupPreview ? (
-                    <div className="aspect-square bg-muted rounded-xl overflow-hidden">
-                      <img src={mockupPreview} alt="Product mockup" className="w-full h-full object-contain" />
-                    </div>
-                  ) : mockupError && design ? (
-                    <div className="space-y-2">
-                      <div className="relative aspect-square bg-muted rounded-xl overflow-hidden">
-                        {(() => {
-                          const product = products.find((p) => p.id === selectedProduct);
-                          const productImg = product?.images?.[0];
-                          const productSrc = productImg
-                            ? (typeof productImg === 'string' ? productImg : productImg.src || productImg.url)
-                            : null;
-                          return productSrc ? (
-                            <>
-                              <img src={productSrc} alt="Product" className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 flex items-center justify-center p-8">
-                                <img
-                                  src={resolveDesignImage(design.image_url)}
-                                  alt="Design"
-                                  className="max-w-[65%] max-h-[65%] object-contain opacity-90"
-                                  style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.2))" }}
-                                />
-                              </div>
-                            </>
-                          ) : (
-                            <img
-                              src={resolveDesignImage(design.image_url)}
-                              alt="Design preview"
-                              className="w-full h-full object-contain p-4"
-                            />
-                          );
-                        })()}
-                      </div>
-                      <p className="text-xs text-muted-foreground text-center">
-                        AI preview unavailable — showing approximate preview
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
-              )}
-              {/* AI Mockup Preview — optional toggle (apparel only) */}
-              {currentProduct && (() => {
-                const t = currentProduct.title.toLowerCase();
-                const isWearable = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater'].some(k => t.includes(k));
-                return isWearable;
-              })() && (
-                  <div className="mt-4">
+                    <p className="text-xs text-muted-foreground text-center">
+                      {generatingMockup ? 'AI mockup generating...' : mockupError ? 'AI preview unavailable — showing design overlay' : 'Design preview'}
+                    </p>
+                  </div>
+                )}
+
+                {/* AI Try-On Button — prominent CTA for wearables */}
+                {currentProduct && (() => {
+                  const t = currentProduct.title.toLowerCase();
+                  const isWearable = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater'].some(k => t.includes(k));
+                  return isWearable;
+                })() && (
+                  <>
                     {!showTryOn ? (
                       <Button
-                        variant="outline"
-                        className="w-full group"
+                        variant="default"
+                        className="w-full group font-bold"
                         onClick={() => setShowTryOn(true)}
                       >
                         <Sparkles className="mr-2 h-4 w-4" />
@@ -572,7 +643,7 @@ const DesignDetail = () => {
                     ) : (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-bold">AI Preview</h3>
+                          <h3 className="text-sm font-bold">AI Virtual Try-On</h3>
                           <Button variant="ghost" size="sm" onClick={() => setShowTryOn(false)}>Close</Button>
                         </div>
                         <AIMockupGenerator
@@ -582,8 +653,10 @@ const DesignDetail = () => {
                         />
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
+              </div>
+
               <div>
                 <h1 className="text-3xl font-black mb-2">{design.title}</h1>
                 {design.description && (

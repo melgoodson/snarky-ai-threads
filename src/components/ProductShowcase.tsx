@@ -41,6 +41,7 @@ const PRODUCT_CATEGORIES: ProductCategory[] = [
         ],
         gradient: "from-blue-500/10 to-indigo-500/10",
     },
+    /* HIDDEN: investigating print quality
     {
         title: "CUSTOM PHOTO",
         highlight: "BLANKETS",
@@ -50,6 +51,7 @@ const PRODUCT_CATEGORIES: ProductCategory[] = [
         images: ["/images/carousel/blanket-hero-1.jpg"],
         gradient: "from-purple-500/10 to-pink-500/10",
     },
+    */
     {
         title: "SNARKY",
         highlight: "TOTE BAGS",

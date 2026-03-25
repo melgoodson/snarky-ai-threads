@@ -16,10 +16,9 @@ const FEATURED_SHIRTS = [
 ];
 
 const HERO_IMAGES = [
-    "/images/carousel/shirt-hero-1.png",
-    "/images/carousel/shirt-hero-2.png",
-    "/images/carousel/shirt-hero-3.png",
-    "/images/carousel/rbf-champion-1.png",
+    "/images/carousel/shirt-hero-new-1.jpg",
+    "/images/carousel/shirt-hero-new-2.jpg",
+    "/images/carousel/shirt-hero-new-3.png",
 ];
 
 const ShirtLanding = () => {

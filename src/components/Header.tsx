@@ -14,7 +14,7 @@ import {
 const SHOP_CATEGORIES = [
   { label: "Shirts", to: "/shirts", emoji: "👕" },
   { label: "Hoodies", to: "/hoodies", emoji: "🧥" },
-  { label: "Blankets", to: "/blankets", emoji: "🛏️" },
+  // { label: "Blankets", to: "/blankets", emoji: "🛏️" }, // HIDDEN: investigating print quality
   { label: "Tote Bags", to: "/tote-bags", emoji: "👜" },
   { label: "Mugs", to: "/mugs", emoji: "☕" },
   { label: "Greeting Cards", to: "/greeting-cards", emoji: "💌" },

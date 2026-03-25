@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ShoppingBag, Leaf, Ruler, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { ImageCarousel } from "@/components/ImageCarousel";
+
+const HERO_IMAGES = [
+    "/images/carousel/tote-hero-1.jpg",
+    "/images/carousel/tote-hero-2.jpg",
+];
 
 const ToteBagLanding = () => {
     const navigate = useNavigate();
@@ -40,12 +46,8 @@ const ToteBagLanding = () => {
                                     <span className="text-lg text-muted-foreground line-through">$38.99</span>
                                 </div>
                             </div>
-                            <div className="flex justify-center">
-                                <img
-                                    src="/images/tote-hero.png"
-                                    alt="Canvas tote bag product mockup"
-                                    className="w-full max-w-md rounded-xl shadow-2xl border border-border object-cover"
-                                />
+                            <div className="max-w-md mx-auto w-full">
+                                <ImageCarousel images={HERO_IMAGES} alt="Snarky tote bag collection" interval={4000} />
                             </div>
                         </div>
                     </div>

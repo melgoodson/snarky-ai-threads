@@ -34,7 +34,7 @@ export const HeroUGCVideo = () => {
                     <video
                         ref={videoRef}
                         src={ugcVideo}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         loop
                         muted
                         playsInline

@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Camera, Shield, Truck, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { ImageCarousel } from "@/components/ImageCarousel";
 import rbfChampion from "@/assets/rbf-champion.png";
+
+const HERO_IMAGES = [
+    "/images/carousel/hoodie-hero-1.jpg",
+    "/images/carousel/hoodie-hero-2.jpg",
+];
 
 const HoodieLanding = () => {
     const navigate = useNavigate();
@@ -40,18 +46,8 @@ const HoodieLanding = () => {
                                     <span className="text-lg text-muted-foreground line-through">$59.99</span>
                                 </div>
                             </div>
-                            <div className="flex justify-center">
-                                <img
-                                    src="/images/hoodie-hero.png"
-                                    alt="Snarky hoodie product mockup"
-                                    className="w-full max-w-md rounded-xl shadow-2xl border border-border"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        if (target.src !== rbfChampion) {
-                                            target.src = rbfChampion;
-                                        }
-                                    }}
-                                />
+                            <div className="max-w-md mx-auto w-full">
+                                <ImageCarousel images={HERO_IMAGES} alt="Snarky hoodie collection" interval={4000} />
                             </div>
                         </div>
                     </div>

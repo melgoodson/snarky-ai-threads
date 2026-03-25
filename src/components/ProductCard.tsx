@@ -19,7 +19,7 @@ export const ProductCard = ({ id, title, price, image, category, badge }: Produc
       className="group overflow-hidden border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)] cursor-pointer"
       onClick={() => navigate(`/designs/${id}`)}
     >
-      <div className="relative aspect-square overflow-hidden bg-secondary">
+      <div className="relative aspect-square overflow-hidden bg-white">
         <img
           src={image}
           alt={title}

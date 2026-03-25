@@ -51,7 +51,7 @@ const GreetingCardLanding = () => {
                             </div>
                             <div className="flex justify-center">
                                 <img
-                                    src="/images/greeting-card-hero.png"
+                                    src="/images/carousel/greeting-card-hero-1.jpg"
                                     alt="Premium greeting card product mockup"
                                     className="w-full max-w-md rounded-xl shadow-2xl border border-border object-cover"
                                 />

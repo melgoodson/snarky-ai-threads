@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Coffee, Droplets, Palette, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { ImageCarousel } from "@/components/ImageCarousel";
+
+const HERO_IMAGES = [
+    "/images/carousel/mug-hero-1.jpg",
+    "/images/carousel/mug-hero-2.jpg",
+];
 
 const MugLanding = () => {
     const navigate = useNavigate();
@@ -40,12 +46,8 @@ const MugLanding = () => {
                                     <span className="text-lg text-muted-foreground line-through">$34.99</span>
                                 </div>
                             </div>
-                            <div className="flex justify-center">
-                                <img
-                                    src="/images/mug-hero.png"
-                                    alt="Ceramic coffee mug product mockup"
-                                    className="w-full max-w-md rounded-xl shadow-2xl border border-border object-cover"
-                                />
+                            <div className="max-w-md mx-auto w-full">
+                                <ImageCarousel images={HERO_IMAGES} alt="Snarky mug collection" interval={4000} />
                             </div>
                         </div>
                     </div>
