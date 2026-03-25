@@ -12,6 +12,7 @@ export interface CartItem {
   printifyProductId?: string;
   variantId?: string;
   designImageUrl?: string; // The actual design artwork URL for printing
+  mockupUrl?: string; // AI-generated product mockup preview
 }
 
 interface CartContextType {
@@ -39,6 +40,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         ...item,
         image: item.image?.startsWith('data:') ? '' : item.image,
         designImageUrl: item.designImageUrl?.startsWith('data:') ? '' : item.designImageUrl,
+        mockupUrl: item.mockupUrl?.startsWith('data:') ? '' : item.mockupUrl,
       }));
       localStorage.setItem('cart', JSON.stringify(itemsToStore));
     } catch (e) {

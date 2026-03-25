@@ -436,22 +436,38 @@ const Checkout = () => {
                   const imageUrl = typeof item.image === 'string'
                     ? item.image
                     : (item.image as any)?.src || '/placeholder.svg';
+                  // Use mockup preview if available (AI-generated product mockup)
+                  const mockupSrc = item.mockupUrl || (designData?.mockupUrl);
 
                   return (
-                    <div key={item.id} className="flex gap-4">
-                      <img
-                        src={imageUrl}
-                        alt={item.title}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <p className="font-bold text-sm">{item.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Size: {item.size} | Qty: {item.quantity}
-                        </p>
-                        <p className="text-sm font-bold mt-1">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </p>
+                    <div key={item.id} className="space-y-3">
+                      {/* AI Mockup Preview */}
+                      {mockupSrc && (
+                        <div className="rounded-lg overflow-hidden border border-border bg-muted">
+                          <img
+                            src={mockupSrc}
+                            alt={`${item.title} mockup preview`}
+                            className="w-full h-auto object-contain"
+                          />
+                          <p className="text-xs text-muted-foreground text-center py-1">Product Preview</p>
+                        </div>
+                      )}
+                      {/* Item details */}
+                      <div className="flex gap-4">
+                        <img
+                          src={imageUrl}
+                          alt={item.title}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <p className="font-bold text-sm">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Size: {item.size} | Qty: {item.quantity}
+                          </p>
+                          <p className="text-sm font-bold mt-1">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );

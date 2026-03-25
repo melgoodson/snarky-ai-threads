@@ -380,6 +380,7 @@ const DesignDetail = () => {
       printifyProductId: product.printify_product_id,
       variantId: variantId,
       designImageUrl: resolveDesignImage(design.image_url),
+      mockupUrl: mockupPreview || undefined, // AI-generated product mockup
     };
 
     console.log('[AddToCart] Adding item:', cartItem);
