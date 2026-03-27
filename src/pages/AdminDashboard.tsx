@@ -251,7 +251,7 @@ export default function AdminDashboard() {
       
       if (!user) {
         toast.error("Please log in to access admin dashboard");
-        navigate("/auth");
+        navigate("/admin");
         return;
       }
 
@@ -433,6 +433,13 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="default"
+                onClick={() => navigate("/admin/orders")}
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Orders
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => navigate("/admin/blog")}

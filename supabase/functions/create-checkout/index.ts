@@ -185,6 +185,12 @@ serve(async (req) => {
 
     console.log("Checkout session created:", session.id);
 
+    // Store Stripe session ID on the order for admin reference
+    await supabaseClient
+      .from("orders")
+      .update({ stripe_session_id: session.id })
+      .eq("id", orderData.id);
+
     return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

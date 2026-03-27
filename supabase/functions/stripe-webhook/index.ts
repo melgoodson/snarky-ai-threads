@@ -87,12 +87,17 @@ serve(async (req) => {
             );
         }
 
-        // Update order status to paid
+        // Update order status to paid and store Stripe payment intent ID
+        const paymentIntentId = typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : (session.payment_intent as any)?.id || null;
+
         const { error: updateError } = await supabaseClient
             .from("orders")
             .update({
                 status: "paid",
                 fulfillment_status: "pending",
+                stripe_payment_intent_id: paymentIntentId,
             })
             .eq("id", orderId);
 
@@ -102,6 +107,24 @@ serve(async (req) => {
         }
 
         console.log("Order marked as paid:", orderId);
+
+        // Create timeline entry for payment
+        try {
+            await supabaseClient
+                .from("order_notes")
+                .insert({
+                    order_id: orderId,
+                    note_type: "status_change",
+                    content: "Payment confirmed via Stripe",
+                    metadata: {
+                        new_status: "paid",
+                        stripe_session_id: session.id,
+                        payment_intent_id: paymentIntentId,
+                    },
+                });
+        } catch (noteErr) {
+            console.warn("Could not create order note:", noteErr);
+        }
 
         // Trigger Printify order creation (reuse existing function)
         try {

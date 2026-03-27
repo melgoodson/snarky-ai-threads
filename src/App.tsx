@@ -23,8 +23,10 @@ import NotFound from "./pages/NotFound";
 import PrintifyAdmin from "./pages/PrintifyAdmin";
 import CustomDesign from "./pages/CustomDesign";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin";
 import AdminBlog from "./pages/AdminBlog";
 import AdminFAQ from "./pages/AdminFAQ";
+import AdminOrders from "./pages/AdminOrders";
 import TeeinblueAdmin from "./pages/TeeinblueAdmin";
 import Auth from "./pages/Auth";
 import ProductManagement from "./pages/ProductManagement";
@@ -75,9 +77,11 @@ const App = () => (
             <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
             <Route path="/printify-admin" element={<PrintifyAdmin />} />
             <Route path="/custom-design" element={<CustomDesign />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/blog" element={<AdminBlog />} />
             <Route path="/admin/faq" element={<AdminFAQ />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/teeinblue-admin" element={<TeeinblueAdmin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/product-management" element={<ProductManagement />} />
