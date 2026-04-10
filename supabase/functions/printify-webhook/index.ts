@@ -53,7 +53,7 @@ serve(async (req) => {
         // Update orders table
         await supabase
           .from('orders')
-          .update({ status: 'shipped' })
+          .update({ status: 'shipped', fulfillment_status: 'shipped' })
           .eq('id', printifyOrder.order_id);
 
         console.log('Order status updated to shipped');
@@ -101,7 +101,7 @@ serve(async (req) => {
 
         await supabase
           .from('orders')
-          .update({ status: 'delivered' })
+          .update({ status: 'delivered', fulfillment_status: 'delivered' })
           .eq('id', printifyOrder.order_id);
 
         console.log('Order status updated to delivered');
@@ -147,7 +147,7 @@ serve(async (req) => {
 
         await supabase
           .from('orders')
-          .update({ status: 'canceled' })
+          .update({ status: 'canceled', fulfillment_status: 'canceled' })
           .eq('id', printifyOrder.order_id);
 
         console.log('Order status updated to canceled');

@@ -346,7 +346,7 @@ export default function AdminDashboard() {
       const { data, error } = await supabase
         .from("orders")
         .select("*, printify_orders(*)")
-        .in("status", ["paid", "processing", "completed"])
+        .in("status", ["paid", "processing", "completed", "shipped", "delivered", "canceled"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -372,10 +372,10 @@ export default function AdminDashboard() {
     );
 
     const completedOrders = recentOrders.filter(
-      (o) => o.status === "completed"
+      (o) => o.status === "completed" || o.status === "delivered"
     ).length;
     const processingOrders = recentOrders.filter(
-      (o) => o.status === "processing"
+      (o) => o.status === "processing" || o.status === "shipped"
     ).length;
     const paidOrders = recentOrders.filter(
       (o) => o.status === "paid"
@@ -461,7 +461,10 @@ export default function AdminDashboard() {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
       paid: "default",
       processing: "secondary",
+      shipped: "default",
+      delivered: "default",
       completed: "default",
+      canceled: "destructive",
     };
 
     return (
@@ -1108,7 +1111,7 @@ export default function AdminDashboard() {
                         <SelectItem value="all">All Orders</SelectItem>
                         <SelectItem value="paid">Paid (New)</SelectItem>
                         <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="completed">Completed/Delivered</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -1153,23 +1156,29 @@ export default function AdminDashboard() {
                               <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
                               <TableCell>{getStatusBadge(order.status)}</TableCell>
                               <TableCell>
-                                {order.printify_orders?.printify_status ? (
-                                  order.printify_orders.tracking_url ? (
-                                    <a href={order.printify_orders.tracking_url} target="_blank" rel="noreferrer" className="hover:underline text-blue-600">
-                                      <Badge variant="outline" className="capitalize bg-blue-50 border-blue-200">
-                                        {order.printify_orders.printify_status}
+                                {(() => {
+                                  const pData = Array.isArray(order.printify_orders) 
+                                    ? order.printify_orders[0] 
+                                    : order.printify_orders;
+                                  
+                                  return pData?.printify_status ? (
+                                    pData.tracking_url ? (
+                                      <a href={pData.tracking_url} target="_blank" rel="noreferrer" className="hover:underline text-blue-600">
+                                        <Badge variant="outline" className="capitalize bg-blue-50 border-blue-200">
+                                          {pData.printify_status}
+                                        </Badge>
+                                      </a>
+                                    ) : (
+                                      <Badge variant="outline" className="capitalize">
+                                        {pData.printify_status}
                                       </Badge>
-                                    </a>
+                                    )
+                                  ) : order.fulfillment_status && order.fulfillment_status !== "pending" ? (
+                                    <Badge variant="outline" className="capitalize">{order.fulfillment_status}</Badge>
                                   ) : (
-                                    <Badge variant="outline" className="capitalize">
-                                      {order.printify_orders.printify_status}
-                                    </Badge>
-                                  )
-                                ) : order.fulfillment_status && order.fulfillment_status !== "pending" ? (
-                                  <Badge variant="outline" className="capitalize">{order.fulfillment_status}</Badge>
-                                ) : (
-                                    <span className="text-xs text-muted-foreground italic">Processing via Printify</span>
-                                )}
+                                      <span className="text-xs text-muted-foreground italic">Processing via Printify</span>
+                                  );
+                                })()}
                               </TableCell>
                               <TableCell>
                                 {new Date(order.created_at).toLocaleDateString()}

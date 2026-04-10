@@ -496,7 +496,7 @@ serve(async (req) => {
     // Update order status
     await supabase
       .from('orders')
-      .update({ status: 'processing' })
+      .update({ status: 'processing', fulfillment_status: 'processing' })
       .eq('id', orderId);
 
     return new Response(
