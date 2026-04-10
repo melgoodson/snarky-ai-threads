@@ -35,7 +35,8 @@ import {
   BarChart3,
   Calendar,
   FileText,
-  HelpCircle
+  HelpCircle,
+  RefreshCw
 } from "lucide-react";
 import { 
   LineChart, 
@@ -154,6 +155,7 @@ export default function AdminDashboard() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [trafficAnalytics, setTrafficAnalytics] = useState<TrafficAnalytics | null>(null);
   const [dateRange, setDateRange] = useState<string>("30");
@@ -365,6 +367,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const syncPrintifyOrders = async () => {
+    try {
+      setIsSyncing(true);
+      toast.info("Syncing Printify orders...");
+      const { data, error } = await supabase.functions.invoke('sync-printify-orders', {
+        method: 'POST'
+      });
+
+      if (error) throw error;
+      
+      toast.success(data?.message || "Printify orders fully synced!");
+      await fetchOrders(); // Refetch after updating
+    } catch (error: any) {
+      console.error("Error syncing printify:", error);
+      toast.error("Failed to sync Printify orders");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const calculateAnalytics = () => {
     const daysAgo = parseInt(dateRange);
     const cutoffDate = new Date();
@@ -515,6 +537,15 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={syncPrintifyOrders} 
+                disabled={isSyncing}
+                className="border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-500 text-foreground transition-all"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
+                {isSyncing ? "Syncing..." : "Sync Printify"}
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="border-red-500/20 hover:bg-red-500/10 hover:text-red-500 text-foreground transition-all">
