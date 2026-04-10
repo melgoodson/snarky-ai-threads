@@ -45,6 +45,59 @@ import {
   ResponsiveContainer 
 } from "recharts";
 
+// ISO 3166-1 alpha-2 → full country name
+const ISO_COUNTRY_NAMES: Record<string, string> = {
+  AF: 'Afghanistan', AL: 'Albania', DZ: 'Algeria', AD: 'Andorra', AO: 'Angola',
+  AG: 'Antigua & Barbuda', AR: 'Argentina', AM: 'Armenia', AU: 'Australia',
+  AT: 'Austria', AZ: 'Azerbaijan', BS: 'Bahamas', BH: 'Bahrain', BD: 'Bangladesh',
+  BB: 'Barbados', BY: 'Belarus', BE: 'Belgium', BZ: 'Belize', BJ: 'Benin',
+  BT: 'Bhutan', BO: 'Bolivia', BA: 'Bosnia & Herzegovina', BW: 'Botswana',
+  BR: 'Brazil', BN: 'Brunei', BG: 'Bulgaria', BF: 'Burkina Faso', BI: 'Burundi',
+  CV: 'Cabo Verde', KH: 'Cambodia', CM: 'Cameroon', CA: 'Canada',
+  CF: 'Central African Rep.', TD: 'Chad', CL: 'Chile', CN: 'China',
+  CO: 'Colombia', KM: 'Comoros', CD: 'Congo (DRC)', CG: 'Congo (Rep.)',
+  CR: 'Costa Rica', CI: "Côte d'Ivoire", HR: 'Croatia', CU: 'Cuba',
+  CY: 'Cyprus', CZ: 'Czech Republic', DK: 'Denmark', DJ: 'Djibouti',
+  DM: 'Dominica', DO: 'Dominican Republic', EC: 'Ecuador', EG: 'Egypt',
+  SV: 'El Salvador', GQ: 'Equatorial Guinea', ER: 'Eritrea', EE: 'Estonia',
+  SZ: 'Eswatini', ET: 'Ethiopia', FJ: 'Fiji', FI: 'Finland', FR: 'France',
+  GA: 'Gabon', GM: 'Gambia', GE: 'Georgia', DE: 'Germany', GH: 'Ghana',
+  GR: 'Greece', GD: 'Grenada', GT: 'Guatemala', GN: 'Guinea',
+  GW: 'Guinea-Bissau', GY: 'Guyana', HT: 'Haiti', HN: 'Honduras',
+  HU: 'Hungary', IS: 'Iceland', IN: 'India', ID: 'Indonesia', IR: 'Iran',
+  IQ: 'Iraq', IE: 'Ireland', IL: 'Israel', IT: 'Italy', JM: 'Jamaica',
+  JP: 'Japan', JO: 'Jordan', KZ: 'Kazakhstan', KE: 'Kenya', KI: 'Kiribati',
+  KW: 'Kuwait', KG: 'Kyrgyzstan', LA: 'Laos', LV: 'Latvia', LB: 'Lebanon',
+  LS: 'Lesotho', LR: 'Liberia', LY: 'Libya', LI: 'Liechtenstein',
+  LT: 'Lithuania', LU: 'Luxembourg', MG: 'Madagascar', MW: 'Malawi',
+  MY: 'Malaysia', MV: 'Maldives', ML: 'Mali', MT: 'Malta', MH: 'Marshall Islands',
+  MR: 'Mauritania', MU: 'Mauritius', MX: 'Mexico', FM: 'Micronesia',
+  MD: 'Moldova', MC: 'Monaco', MN: 'Mongolia', ME: 'Montenegro', MA: 'Morocco',
+  MZ: 'Mozambique', MM: 'Myanmar', NA: 'Namibia', NR: 'Nauru', NP: 'Nepal',
+  NL: 'Netherlands', NZ: 'New Zealand', NI: 'Nicaragua', NE: 'Niger',
+  NG: 'Nigeria', NO: 'Norway', OM: 'Oman', PK: 'Pakistan', PW: 'Palau',
+  PA: 'Panama', PG: 'Papua New Guinea', PY: 'Paraguay', PE: 'Peru',
+  PH: 'Philippines', PL: 'Poland', PT: 'Portugal', QA: 'Qatar', RO: 'Romania',
+  RU: 'Russia', RW: 'Rwanda', KN: 'Saint Kitts & Nevis', LC: 'Saint Lucia',
+  VC: 'Saint Vincent', WS: 'Samoa', SM: 'San Marino', ST: 'São Tomé & Príncipe',
+  SA: 'Saudi Arabia', SN: 'Senegal', RS: 'Serbia', SC: 'Seychelles',
+  SL: 'Sierra Leone', SG: 'Singapore', SK: 'Slovakia', SI: 'Slovenia',
+  SB: 'Solomon Islands', SO: 'Somalia', ZA: 'South Africa', SS: 'South Sudan',
+  ES: 'Spain', LK: 'Sri Lanka', SD: 'Sudan', SR: 'Suriname', SE: 'Sweden',
+  CH: 'Switzerland', SY: 'Syria', TW: 'Taiwan', TJ: 'Tajikistan',
+  TZ: 'Tanzania', TH: 'Thailand', TL: 'Timor-Leste', TG: 'Togo',
+  TO: 'Tonga', TT: 'Trinidad & Tobago', TN: 'Tunisia', TR: 'Turkey',
+  TM: 'Turkmenistan', TV: 'Tuvalu', UG: 'Uganda', UA: 'Ukraine',
+  AE: 'United Arab Emirates', GB: 'United Kingdom', US: 'United States',
+  UY: 'Uruguay', UZ: 'Uzbekistan', VU: 'Vanuatu', VE: 'Venezuela',
+  VN: 'Vietnam', YE: 'Yemen', ZM: 'Zambia', ZW: 'Zimbabwe',
+  XX: 'Unknown',
+};
+
+function isoToCountryName(code: string): string {
+  return ISO_COUNTRY_NAMES[code.toUpperCase()] || code;
+}
+
 interface Order {
   id: string;
   email: string;
@@ -56,6 +109,7 @@ interface Order {
   mockup_url?: string;
   artwork_url?: string;
   printify_order_id?: string;
+  printify_orders?: any;
 }
 
 interface AnalyticsData {
@@ -63,8 +117,8 @@ interface AnalyticsData {
   totalOrders: number;
   averageOrderValue: number;
   completedOrders: number;
-  pendingOrders: number;
-  failedOrders: number;
+  processingOrders: number;
+  paidOrders: number;
   revenueByDay: Array<{ date: string; revenue: number; orders: number }>;
   ordersByStatus: Array<{ name: string; value: number }>;
 }
@@ -147,8 +201,13 @@ export default function AdminDashboard() {
       // Calculate metrics
       const totalSessions = sessions?.length || 0;
       const uniqueVisitors = new Set(sessions?.map(s => s.visitor_id)).size;
-      const bounces = sessions?.filter(s => s.is_bounce).length || 0;
-      const bounceRate = totalSessions > 0 ? Math.round((bounces / totalSessions) * 100) : 0;
+      // Only count bounce rate on sessions that have ended — active/incomplete sessions
+      // all default to is_bounce=true, which would inflate the rate to ~100%.
+      const completedSessions = sessions?.filter(s => s.ended_at) || [];
+      const completedBounces = completedSessions.filter(s => s.is_bounce).length;
+      const bounceRate = completedSessions.length > 0
+        ? Math.round((completedBounces / completedSessions.length) * 100)
+        : 0;
 
       // Average session duration
       let totalDuration = 0;
@@ -199,9 +258,9 @@ export default function AdminDashboard() {
         countryCounts[country] = (countryCounts[country] || 0) + 1;
       });
       const countryBreakdown = Object.entries(countryCounts)
-        .map(([name, value]) => ({ name, value }))
+        .map(([code, value]) => ({ name: isoToCountryName(code), value }))
         .sort((a, b) => b.value - a.value)
-        .slice(0, 15);
+        .slice(0, 10);
 
       // OS breakdown from sessions
       const osCounts: Record<string, number> = {};
@@ -211,11 +270,16 @@ export default function AdminDashboard() {
       });
       const osBreakdown = Object.entries(osCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 
-      // Traffic sources from sessions
+      // Traffic sources from sessions — map null/unknown → 'Direct'
+      const SOURCE_LABELS: Record<string, string> = {
+        direct: 'Direct', organic: 'Organic', paid: 'Paid', social: 'Social',
+        email: 'Email', referral: 'Referral', unknown: 'Direct',
+      };
       const sourceCounts: Record<string, number> = {};
       sessions?.forEach(s => {
-        const source = (s as any).traffic_source_type || 'unknown';
-        sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+        const raw = (s as any).traffic_source_type || 'direct';
+        const label = SOURCE_LABELS[raw] || 'Direct';
+        sourceCounts[label] = (sourceCounts[label] || 0) + 1;
       });
       const trafficSources = Object.entries(sourceCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 
@@ -281,7 +345,8 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select("*, printify_orders(*)")
+        .in("status", ["paid", "processing", "completed"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -309,11 +374,11 @@ export default function AdminDashboard() {
     const completedOrders = recentOrders.filter(
       (o) => o.status === "completed"
     ).length;
-    const pendingOrders = recentOrders.filter(
-      (o) => o.status === "pending"
+    const processingOrders = recentOrders.filter(
+      (o) => o.status === "processing"
     ).length;
-    const failedOrders = recentOrders.filter(
-      (o) => o.status === "failed"
+    const paidOrders = recentOrders.filter(
+      (o) => o.status === "paid"
     ).length;
 
     // Revenue by day
@@ -334,8 +399,8 @@ export default function AdminDashboard() {
 
     const ordersByStatus = [
       { name: "Completed", value: completedOrders },
-      { name: "Pending", value: pendingOrders },
-      { name: "Failed", value: failedOrders },
+      { name: "Processing", value: processingOrders },
+      { name: "Paid/New", value: paidOrders },
     ];
 
     setAnalytics({
@@ -343,8 +408,8 @@ export default function AdminDashboard() {
       totalOrders: recentOrders.length,
       averageOrderValue: recentOrders.length > 0 ? totalRevenue / recentOrders.length : 0,
       completedOrders,
-      pendingOrders,
-      failedOrders,
+      processingOrders,
+      paidOrders,
       revenueByDay: revenueByDayArray,
       ordersByStatus,
     });
@@ -394,13 +459,19 @@ export default function AdminDashboard() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
-      pending: "secondary",
-      processing: "default",
+      paid: "default",
+      processing: "secondary",
       completed: "default",
-      failed: "destructive",
     };
 
-    return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+    return (
+      <Badge 
+        variant={variants[status] || "default"}
+        className={status === "paid" ? "bg-emerald-500 hover:bg-emerald-600" : ""}
+      >
+        {status}
+      </Badge>
+    );
   };
 
   const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
@@ -568,15 +639,15 @@ export default function AdminDashboard() {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+                    <CardTitle className="text-sm font-medium">Processing Orders</CardTitle>
                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {analytics?.pendingOrders || 0}
+                      {analytics?.processingOrders || 0}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Needs attention
+                      Being fulfilled
                     </p>
                   </CardContent>
                 </Card>
@@ -746,7 +817,15 @@ export default function AdminDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">{trafficAnalytics?.averageSessionDuration || 0}s</p>
+                    <p className="text-3xl font-bold">
+                      {(() => {
+                        const s = trafficAnalytics?.averageSessionDuration || 0;
+                        if (s === 0) return '—';
+                        const m = Math.floor(s / 60);
+                        const sec = s % 60;
+                        return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+                      })()}
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -874,26 +953,29 @@ export default function AdminDashboard() {
               {/* Country Breakdown */}
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Sessions by Country</CardTitle>
-                  <CardDescription>Geographic distribution of sessions (ISO country codes)</CardDescription>
+                  <CardTitle>Top Countries</CardTitle>
+                  <CardDescription>Geographic distribution of sessions</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {trafficAnalytics?.countryBreakdown && trafficAnalytics.countryBreakdown.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={trafficAnalytics.countryBreakdown}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: 'hsl(var(--card))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px'
-                          }}
-                        />
-                        <Bar dataKey="value" fill="hsl(var(--chart-3))" name="Sessions" radius={[8, 8, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <div className="space-y-3">
+                      {(() => {
+                        const maxVal = trafficAnalytics.countryBreakdown[0]?.value || 1;
+                        return trafficAnalytics.countryBreakdown.map((entry, index) => (
+                          <div key={index} className="flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground w-4 text-right">{index + 1}</span>
+                            <span className="text-sm font-medium w-40 shrink-0 truncate">{entry.name}</span>
+                            <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+                              <div
+                                className="h-2 rounded-full bg-[hsl(var(--chart-3))]"
+                                style={{ width: `${Math.round((entry.value / maxVal) * 100)}%` }}
+                              />
+                            </div>
+                            <Badge variant="secondary" className="shrink-0">{entry.value}</Badge>
+                          </div>
+                        ));
+                      })()}
+                    </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">No country data yet</p>
                   )}
@@ -966,11 +1048,11 @@ export default function AdminDashboard() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                    <CardTitle className="text-sm font-medium">Completed</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold text-yellow-600">
-                      {orders.filter((o) => o.status === "pending").length}
+                    <p className="text-3xl font-bold text-green-600">
+                      {orders.filter((o) => o.status === "completed").length}
                     </p>
                   </CardContent>
                 </Card>
@@ -988,11 +1070,11 @@ export default function AdminDashboard() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium">Failed</CardTitle>
+                    <CardTitle className="text-sm font-medium">Paid (New)</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold text-red-600">
-                      {orders.filter((o) => o.status === "failed").length}
+                    <p className="text-3xl font-bold text-emerald-600">
+                      {orders.filter((o) => o.status === "paid").length}
                     </p>
                   </CardContent>
                 </Card>
@@ -1024,10 +1106,9 @@ export default function AdminDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Orders</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="paid">Paid (New)</SelectItem>
                         <SelectItem value="processing">Processing</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -1072,7 +1153,23 @@ export default function AdminDashboard() {
                               <TableCell>${Number(order.total_amount).toFixed(2)}</TableCell>
                               <TableCell>{getStatusBadge(order.status)}</TableCell>
                               <TableCell>
-                                <Badge variant="outline">{order.fulfillment_status}</Badge>
+                                {order.printify_orders?.printify_status ? (
+                                  order.printify_orders.tracking_url ? (
+                                    <a href={order.printify_orders.tracking_url} target="_blank" rel="noreferrer" className="hover:underline text-blue-600">
+                                      <Badge variant="outline" className="capitalize bg-blue-50 border-blue-200">
+                                        {order.printify_orders.printify_status}
+                                      </Badge>
+                                    </a>
+                                  ) : (
+                                    <Badge variant="outline" className="capitalize">
+                                      {order.printify_orders.printify_status}
+                                    </Badge>
+                                  )
+                                ) : order.fulfillment_status && order.fulfillment_status !== "pending" ? (
+                                  <Badge variant="outline" className="capitalize">{order.fulfillment_status}</Badge>
+                                ) : (
+                                    <span className="text-xs text-muted-foreground italic">Processing via Printify</span>
+                                )}
                               </TableCell>
                               <TableCell>
                                 {new Date(order.created_at).toLocaleDateString()}

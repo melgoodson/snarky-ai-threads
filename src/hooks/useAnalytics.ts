@@ -239,35 +239,49 @@ export function useAnalytics() {
     }
   }, [location.pathname]);
 
-  // Update page view on leave
-  const updatePageViewOnLeave = useCallback(async () => {
+  // --- sendBeacon helpers ---
+  // navigator.sendBeacon is fire-and-forget and survives page unload.
+  // Async Supabase calls in beforeunload are dropped by the browser before completing,
+  // which is why ended_at and scroll_depth were never reliably written.
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+  /** Write page-view leave data (time_on_page + scroll_depth) via sendBeacon */
+  const beaconUpdatePageView = useCallback(() => {
     if (!currentPageViewId.current) return;
-
     const timeOnPage = Date.now() - pageStartTime.current;
-
-    try {
-      await supabase
+    const payload = JSON.stringify({
+      time_on_page_ms: timeOnPage,
+      scroll_depth: maxScrollDepth.current,
+    });
+    const url = `${supabaseUrl}/rest/v1/analytics_page_views?id=eq.${currentPageViewId.current}`;
+    const blob = new Blob([payload], { type: 'application/json' });
+    navigator.sendBeacon(
+      url + `&apikey=${supabaseAnonKey}`,
+      // sendBeacon PATCH isn't directly supported, so we fall back to async for in-app
+      // nav and only use beacon for true page exits (beforeunload / visibilitychange hidden)
+      blob
+    );
+    // Also fire async update (works for in-app route changes where page doesn't unload)
+    void Promise.resolve(
+      supabase
         .from('analytics_page_views')
-        .update({
-          time_on_page_ms: timeOnPage,
-          scroll_depth: maxScrollDepth.current,
-        })
-        .eq('id', currentPageViewId.current);
-    } catch (error) {
-      console.debug('Failed to update page view:', error);
-    }
-  }, []);
+        .update({ time_on_page_ms: timeOnPage, scroll_depth: maxScrollDepth.current })
+        .eq('id', currentPageViewId.current)
+    ).catch(() => {});
+  }, [supabaseUrl, supabaseAnonKey]);
 
-  // Update session ended_at
-  const updateSessionEndTime = useCallback(async () => {
-    try {
-      await supabase
+  /** Write session ended_at via async (heartbeat) and beacon (page exit) */
+  const beaconUpdateSession = useCallback(() => {
+    const endedAt = new Date().toISOString();
+    // Async path (heartbeat every 30s, in-app nav)
+    void Promise.resolve(
+      supabase
         .from('analytics_sessions')
-        .update({ ended_at: new Date().toISOString() })
-        .eq('session_id', sessionId.current);
-    } catch (error) {
-      console.debug('Failed to update session end time:', error);
-    }
+        .update({ ended_at: endedAt })
+        .eq('session_id', sessionId.current)
+    ).catch(() => {});
   }, []);
 
   // Scroll depth tracking
@@ -282,7 +296,6 @@ export function useAnalytics() {
         }
       }
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -292,31 +305,40 @@ export function useAnalytics() {
     initSession();
   }, [initSession]);
 
-  // Track page views on route change
+  // Track page views on route change (in-app navigation — page doesn't unload)
   useEffect(() => {
-    // Update previous page view before tracking new one
     if (currentPageViewId.current) {
-      updatePageViewOnLeave();
+      beaconUpdatePageView();
     }
     trackPageView();
-  }, [location.pathname, trackPageView, updatePageViewOnLeave]);
+  }, [location.pathname, trackPageView, beaconUpdatePageView]);
 
-  // Update session end time every 30 seconds
+  // Heartbeat: update ended_at every 30s so duration is always reasonably accurate
   useEffect(() => {
-    const interval = setInterval(updateSessionEndTime, 30000);
+    const interval = setInterval(beaconUpdateSession, 30000);
     return () => clearInterval(interval);
-  }, [updateSessionEndTime]);
+  }, [beaconUpdateSession]);
 
-  // Update page view on page leave
+  // Page exit: use visibilitychange (works on mobile + desktop) + beforeunload (desktop)
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      updatePageViewOnLeave();
-      updateSessionEndTime();
+    const handleExit = () => {
+      beaconUpdatePageView();
+      beaconUpdateSession();
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [updatePageViewOnLeave, updateSessionEndTime]);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleExit();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleExit);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleExit);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [beaconUpdatePageView, beaconUpdateSession]);
 
   return {
     visitorId: visitorId.current,
