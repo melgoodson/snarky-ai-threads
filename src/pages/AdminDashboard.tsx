@@ -9,6 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -506,49 +514,37 @@ export default function AdminDashboard() {
               </p>
             </div>
             
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="default"
-                onClick={() => navigate("/admin/orders")}
-              >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Orders
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/admin/blog")}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Website SEAL
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/admin/faq")}
-              >
-                <HelpCircle className="h-4 w-4 mr-2" />
-                FAQ
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/product-management")}
-              >
-                <Package className="h-4 w-4 mr-2" />
-                Products
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/printify-admin")}
-              >
-                <Warehouse className="h-4 w-4 mr-2" />
-                Printify
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/teeinblue-admin")}
-              >
-                <ShoppingBag className="h-4 w-4 mr-2" />
-                Teeinblue
-              </Button>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="border-red-500/20 hover:bg-red-500/10 hover:text-red-500 text-foreground transition-all">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Manage Store
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Store Content</DropdownMenuLabel>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/product-management")}>
+                    <Package className="mr-2 h-4 w-4" /> Products
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin/blog")}>
+                    <FileText className="mr-2 h-4 w-4" /> Website SEAL
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin/faq")}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> FAQ
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuLabel>Integrations</DropdownMenuLabel>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/printify-admin")}>
+                    <Warehouse className="mr-2 h-4 w-4" /> Printify
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/teeinblue-admin")}>
+                    <ShoppingBag className="mr-2 h-4 w-4" /> Teeinblue
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
