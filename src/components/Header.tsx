@@ -168,6 +168,7 @@ export const Header = () => {
         >
           ABOUT
         </Link>
+        {/* HIDDEN
         {isAdmin && (
           <Link
             to="/admin"
@@ -178,6 +179,7 @@ export const Header = () => {
             ADMIN
           </Link>
         )}
+        */}
       </>
     );
   };

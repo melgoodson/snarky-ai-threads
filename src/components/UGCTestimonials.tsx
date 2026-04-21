@@ -8,11 +8,43 @@ const TESTIMONIALS = [
         video: tshirtVideo,
         product: "Snarky Tee",
         aspect: "aspect-[9/16]",
+        key: "old-tee"
+    },
+    {
+        video: "/snarkyazz - website reviews/WEBSITE REVIEWS/snarkyazzshirt1.mp4",
+        product: "Snarky Shirt 1",
+        aspect: "aspect-[9/16]",
+        key: "new-shirt-1"
+    },
+    {
+        video: "/snarkyazz - website reviews/WEBSITE REVIEWS/snarkyazzmugs1.mp4",
+        product: "Snarky Mug",
+        aspect: "aspect-[9/16]",
+        key: "mug-1"
     },
     {
         video: tumblerVideo,
         product: "Snarky Tumbler",
         aspect: "aspect-video",
+        key: "old-tumbler"
+    },
+    {
+        video: "/snarkyazz - website reviews/WEBSITE REVIEWS/snarkyazzshirt2.mp4",
+        product: "Snarky Shirt 2",
+        aspect: "aspect-[9/16]",
+        key: "new-shirt-2"
+    },
+    {
+        video: "/snarkyazz - website reviews/WEBSITE REVIEWS/snarkyazztote1.mp4",
+        product: "Snarky Tote",
+        aspect: "aspect-[9/16]",
+        key: "tote-1"
+    },
+    {
+        video: "/snarkyazz - website reviews/WEBSITE REVIEWS/snarkyazzmugs2.mp4",
+        product: "More Mugs",
+        aspect: "aspect-[9/16]",
+        key: "mug-2"
     },
 ];
 
@@ -38,10 +70,10 @@ function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
     };
 
     return (
-        <div className="group">
+        <div className="group break-inside-avoid mb-6">
             {/* Video container */}
             <div
-                className={`relative ${testimonial.aspect} max-h-[500px] rounded-xl overflow-hidden border border-border bg-black cursor-pointer`}
+                className={`relative w-full ${testimonial.aspect} max-h-[600px] rounded-xl overflow-hidden border border-border bg-black cursor-pointer shadow-md`}
                 onClick={togglePlay}
             >
                 <video
@@ -105,9 +137,9 @@ export const UGCTestimonials = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-start">
+                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 max-w-7xl mx-auto space-y-6">
                     {TESTIMONIALS.map((testimonial) => (
-                        <VideoCard key={testimonial.product} testimonial={testimonial} />
+                        <VideoCard key={testimonial.key} testimonial={testimonial} />
                     ))}
                 </div>
             </div>
