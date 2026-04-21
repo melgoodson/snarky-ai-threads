@@ -70,10 +70,10 @@ function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
     };
 
     return (
-        <div className="group break-inside-avoid mb-6">
+        <div className="flex-shrink-0 w-[300px] md:w-[340px] group select-none">
             {/* Video container */}
             <div
-                className={`relative w-full ${testimonial.aspect} max-h-[600px] rounded-xl overflow-hidden border border-border bg-black cursor-pointer shadow-md`}
+                className={`relative w-full ${testimonial.aspect} rounded-xl overflow-hidden border border-border bg-black cursor-pointer shadow-md`}
                 onClick={togglePlay}
             >
                 <video
@@ -125,10 +125,12 @@ function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
 }
 
 export const UGCTestimonials = () => {
+    const [isPaused, setIsPaused] = useState(false);
+
     return (
-        <section className="py-16 md:py-24 bg-card/50">
+        <section className="py-16 md:py-24 bg-card/50 overflow-hidden">
             <div className="container px-4">
-                <div className="text-center mb-12">
+                <div className="text-center mb-12 relative z-10">
                     <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
                         REAL HUMANS. <span className="text-primary">REAL SNARK.</span>
                     </h2>
@@ -136,13 +138,29 @@ export const UGCTestimonials = () => {
                         See what our community is saying — unfiltered, unscripted, unapologetically snarky.
                     </p>
                 </div>
-
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 max-w-7xl mx-auto space-y-6">
-                    {TESTIMONIALS.map((testimonial) => (
-                        <VideoCard key={testimonial.key} testimonial={testimonial} />
-                    ))}
-                </div>
             </div>
+
+            <div 
+                className="flex gap-6 ugc-marquee items-center"
+                style={{ animationPlayState: isPaused ? "paused" : "running" }}
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+            >
+                {[...TESTIMONIALS, ...TESTIMONIALS].map((testimonial, idx) => (
+                    <VideoCard key={`${testimonial.key}-${idx}`} testimonial={testimonial} />
+                ))}
+            </div>
+
+            <style>{`
+                .ugc-marquee {
+                    animation: marquee-scroll 50s linear infinite;
+                    width: max-content;
+                }
+                @keyframes marquee-scroll {
+                    from { transform: translateX(0); }
+                    to   { transform: translateX(-50%); }
+                }
+            `}</style>
         </section>
     );
 };
