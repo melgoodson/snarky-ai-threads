@@ -265,7 +265,9 @@ export default function AdminDashboard() {
       const countryCounts: Record<string, number> = {};
       sessions?.forEach(s => {
         const country = s.country || 'XX';
-        countryCounts[country] = (countryCounts[country] || 0) + 1;
+        if (country !== 'XX') {
+          countryCounts[country] = (countryCounts[country] || 0) + 1;
+        }
       });
       const countryBreakdown = Object.entries(countryCounts)
         .map(([code, value]) => ({ name: isoToCountryName(code), value }))

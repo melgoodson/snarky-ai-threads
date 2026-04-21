@@ -153,6 +153,58 @@ serve(async (req) => {
 </html>`,
     });
 
+    // Send internal admin notification
+    await resend.emails.send({
+      from: "Snarky Humans <hello@snarkyazzhumans.com>",
+      to: ["teamsienvi@gmail.com", "sienviclientmelgoodson@gmail.com"],
+      subject: `[INTERNAL] Order Shipped: ${orderId}`,
+      html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Alert — Snarky Humans</title>
+</head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#111111;border-radius:12px;overflow:hidden;border:1px solid #C0392B;">
+          <!-- Header -->
+          <tr>
+            <td style="background:#C0392B;padding:24px;text-align:center;">
+              <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.2em;color:rgba(255,255,255,0.8);text-transform:uppercase;">Admin Alert</p>
+              <h1 style="margin:8px 0 0;font-size:24px;font-weight:900;color:#ffffff;letter-spacing:-0.02em;">ORDER IN TRANSIT 🚀</h1>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <p style="margin:0 0 24px;font-size:16px;color:#cccccc;line-height:1.6;">Another masterpiece has left the building.</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+                <tr><td style="padding:24px;">
+                  <p style="margin:0 0 12px;font-size:15px;color:#cccccc;">🧾 <strong style="color:#ffffff;">Order ID:</strong> ${orderId}</p>
+                  <p style="margin:0 0 12px;font-size:15px;color:#cccccc;">📧 <strong style="color:#ffffff;">Customer:</strong> ${email}</p>
+                  <p style="margin:0 0 12px;font-size:15px;color:#cccccc;">📦 <strong style="color:#ffffff;">Tracking:</strong> ${trackingNumber || "N/A"}</p>
+                  <p style="margin:0;font-size:15px;color:#cccccc;">🔗 <strong style="color:#ffffff;">URL:</strong> ${trackingUrl || "N/A"}</p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:0 40px 32px;text-align:center;">
+              <p style="margin:0;font-size:14px;color:#666666;font-style:italic;">Stay snarky. The mail carrier is watching.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+    });
+
     console.log("Shipping notification sent:", emailResponse);
 
     return new Response(

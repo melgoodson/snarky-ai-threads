@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { HeroUGCVideo } from "@/components/HeroUGCVideo";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { UGCTestimonials } from "@/components/UGCTestimonials";
+import { WebsiteReviews } from "@/components/WebsiteReviews";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Footer } from "@/components/Footer";
 import { EmailCapture } from "@/components/EmailCapture";
@@ -21,6 +22,7 @@ const Index = () => {
         <HeroUGCVideo />
         <ProductShowcase />
         <UGCTestimonials />
+        <WebsiteReviews />
         {/* Email capture — placed after social proof, before product grid for max conversion */}
         <EmailCapture variant="homepage" source="homepage_banner" />
         <div id="products">

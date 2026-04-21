@@ -1,0 +1,10 @@
+﻿6175469 2026-04-11 feat(admin): add robust sync-printify-orders edge function and ui button
+5367b44 2026-04-11 style(admin): cleanup dashboard header layout into grouped dropdown
+939f613 2026-04-11 fix(printify): sync fulfillment_status natively in database via webhooks
+469982c 2026-04-11 fix(analytics): resolve country API, useBeacon for events, hide test orders and add Printify tracking
+15559b5 2026-03-28 feat: Add admin order dashboard, admin login page, and auth updates
+abc104c 2026-03-26 feat: add AI mockup preview to checkout order summary
+72e4f9f 2026-03-26 fix: design grid styling, mockup preview, blanket hiding, landing page carousels
+f040f9a 2026-03-26 Update all product preview images with new mockup photos and carousel support
+0390939 2026-03-25 Fix UGC video aspect ratio to vertical 9:16
+9d09fb8 2026-03-25 Add standalone UGC video between Hero and Shop by Product, restore testimonials
