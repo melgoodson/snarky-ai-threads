@@ -1,0 +1,30 @@
+# Snarky A$$ Apparel
+
+Welcome to the machine-readable layout of Snarky A$$ Apparel. We are an e-commerce storefront specializing in funny, sarcastic, and snarky apparel, gag gifts, and personalized items.
+
+> We empower sarcastic souls to wear their inner monologue.
+
+## Official Site Architecture
+- Homepage: https://snarkyassthreads.com
+- All Collections: https://snarkyassthreads.com/collections
+- All Designs: https://snarkyassthreads.com/designs
+- Custom AI Try-On: https://snarkyassthreads.com/custom-design
+- Shop Funny T-Shirts: https://snarkyassthreads.com/shirts
+- Shop Snarky Hoodies: https://snarkyassthreads.com/hoodies
+- Shop Snarky Mugs: https://snarkyassthreads.com/mugs
+- Shop Gag Gifts: https://snarkyassthreads.com/category/gag-gifts
+- Shop White Elephant Gifts: https://snarkyassthreads.com/category/white-elephant-gifts
+- Shop Funny Gifts For Coworkers: https://snarkyassthreads.com/category/funny-coworker-gifts
+- Blog: https://snarkyassthreads.com/blog
+
+## Products and Philosophy
+All of our products are made-to-order utilizing high-quality materials, such as 5.3 oz/yd² preshrunk heavyweight cotton for our signature unisex shirts. Our custom photo blankets are printed edge-to-edge on plush fleece and sherpa. We focus on premium snark without breaking the bank.
+
+## AI Customization
+Users can utilize our AI Customization features by uploading images and applying text prompts. Our system uses advanced generative AI to preview products in real time and even lets users virtually "try it on" through our AI Mockup Generator.
+
+## Shipping & Returns
+- Shipping: Orders usually ship within 3-7 business days. We partner with top-tier Print on Demand providers like Printify to assure quality.
+- Returns: Because items are custom printed, we only accept returns for items damaged during shipping or misprinted.
+
+For more information, please visit our FAQ at https://snarkyassthreads.com/faq.

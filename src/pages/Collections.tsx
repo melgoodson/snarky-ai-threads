@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
@@ -21,6 +22,15 @@ const PERSONALIZED_COLLECTIONS = [
   { name: "Gifts for Mom", slug: "/designs", emoji: "💝", description: "Thoughtful personalized gifts she'll actually love", keywords: "personalized gifts for mom, personalized gifts to mom" },
   { name: "Photo Gifts", slug: "/blankets", emoji: "🖼️", description: "Custom photo blankets, mugs & more", keywords: "personalized gifts with photo, personalized gifts with pictures, personalized gifts using photos" },
   { name: "Christmas Gifts", slug: "/designs", emoji: "🎄", description: "Custom personalized holiday gifts", keywords: "personalized christmas gifts, personalized gifts christmas, personalized gifts xmas" },
+];
+
+const GIFT_COLLECTIONS = [
+  { name: "Funny Gifts", slug: "/category/funny-gifts", emoji: "🎁", description: "Hilarious gifts for any occasion", keywords: "funny gifts, gag gifts, comedy gifts" },
+  { name: "Gag Gifts", slug: "/category/gag-gifts", emoji: "🤡", description: "Prank gifts and funny stuff guaranteed to get a laugh", keywords: "gag gifts, prank gifts" },
+  { name: "White Elephant Gifts", slug: "/category/white-elephant-gifts", emoji: "🐘", description: "The most stolen gifts at your holiday party", keywords: "white elephant gifts, secret santa gifts" },
+  { name: "Funny Gifts for Coworkers", slug: "/category/funny-coworker-gifts", emoji: "👔", description: "Survive the office with these snarky coworker gifts", keywords: "funny gifts for coworkers, office gifts, coworker gifts" },
+  { name: "Funny Gifts Under $25", slug: "/category/funny-gifts-under-25", emoji: "💵", description: "Cheap but hilarious gifts on a budget", keywords: "funny gifts under 25, cheap gag gifts" },
+  { name: "Funny Gifts Under $50", slug: "/category/funny-gifts-under-50", emoji: "💰", description: "Premium snark without breaking the bank", keywords: "funny gifts under 50" },
 ];
 
 const SHOP_BY_PRODUCT = [
@@ -77,6 +87,11 @@ const CollectionSilo = ({
 const Collections = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Shop Snarky Collections | Funny Gifts, Gag Gifts & T-Shirts</title>
+        <meta name="description" content="Browse our collections of funny gifts, gag gifts, white elephant gifts, and sarcastic shirts. Perfect for coworkers, friends, and family who appreciate snark." />
+        <link rel="canonical" href="https://snarkyassthreads.com/collections" />
+      </Helmet>
       <Header />
       <main className="flex-1">
         <section className="py-12 md:py-20">
@@ -98,14 +113,21 @@ const Collections = () => {
               collections={SNARKY_COLLECTIONS}
             />
 
-            {/* Silo 2: Personalized Gifts */}
+            {/* Silo 2: Gag & Funny Gifts (SEO Target) */}
             <CollectionSilo
-              title="🎁 Personalized Gifts"
+              title="🎁 Gift Shop"
+              subtitle="Hilarious gag gifts, white elephant must-haves, and snarky coworker presents."
+              collections={GIFT_COLLECTIONS}
+            />
+
+            {/* Silo 3: Personalized Gifts */}
+            <CollectionSilo
+              title="📸 Personalized Gifts"
               subtitle="Custom photo gifts and personalized presents for him, her, mom, and everyone on your list."
               collections={PERSONALIZED_COLLECTIONS}
             />
 
-            {/* Silo 3: Shop by Product */}
+            {/* Silo 4: Shop by Product */}
             <CollectionSilo
               title="🛍️ Shop by Product"
               subtitle="Browse by product type — shirts, hoodies, blankets, mugs, totes, and greeting cards."

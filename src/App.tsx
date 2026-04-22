@@ -45,6 +45,7 @@ import BlanketLanding from "./pages/BlanketLanding";
 import ToteBagLanding from "./pages/ToteBagLanding";
 import MugLanding from "./pages/MugLanding";
 import GreetingCardLanding from "./pages/GreetingCardLanding";
+import CategoryLanding from "./pages/CategoryLanding";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,7 @@ const App = () => (
             <Route path="/tote-bags" element={<ToteBagLanding />} />
             <Route path="/mugs" element={<MugLanding />} />
             <Route path="/greeting-cards" element={<GreetingCardLanding />} />
+            <Route path="/category/:categorySlug" element={<CategoryLanding />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
