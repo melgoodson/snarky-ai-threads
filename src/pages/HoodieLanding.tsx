@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,11 @@ const HoodieLanding = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
+            <Helmet>
+                <title>Snarky Hoodies | Sarcastic & Funny Hoodies | Snarky A$$ Apparel</title>
+                <meta name="description" content="Shop premium snarky hoodies. Fleece-lined, cozy, and printed with bold sarcastic designs. Perfect for when you want to be warm and unapproachable." />
+                <link rel="canonical" href="https://snarkyassthreads.com/hoodies" />
+            </Helmet>
             <Header />
             <main className="flex-1">
                 {/* Hero — split layout like blankets */}

@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,11 @@ const ToteBagLanding = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
+            <Helmet>
+                <title>Snarky Tote Bags | Funny Canvas Totes | Snarky A$$ Apparel</title>
+                <meta name="description" content="Carry your attitude everywhere. Shop durable eco-friendly canvas tote bags with bold, snarky, and sarcastic designs." />
+                <link rel="canonical" href="https://snarkyassthreads.com/tote-bags" />
+            </Helmet>
             <Header />
             <main className="flex-1">
                 {/* Hero */}

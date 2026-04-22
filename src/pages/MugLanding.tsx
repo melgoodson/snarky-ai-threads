@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,11 @@ const MugLanding = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
+            <Helmet>
+                <title>Snarky Coffee Mugs | Funny & Sarcastic Mugs | Snarky A$$ Apparel</title>
+                <meta name="description" content="Start your morning with a hot take. Shop premium 11oz and 15oz ceramic coffee mugs with funny, snarky, and sarcastic designs." />
+                <link rel="canonical" href="https://snarkyassthreads.com/mugs" />
+            </Helmet>
             <Header />
             <main className="flex-1">
                 {/* Hero */}
