@@ -59,6 +59,33 @@ const CATEGORY_DATA: Record<string, { title: string; subtitle: string; descripti
     copyText1: "Step up your gifting game. Our under $50 collection features premium hoodies, oversized custom blankets, and heavyweight graphic tees.",
     copyText2: "These make perfect main event gifts for birthdays, anniversaries, or just to show someone you aggressively care about them.",
     keywords: "funny gifts under 50, premium gag gifts, sarcastic hoodies"
+  },
+  "custom-gifts-for-men": {
+    title: "Custom Gifts For Men",
+    subtitle: "Funny & personalized gifts for guys who want nothing",
+    description: "Shop unique, snarky, and custom gifts for men, dads, husbands, and boyfriends.",
+    metaDesc: "Struggling to find custom gifts for men? Shop personalized funny gifts, sarcastic shirts, and premium mugs for the guys in your life.",
+    copyText1: "Men are famously impossible to shop for. Instead of getting him another boring tie or expensive tech gadget he won't use, get him something that actually matches his personality.",
+    copyText2: "Our custom snarky t-shirts and personalized mugs are the perfect custom gifts for men with a chaotic sense of humor.",
+    keywords: "custom gifts for men, personalized gifts for guys, funny gifts for dad"
+  },
+  "custom-mothers-day-gifts": {
+    title: "Custom Mother's Day Gifts",
+    subtitle: "Because she deserves more than a generic card",
+    description: "Personalized Mother's Day gifts for moms with a sense of humor and a lot of patience.",
+    metaDesc: "Shop custom Mother's Day gifts that are actually funny. Ditch the boring flowers for personalized photo blankets, snarky mom shirts, and custom mugs.",
+    copyText1: "Being a mom requires surviving on caffeine, chaos, and a sharp sense of humor. Celebrate her survival skills with our premium custom Mother's Day gifts.",
+    copyText2: "From personalized photo blankets featuring her favorite (or least favorite) children, to sarcastic coffee mugs, we have exactly what she wants.",
+    keywords: "custom mothers day gifts, funny gifts for mom, personalized mom blanket"
+  },
+  "personalized-blanket-gifts": {
+    title: "Personalized Blanket Gifts",
+    subtitle: "Warm, cozy, and completely custom",
+    description: "Design your own custom photo blankets and personalized fleece throws.",
+    metaDesc: "Create the ultimate personalized blanket gifts. Custom photo blankets printed edge-to-edge on premium sherpa and fleece. Easy to design online.",
+    copyText1: "Nothing says 'I put effort into this' quite like a personalized blanket gift. Whether you're plastering an embarrassing photo of your best friend across 60 inches of fleece, or making a heartfelt pet memorial throw.",
+    copyText2: "Our custom blankets use premium sublimation printing so the colors stay vibrant wash after wash.",
+    keywords: "personalized blanket gifts, custom photo blankets, custom throw blanket"
   }
 };
 

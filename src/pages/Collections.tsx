@@ -20,6 +20,9 @@ const PERSONALIZED_COLLECTIONS = [
   { name: "Gifts for Him", slug: "/designs", emoji: "👨", description: "Personalized gifts for boyfriend, husband, or dad", keywords: "personalized gifts for him, personalized gifts for boyfriend, personalized gifts for men" },
   { name: "Gifts for Her", slug: "/designs", emoji: "👩", description: "Custom gifts for girlfriend, wife, or mom", keywords: "personalized gifts for her, personalized gifts for girlfriend" },
   { name: "Gifts for Mom", slug: "/designs", emoji: "💝", description: "Thoughtful personalized gifts she'll actually love", keywords: "personalized gifts for mom, personalized gifts to mom" },
+  { name: "Custom Mother's Day Gifts", slug: "/category/custom-mothers-day-gifts", emoji: "💐", description: "Personalized Mother's Day gifts for moms with a sense of humor", keywords: "custom mothers day gifts, funny gifts for mom" },
+  { name: "Custom Gifts for Men", slug: "/category/custom-gifts-for-men", emoji: "🧔", description: "Funny & personalized gifts for guys who want nothing", keywords: "custom gifts for men, funny gifts for dad" },
+  { name: "Personalized Blanket Gifts", slug: "/category/personalized-blanket-gifts", emoji: "🛏️", description: "Custom photo blankets and personalized fleece throws", keywords: "personalized blanket gifts, custom photo blankets" },
   { name: "Photo Gifts", slug: "/blankets", emoji: "🖼️", description: "Custom photo blankets, mugs & more", keywords: "personalized gifts with photo, personalized gifts with pictures, personalized gifts using photos" },
   { name: "Christmas Gifts", slug: "/designs", emoji: "🎄", description: "Custom personalized holiday gifts", keywords: "personalized christmas gifts, personalized gifts christmas, personalized gifts xmas" },
 ];
