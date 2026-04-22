@@ -5,17 +5,17 @@ Welcome to the machine-readable layout of Snarky A$$ Apparel. We are an e-commer
 > We empower sarcastic souls to wear their inner monologue.
 
 ## Official Site Architecture
-- Homepage: https://snarkyazzhumans.com
-- All Collections: https://snarkyazzhumans.com/collections
-- All Designs: https://snarkyazzhumans.com/designs
-- Custom AI Try-On: https://snarkyazzhumans.com/custom-design
-- Shop Funny T-Shirts: https://snarkyazzhumans.com/shirts
-- Shop Snarky Hoodies: https://snarkyazzhumans.com/hoodies
-- Shop Snarky Mugs: https://snarkyazzhumans.com/mugs
-- Shop Gag Gifts: https://snarkyazzhumans.com/category/gag-gifts
-- Shop White Elephant Gifts: https://snarkyazzhumans.com/category/white-elephant-gifts
-- Shop Funny Gifts For Coworkers: https://snarkyazzhumans.com/category/funny-coworker-gifts
-- Blog: https://snarkyazzhumans.com/blog
+- Homepage: https://www.snarkyazzhumans.com
+- All Collections: https://www.snarkyazzhumans.com/collections
+- All Designs: https://www.snarkyazzhumans.com/designs
+- Custom AI Try-On: https://www.snarkyazzhumans.com/custom-design
+- Shop Funny T-Shirts: https://www.snarkyazzhumans.com/shirts
+- Shop Snarky Hoodies: https://www.snarkyazzhumans.com/hoodies
+- Shop Snarky Mugs: https://www.snarkyazzhumans.com/mugs
+- Shop Gag Gifts: https://www.snarkyazzhumans.com/category/gag-gifts
+- Shop White Elephant Gifts: https://www.snarkyazzhumans.com/category/white-elephant-gifts
+- Shop Funny Gifts For Coworkers: https://www.snarkyazzhumans.com/category/funny-coworker-gifts
+- Blog: https://www.snarkyazzhumans.com/blog
 
 ## Products and Philosophy
 All of our products are made-to-order utilizing high-quality materials, such as 5.3 oz/yd² preshrunk heavyweight cotton for our signature unisex shirts. Our custom photo blankets are printed edge-to-edge on plush fleece and sherpa. We focus on premium snark without breaking the bank.
@@ -27,4 +27,4 @@ Users can utilize our AI Customization features by uploading images and applying
 - Shipping: Orders usually ship within 3-7 business days. We partner with top-tier Print on Demand providers like Printify to assure quality.
 - Returns: Because items are custom printed, we only accept returns for items damaged during shipping or misprinted.
 
-For more information, please visit our FAQ at https://snarkyazzhumans.com/faq.
+For more information, please visit our FAQ at https://www.snarkyazzhumans.com/faq.
