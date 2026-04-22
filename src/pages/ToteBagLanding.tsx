@@ -20,7 +20,7 @@ const ToteBagLanding = () => {
             <Helmet>
                 <title>Snarky Tote Bags | Funny Canvas Totes | Snarky A$$ Apparel</title>
                 <meta name="description" content="Carry your attitude everywhere. Shop durable eco-friendly canvas tote bags with bold, snarky, and sarcastic designs." />
-                <link rel="canonical" href="https://snarkyassthreads.com/tote-bags" />
+                <link rel="canonical" href="https://snarkyazzhumans.com/tote-bags" />
             </Helmet>
             <Header />
             <main className="flex-1">

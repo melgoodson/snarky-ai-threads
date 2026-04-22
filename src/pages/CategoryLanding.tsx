@@ -87,7 +87,7 @@ const CategoryLanding = () => {
         <title>{category.title} | Snarky A$$ Apparel</title>
         <meta name="description" content={category.metaDesc} />
         <meta name="keywords" content={category.keywords} />
-        <link rel="canonical" href={`https://snarkyassthreads.com/category/${categorySlug}`} />
+        <link rel="canonical" href={`https://snarkyazzhumans.com/category/${categorySlug}`} />
       </Helmet>
       
       <Header />

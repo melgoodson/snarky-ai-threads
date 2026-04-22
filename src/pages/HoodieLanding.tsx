@@ -21,7 +21,7 @@ const HoodieLanding = () => {
             <Helmet>
                 <title>Snarky Hoodies | Sarcastic & Funny Hoodies | Snarky A$$ Apparel</title>
                 <meta name="description" content="Shop premium snarky hoodies. Fleece-lined, cozy, and printed with bold sarcastic designs. Perfect for when you want to be warm and unapproachable." />
-                <link rel="canonical" href="https://snarkyassthreads.com/hoodies" />
+                <link rel="canonical" href="https://snarkyazzhumans.com/hoodies" />
             </Helmet>
             <Header />
             <main className="flex-1">

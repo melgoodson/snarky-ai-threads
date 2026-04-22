@@ -643,10 +643,10 @@ const ProductDetail = () => {
     "@type": "Product",
     "name": product.title,
     "description": product.subtitle || product.title,
-    "image": product.images.map((img) => img.startsWith('/') ? `https://snarkyassthreads.com${img}` : img),
+    "image": product.images.map((img) => img.startsWith('/') ? `https://snarkyazzhumans.com${img}` : img),
     "offers": {
       "@type": "Offer",
-      "url": `https://snarkyassthreads.com/product/${id}`,
+      "url": `https://snarkyazzhumans.com/product/${id}`,
       "priceCurrency": "USD",
       "price": product.price,
       "itemCondition": "https://schema.org/NewCondition",
@@ -663,9 +663,9 @@ const ProductDetail = () => {
       <Helmet>
         <title>{product.title} | Snarky A$$ Apparel</title>
         <meta name="description" content={`${product.subtitle}. ${product.description ? product.description.substring(0, 150) : ''}`} />
-        <link rel="canonical" href={`https://snarkyassthreads.com/product/${id}`} />
+        <link rel="canonical" href={`https://snarkyazzhumans.com/product/${id}`} />
         <meta property="og:title" content={product.title} />
-        <meta property="og:image" content={product.images[0].startsWith('/') ? `https://snarkyassthreads.com${product.images[0]}` : product.images[0]} />
+        <meta property="og:image" content={product.images[0].startsWith('/') ? `https://snarkyazzhumans.com${product.images[0]}` : product.images[0]} />
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
       </Helmet>
       <Header />

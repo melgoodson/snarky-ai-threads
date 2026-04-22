@@ -14,8 +14,8 @@ const Index = () => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Snarky A$$ Apparel",
-    "url": "https://snarkyassthreads.com",
-    "logo": "https://snarkyassthreads.com/images/snarky-logo.png",
+    "url": "https://snarkyazzhumans.com",
+    "logo": "https://snarkyazzhumans.com/images/snarky-logo.png",
     "sameAs": [
       "https://twitter.com/SnarkyApparel",
       "https://instagram.com/snarkyapparel"
@@ -26,10 +26,10 @@ const Index = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Snarky A$$ Apparel",
-    "url": "https://snarkyassthreads.com",
+    "url": "https://snarkyazzhumans.com",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://snarkyassthreads.com/collections?q={search_term_string}",
+      "target": "https://snarkyazzhumans.com/collections?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };
@@ -39,10 +39,10 @@ const Index = () => {
       <Helmet>
         <title>Snarky A$$ Apparel | Funny Graphic Tees & Sarcastic Gifts</title>
         <meta name="description" content="Shop the best collection of funny graphic t-shirts, sarcastic hoodies, gag gifts, and Snarky A$$ apparel. Perfect for coworkers, white elephant gifts, and snarky souls." />
-        <link rel="canonical" href="https://snarkyassthreads.com/" />
+        <link rel="canonical" href="https://snarkyazzhumans.com/" />
         <meta property="og:title" content="Snarky A$$ Apparel | Funny Graphic Tees & Sarcastic Gifts" />
         <meta property="og:description" content="Shop the best collection of funny graphic t-shirts, sarcastic hoodies, gag gifts, and Snarky A$$ apparel." />
-        <meta property="og:url" content="https://snarkyassthreads.com/" />
+        <meta property="og:url" content="https://snarkyazzhumans.com/" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>

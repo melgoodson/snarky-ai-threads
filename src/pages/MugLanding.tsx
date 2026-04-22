@@ -20,7 +20,7 @@ const MugLanding = () => {
             <Helmet>
                 <title>Snarky Coffee Mugs | Funny & Sarcastic Mugs | Snarky A$$ Apparel</title>
                 <meta name="description" content="Start your morning with a hot take. Shop premium 11oz and 15oz ceramic coffee mugs with funny, snarky, and sarcastic designs." />
-                <link rel="canonical" href="https://snarkyassthreads.com/mugs" />
+                <link rel="canonical" href="https://snarkyazzhumans.com/mugs" />
             </Helmet>
             <Header />
             <main className="flex-1">
