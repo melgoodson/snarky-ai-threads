@@ -102,17 +102,29 @@ const SEO_ROUTES = [
   },
   {
     path: '/category/white-elephant-gifts',
-    title: 'White Elephant Gifts | Best Exchange Presents | Snarky A$$ Apparel',
-    desc: 'Win the holiday party with the best white elephant gifts under $25 and $50. Snarky, sarcastic items everyone will fight to steal.',
-    body: `<h1>The Best White Elephant Gifts People Actually Want</h1>
-    <p>Win the holiday party with the best white elephant gifts under $25 and $50. Snarky, sarcastic items everyone will fight to steal instead of throwing away.</p>`
+    title: 'Best White Elephant Gifts Under $25 and $50 | Snarky A$$ Apparel',
+    desc: 'Win the office holiday party or family exchange with hilarious white elephant gifts. Sarcastic mugs, funny tees, and snarky stuff people will actually fight to steal.',
+    body: `<h1>GIFTS THEY'LL ACTUALLY STEAL</h1>
+    <p>The secret to winning a white elephant exchange is bringing something everyone desperately wants. Forget the cheap plastic junk—bring premium snark.</p>
+    <h2>WHY OUR GIFTS WIN</h2>
+    <ul>
+      <li>Unfiltered Humor: Pure edge and sarcasm.</li>
+      <li>Premium Quality: Heavyweight cotton, plush blankets, and durable ceramics.</li>
+      <li>Budget Friendly: Under $25 and under $50 options to fit party rules.</li>
+    </ul>`
   },
   {
     path: '/category/funny-coworker-gifts',
-    title: 'Funny Gifts for Coworkers | Office Gag Gifts | Snarky A$$ Apparel',
-    desc: 'The ultimate collection of funny coworker gifts. Sarcastic mugs, snarky tote bags, and desk-appropriate humor to survive the 9-to-5.',
-    body: `<h1>Funny Gifts for Coworkers (HR Approved-ish)</h1>
-    <p>Half your meetings could have been an email. Help your favorite coworker survive the corporate grind with our snarky mugs and apparel.</p>`
+    title: 'Funny Coworker Gifts & Office Gag Gifts | Snarky A$$ Apparel',
+    desc: 'Survive the corporate grind with funny coworker gifts. Passive-aggressive mugs, sarcastic office hoodies, and snarky stuff for the work bestie.',
+    body: `<h1>GIFTS FOR THE WORK BESTIE</h1>
+    <p>Let's be honest, half your meetings could have been an email. Help your favorite coworker survive the corporate grind with our office-approved (mostly) sarcastic gifts.</p>
+    <h2>ESSENTIAL OFFICE SURVIVAL TACTICS</h2>
+    <ul>
+      <li>The Morning Shield: A mug that clearly states 'Do Not Talk To Me Yet.'</li>
+      <li>Zoom Call Friendly: Hoodies that look professional-ish on camera.</li>
+      <li>Passive Aggressive: Say what everyone is thinking, but on a tote bag.</li>
+    </ul>`
   },
   {
     path: '/category/funny-gifts-under-25',
