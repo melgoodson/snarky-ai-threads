@@ -1,0 +1,5 @@
+# Cloudflare Pages SPA fallback — serve index.html for any path that doesn't
+# have a matching static file, so React Router can handle client-side routing.
+# Prerendered pages (/shirts, /blankets, etc.) already have their own index.html
+# and take precedence over this catch-all.
+/* /index.html 200
