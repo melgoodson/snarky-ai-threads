@@ -48,59 +48,79 @@ export const Cart = () => {
                 {items.map(item => (
                   <div
                     key={item.id}
-                    className="flex gap-4 p-4 border border-border rounded-lg bg-card"
+                    className="flex flex-col gap-3 p-4 border border-border rounded-lg bg-card"
                   >
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-20 h-20 object-cover rounded"
-                    />
-                    <div className="flex-1 space-y-2">
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="font-bold text-sm">{item.title}</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Size: {item.size}
+                    {/* Mockup preview for custom orders */}
+                    {item.mockupUrl && (
+                      <div className="rounded-lg overflow-hidden border border-border/50 bg-muted relative">
+                        <img
+                          src={item.mockupUrl}
+                          alt={`${item.title} preview`}
+                          className="w-full h-auto object-contain max-h-48"
+                        />
+                        <span className="absolute top-2 left-2 bg-primary/90 text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+                          Custom Preview
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-4">
+                      {/* Thumbnail — only show when there's no full mockup */}
+                      {!item.mockupUrl && (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-20 h-20 object-cover rounded flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between">
+                          <div>
+                            <h4 className="font-bold text-sm">{item.title}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Size: {item.size}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => removeItem(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="text-sm font-bold w-8 text-center">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <p className="font-bold">
+                            ${(item.price * item.quantity).toFixed(2)}
                           </p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="text-sm font-bold w-8 text-center">
-                            {item.quantity}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <p className="font-bold">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </p>
                       </div>
                     </div>
                   </div>
+
                 ))}
               </div>
 

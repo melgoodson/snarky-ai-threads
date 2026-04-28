@@ -1007,6 +1007,9 @@ export default function CustomDesign() {
           price: basePrice,
           size: selectedSize,
           image: displayImage,
+          // mockupUrl is stored separately so Cart & Checkout can show a proper preview.
+          // Prefer Printify CDN URL (persists through page refresh) over base64 AI preview.
+          mockupUrl: customProductData.mockupImageUrl || mockupPreview || undefined,
           printifyProductId: customProductData.printifyProductId,
           variantId: String(selectedVariant.id),
           designImageUrl: confirmedDesignUrl,
