@@ -366,7 +366,7 @@ const DesignDetail = () => {
       return;
     }
 
-    const retailPrice = product.retail_price || 0;
+    const retailPrice = product.retail_price || product.price || 0;
 
     // For products without variants (greeting cards, etc.), use default values
     const variantTitle = selectedVariant?.title || "Default";
@@ -397,7 +397,7 @@ const DesignDetail = () => {
 
   // Get a display-friendly retail price + original price (with $20 markup)
   const getDisplayPrice = (product: Product) => {
-    const retail = product.retail_price || 0;
+    const retail = product.retail_price || product.price || 0;
     return { price: retail, originalPrice: retail + 20 };
   };
 

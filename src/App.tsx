@@ -48,6 +48,7 @@ import GreetingCardLanding from "./pages/GreetingCardLanding";
 import CategoryLanding from "./pages/CategoryLanding";
 import WhiteElephantLanding from "./pages/WhiteElephantLanding";
 import CoworkerGiftsLanding from "./pages/CoworkerGiftsLanding";
+import { BestSellersPopup } from "./components/BestSellersPopup";
 
 const queryClient = new QueryClient();
 
@@ -65,7 +66,8 @@ const App = () => (
         <BrowserRouter>
           <AnalyticsProvider>
             <ScrollToTop />
-          <AppContent />
+            <AppContent />
+            <BestSellersPopup />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/product/:id" element={<ProductDetail />} />

@@ -167,82 +167,75 @@ OUTPUT: One square-format photorealistic ${color} ${product} on a white backgrou
     const userImagePart = await toImagePart(userImage);
     const productImagePart = await toImagePart(productImage);
 
-    // Models in priority order. gemini-2.0-flash-preview-image-generation is the confirmed
-    // working image-generation model. gemini-2.0-flash-exp-image-generation is the fallback.
-    const models = ["gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-exp-image-generation"];
+    // gemini-2.5-flash-image is the current working image generation model.
+    const MODEL = "gemini-2.5-flash-image";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GOOGLE_AI_API_KEY}`;
 
-    const MAX_RETRIES = 2;
+    const MAX_RETRIES = 3;
     let lastError = "";
 
-    for (const model of models) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`;
-      console.log(`Trying model: ${model}`);
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        const delay = Math.min(3000 * attempt, 9000);
+        console.log(`Retry ${attempt + 1}/${MAX_RETRIES}, waiting ${delay}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+      }
 
-      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        if (attempt > 0) {
-          const delay = Math.min(2000 * Math.pow(2, attempt - 1), 8000);
-          console.log(`Retry ${attempt + 1}, waiting ${delay}ms...`);
-          await new Promise(r => setTimeout(r, delay));
-        }
+      console.log(`Attempt ${attempt + 1}: calling ${MODEL}`);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              userImagePart,
+              productImagePart,
+            ]
+          }],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"],
+          },
+        }),
+      });
 
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                userImagePart,
-                productImagePart,
-              ]
-            }],
-            generationConfig: {
-              responseModalities: ["TEXT", "IMAGE"],
-            },
-          }),
-        });
+      if (response.status === 429) {
+        lastError = "Rate limit exceeded";
+        console.log(`Rate limited, attempt ${attempt + 1}/${MAX_RETRIES}`);
+        continue; // retry
+      }
 
-        if (response.status === 429) {
-          lastError = "Rate limit exceeded";
-          console.log(`Rate limited on ${model}, attempt ${attempt + 1}/${MAX_RETRIES}`);
-          continue;
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Gemini API error: ${response.status} - ${errorText}`);
+        lastError = `API error ${response.status}`;
+        // Non-rate-limit errors won't improve with retries — bail immediately
+        break;
+      }
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Gemini API error: ${response.status} - ${errorText}`);
-          lastError = `${response.status} - ${errorText}`;
-          break;
-        }
+      const data = await response.json();
+      const candidateParts = data.candidates?.[0]?.content?.parts;
 
-        const data = await response.json();
-        let generatedImageUrl: string | null = null;
-
-        const candidateParts = data.candidates?.[0]?.content?.parts;
-        if (Array.isArray(candidateParts)) {
-          for (const part of candidateParts) {
-            if (part.inlineData?.data && part.inlineData?.mimeType) {
-              generatedImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-              break;
-            }
+      if (Array.isArray(candidateParts)) {
+        for (const part of candidateParts) {
+          if (part.inlineData?.data && part.inlineData?.mimeType) {
+            const mockupUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            console.log('Mockup generated successfully');
+            return new Response(
+              JSON.stringify({
+                mockupUrl,
+                productConfig: { placement: config.placement, printMethod: config.printMethod }
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
           }
         }
-
-        if (!generatedImageUrl) {
-          console.error('No image in response:', JSON.stringify(data).substring(0, 1000));
-          lastError = "No image generated";
-          break;
-        }
-
-        console.log('Mockup generated successfully');
-        return new Response(
-          JSON.stringify({
-            mockupUrl: generatedImageUrl,
-            productConfig: { placement: config.placement, printMethod: config.printMethod }
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
       }
+
+      // Response came back OK but contained no image — log and retry
+      console.error('No image in response:', JSON.stringify(data).substring(0, 500));
+      lastError = "No image in response — model may have refused the request";
+      // Retry in case of transient refusal
     }
 
     if (lastError === "Rate limit exceeded") {

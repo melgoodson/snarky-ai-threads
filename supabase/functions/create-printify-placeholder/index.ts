@@ -24,7 +24,7 @@ serve(async (req) => {
 
     console.log('Generating placeholder image with Gemini API...');
 
-    const model = "gemini-2.0-flash-exp-image-generation";
+    const model = "gemini-2.5-flash-image";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleApiKey}`;
 
     const aiResponse = await fetch(url, {

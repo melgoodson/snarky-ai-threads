@@ -145,18 +145,30 @@ export default function CustomDesign() {
     return index === -1 ? 999 : index;
   };
 
+  // Strip trailing quantity like "1 pc", "5 pcs", "10 pack" from variant titles.
+  // Printify greeting card variants look like: "6.9" x 4.9" / Glossy / 1 pc"
+  const stripQuantitySuffix = (s: string): string =>
+    s.replace(/\s*\/\s*\d+\s*(pcs?|pieces?|pack|cards?)?s?\s*$/i, '').trim();
+
   const extractColorFromVariant = (variantTitle: string): string => {
-    const parts = variantTitle.split('/').map(p => p.trim());
-    if (parts.length === 2) {
-      if (isSize(parts[0])) return parts[1];
-      if (isSize(parts[1])) return parts[0];
+    const cleaned = stripQuantitySuffix(variantTitle);
+    const parts = cleaned.split('/').map(p => p.trim());
+    if (parts.length === 1) {
+      // Single-dimension variant (e.g. just a size like "S" or format like "4×6")
       return parts[0];
     }
-    return variantTitle;
+    if (parts.length === 2) {
+      if (isSize(parts[0])) return parts[1]; // "S / Black" → "Black"
+      if (isSize(parts[1])) return parts[0]; // "Black / S" → "Black"
+      return parts[0];                        // "6.9" x 4.9" / Glossy" → "6.9" x 4.9""
+    }
+    // 3+ parts (shouldn't happen after stripQuantitySuffix but just in case)
+    return parts[0];
   };
 
   const extractSizeFromVariant = (variantTitle: string): string => {
-    const parts = variantTitle.split('/').map(p => p.trim());
+    const cleaned = stripQuantitySuffix(variantTitle);
+    const parts = cleaned.split('/').map(p => p.trim());
     if (parts.length === 2) {
       if (isSize(parts[0])) return parts[0];
       if (isSize(parts[1])) return parts[1];
@@ -166,10 +178,34 @@ export default function CustomDesign() {
     return variantTitle;
   };
 
-  const getUniqueColors = (variants: Variant[]): string[] => {
+  // Core shirt colours — case-insensitive whitelist to keep the picker tidy.
+  const BASIC_SHIRT_COLORS_LOWER = [
+    'white', 'black', 'navy', 'gray', 'grey', 'heather gray', 'heather grey',
+    'red', 'royal blue', 'forest green', 'dark heather', 'sport grey',
+    'charcoal', 'ash', 'military green', 'maroon', 'purple', 'gold',
+  ];
+
+  const getUniqueColors = (variants: Variant[], productTitle?: string): string[] => {
     const enabledVariants = variants.filter(v => v.is_enabled);
     const colors = enabledVariants.map(v => extractColorFromVariant(v.title));
-    return [...new Set(colors)];
+    const unique = [...new Set(colors)];
+
+    const t = (productTitle || '').toLowerCase();
+
+    if (t.includes('tee') || t.includes('shirt')) {
+      // Case-insensitive whitelist match; fall back to first 8 if nothing matches
+      const filtered = unique.filter(c =>
+        BASIC_SHIRT_COLORS_LOWER.includes(c.toLowerCase())
+      );
+      return filtered.length > 0 ? filtered : unique.slice(0, 8);
+    }
+
+    if (t.includes('card') || t.includes('greeting')) {
+      // Greeting card variants are size/finish combos — cap at 6 clearest options
+      return unique.slice(0, 6);
+    }
+
+    return unique;
   };
 
   const getSizesForColor = (variants: Variant[], color: string): Variant[] => {
@@ -181,6 +217,8 @@ export default function CustomDesign() {
         return getSizeOrderIndex(sizeA) - getSizeOrderIndex(sizeB);
       });
   };
+
+
 
   // Check if product is apparel (for Virtual Try-On eligibility)
   const isApparelProduct = (product: Product | null): boolean => {
@@ -373,14 +411,17 @@ export default function CustomDesign() {
         model: p.model || "",
         category: p.category || "",
         description: p.description || "",
-        images: Array.isArray(p.images) ? p.images.map(String) : [],
+        images: Array.isArray(p.images) ? p.images.map((img: any) => typeof img === 'string' ? img : img.src || img.url || String(img)) : [],
         template_image_url: p.template_image_url || "",
         price: Number(p.price) || 0,
-        retail_price: Number(p.retail_price) || 0,
+        retail_price: Number(p.retail_price) || Number(p.price) || 0,
         variants: Array.isArray(p.variants) ? p.variants.map((v: any) => ({
           id: v.id,
           title: v.title || '',
-          is_enabled: v.is_enabled || false,
+          // On the Custom Design page customers pick their own design, so all
+          // printable variants (colours/sizes) should be available regardless
+          // of whether the Printify placeholder had them enabled.
+          is_enabled: true,
           price: v.price || 0,
           cost: v.cost || 0,
         })) : [],
@@ -415,16 +456,15 @@ export default function CustomDesign() {
         }
       }
 
-      // Inherit variants for products with none
+      // Always give every product the best (largest) variant set for its type.
+      // This ensures the display product shows all colours even if its own
+      // Printify placeholder was configured with only one colour.
       for (const p of allProducts) {
-        const enabledCount = p.variants.filter(v => v.is_enabled).length;
-        if (enabledCount === 0) {
-          const type = getProductType(p.title);
-          const donor = donorByType[type];
-          if (donor) {
-            console.log(`Inheriting ${donor.variants.filter(v => v.is_enabled).length} variants from "${donor.title}" to "${p.title}"`);
-            p.variants = donor.variants;
-          }
+        const type = getProductType(p.title);
+        const donor = donorByType[type];
+        if (donor && donor.id !== p.id && donor.variants.length > p.variants.length) {
+          console.log(`Assigning ${donor.variants.length} variants from "${donor.title}" to "${p.title}"`);
+          p.variants = donor.variants;
         }
       }
 
@@ -663,6 +703,46 @@ export default function CustomDesign() {
     if (saved) approveDesign();
   };
 
+  // Returns an image source the Supabase edge function can fetch.
+  // template_image_url is an absolute Printify CDN URL — always works.
+  // Local /images/* paths work on the dev server but NOT from remote edge functions;
+  // we convert them to base64 data URLs so they travel in the request body.
+  const getProductImageForAI = async (product: Product): Promise<string> => {
+    if (product.template_image_url) return product.template_image_url;
+    const localPath = getBlankMockup(undefined, product.title);
+    if (!localPath) return '';
+    if (!localPath.startsWith('/')) return localPath;
+    try {
+      const resp = await fetch(localPath);
+      const blob = await resp.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      // Last resort — absolute URL (works on deployed site, fails on localhost)
+      return `${window.location.origin}${localPath}`;
+    }
+  };
+
+  // Returns the best blank product image for the Custom Design page.
+  // Priority: local clean blank shot → Printify catalog URL (lifestyle photos, last resort)
+  // Printify blueprint images are marketing/lifestyle photos, not clean white blanks,
+  // so local curated images are preferred here where the user is placing their own design.
+  const getBlankMockup = (templateImageUrl: string | undefined, title: string) => {
+    const t = title.toLowerCase();
+    if (t.includes('hoodie') || t.includes('sweatshirt')) return '/images/hoodie-mockup.png';
+    if (t.includes('mug')) return '/images/mug-mockup.png';
+    if (t.includes('card') || t.includes('greeting')) return '/images/greeting-card-mockup.png';
+    if (t.includes('tote') || t.includes('bag')) return '/images/tote-mockup.png';
+    if (t.includes('tee') || t.includes('shirt')) return '/images/shirt-mockup.png';
+    if (t.includes('blanket')) return personalizationBlanketFallback;
+    // Unknown product type — fall back to whatever Printify gave us
+    return templateImageUrl || '';
+  };
+
   const [mockupError, setMockupError] = useState<string | null>(null);
 
   const generateMockup = async () => {
@@ -679,10 +759,10 @@ export default function CustomDesign() {
 
     const selectedColor = extractColorFromVariant(selectedVariant.title);
 
-    // Build a product reference image: template_image_url → catalog images[0]
-    const rawImg = selectedProduct.images?.[0];
-    const catalogImgUrl = rawImg ? (typeof rawImg === 'string' ? rawImg : (rawImg as any).src || (rawImg as any).url || '') : '';
-    const productImageStr = selectedProduct.template_image_url || catalogImgUrl;
+    // Get an image the remote edge function can actually fetch.
+    // getProductImageForAI returns template_image_url (Printify CDN) when available,
+    // otherwise converts the local blank mockup to a base64 data URL.
+    const productImageStr = await getProductImageForAI(selectedProduct);
 
     if (!productImageStr) {
       // No reference image at all — skip AI mockup, go straight to review with CSS fallback
@@ -1283,7 +1363,7 @@ export default function CustomDesign() {
                         >
                           <div className="relative aspect-square bg-secondary">
                             <img
-                              src={product.template_image_url || (product.images && product.images[0]) || (product.title.toLowerCase().includes('blanket') ? personalizationBlanketFallback : '')}
+                              src={getBlankMockup(product.template_image_url, product.title)}
                               alt={product.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -1325,7 +1405,7 @@ export default function CustomDesign() {
                           {selectedProduct.variants.some(v => v.title.includes(' / ')) ? 'Color' : 'Size'}
                         </h4>
                         <div className="flex flex-wrap gap-3">
-                          {getUniqueColors(selectedProduct.variants).map((color) => {
+                          {getUniqueColors(selectedProduct.variants, selectedProduct.title).map((color) => {
                             const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title) === color;
                             return (
                               <button
@@ -1517,11 +1597,7 @@ export default function CustomDesign() {
                             // Only used if AI generation was skipped or failed
                             <>
                               {(() => {
-                                const rawImg = selectedProduct.images?.[0];
-                                const catalogUrl = rawImg ? (typeof rawImg === 'string' ? rawImg : (rawImg as any).src || (rawImg as any).url || '') : '';
-                                const fallbackImg = selectedProduct.template_image_url ||
-                                  (selectedProduct.title.toLowerCase().includes('blanket') ? personalizationBlanketFallback : '') ||
-                                  catalogUrl;
+                                const fallbackImg = getBlankMockup(selectedProduct.template_image_url, selectedProduct.title);
                                 return fallbackImg ? (
                                   <>
                                     <img

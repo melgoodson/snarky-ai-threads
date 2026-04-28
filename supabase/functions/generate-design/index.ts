@@ -49,7 +49,7 @@ serve(async (req) => {
       }
     }
 
-    const models = ["gemini-2.0-flash-exp-image-generation", "gemini-2.5-flash-image"];
+    const models = ["gemini-2.5-flash-image"];
     const MAX_RETRIES = 3;
     let lastError = "";
 

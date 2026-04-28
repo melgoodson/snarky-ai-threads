@@ -79,11 +79,11 @@ async function toImagePart(image: string): Promise<{ inlineData: { mimeType: str
   return { inlineData: { mimeType: 'image/jpeg', data: image } };
 }
 
-// Models in priority order. gemini-2.0-flash-preview-image-generation is the confirmed
-// working image-generation model. gemini-2.0-flash-exp-image-generation is the fallback.
+// gemini-2.5-flash-image is the current image generation model (April 2025).
+// The previous models (gemini-2.0-flash-preview-image-generation,
+// gemini-2.0-flash-exp-image-generation) both return 404 from the API.
 const MODELS = [
-  "gemini-2.0-flash-preview-image-generation",
-  "gemini-2.0-flash-exp-image-generation",
+  "gemini-2.5-flash-image",
 ];
 
 serve(async (req) => {
