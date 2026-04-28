@@ -22,46 +22,7 @@ import fathers from "@/assets/fathers.png";
 import dark from "@/assets/dark.png";
 import personalizationBlanket from "@/assets/personalization-blanket.png";
 
-// Color name → hex mapping for visual swatches
-const COLOR_HEX_MAP: Record<string, string> = {
-  "Black": "#000000",
-  "White": "#FFFFFF",
-  "Navy": "#1B1F3B",
-  "Red": "#C0392B",
-  "Royal Blue": "#2E5EAA",
-  "Sport Grey": "#9B9B9B",
-  "Dark Heather": "#4A4A4A",
-  "Military Green": "#4B5320",
-  "Maroon": "#6B1C23",
-  "Forest Green": "#2D572C",
-  "Sand": "#C2B280",
-  "Light Blue": "#ADD8E6",
-  "Charcoal": "#36454F",
-  "Heather Grey": "#B0B0B0",
-  "Natural": "#F5F5DC",
-  "Irish Green": "#009A44",
-  "Orange": "#FF6B35",
-  "Purple": "#6B3FA0",
-  "Indigo Blue": "#3F51B5",
-  "Carolina Blue": "#56A0D3",
-  "Light Pink": "#FFB6C1",
-  "Daisy": "#F8D568",
-  "Ash": "#B2BEB5",
-  "Ice Grey": "#D6D6D6",
-  "Sapphire": "#0F52BA",
-  "Berry": "#8E4585",
-  "Mint Green": "#98FB98",
-  "Coral Silk": "#FF7F7F",
-  "Sunset": "#FAD6A5",
-  "Safety Green": "#78FF00",
-  "Safety Orange": "#FF6600",
-  "Gold": "#FFD700",
-  "Antique Cherry Red": "#9B111E",
-  "Tweed": "#C3B091",
-  "Tropical Blue": "#00CED1",
-  "Violet": "#7F00FF",
-  "Rustique": "#B7410E",
-};
+import { COLOR_HEX_MAP } from "@/lib/variantUtils";
 
 interface ProductData {
   title: string;

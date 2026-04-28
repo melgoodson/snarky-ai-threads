@@ -13,65 +13,14 @@ import { useCart } from "@/contexts/CartContext";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 
-// Color name → hex mapping for visual swatches
-const COLOR_HEX_MAP: Record<string, string> = {
-  "Black": "#000000",
-  "White": "#FFFFFF",
-  "Snowwhite": "#FFFAFA",
-  "Navy": "#1B1F3B",
-  "Red": "#C0392B",
-  "Royal": "#4169E1",
-  "Royal Blue": "#2E5EAA",
-  "True Royal": "#4169E1",
-  "Sport Grey": "#9B9B9B",
-  "Dark Heather": "#4A4A4A",
-  "Dark Grey Heather": "#5A5A5A",
-  "Military Green": "#4B5320",
-  "Maroon": "#6B1C23",
-  "Forest Green": "#2D572C",
-  "Sand": "#C2B280",
-  "Light Blue": "#ADD8E6",
-  "Charcoal": "#36454F",
-  "Natural": "#F5F5DC",
-  "Irish Green": "#009A44",
-  "Orange": "#FF6B35",
-  "Purple": "#6B3FA0",
-  "Light Pink": "#FFB6C1",
-  "Daisy": "#F8D568",
-  "Ash": "#B2BEB5",
-  "Gold": "#FFD700",
-  "Safety Green": "#78FF00",
-  "Safety Orange": "#FF6600",
-  "Safety Pink": "#FF69B4",
-  "Antique Cherry Red": "#9B111E",
-  "Antique Sapphire": "#0B3D91",
-  "Coral Silk": "#FF7F7F",
-  "Ice Grey": "#D6D6D6",
-  "Sapphire": "#0F52BA",
-  "Berry": "#8E4585",
-  "Heather Grey": "#B0B0B0",
-  "Athletic Heather": "#B8B8B0",
-  "Graphite Heather": "#5C5C5C",
-  "Heather Mauve": "#C4A4B0",
-  "Heather Peach": "#E8C0A8",
-  "Heather Navy": "#2C3E6B",
-  "Heather Sport Royal": "#3A5FCD",
-  "Heather Sport Dark Navy": "#1C2951",
-  "Carolina Blue": "#56A0D3",
-  "Indigo Blue": "#3F51B5",
-  "Violet": "#7F00FF",
-  "Tropical Blue": "#00CED1",
-  "Mint Green": "#98FB98",
-  "Sunset": "#FAD6A5",
-  "Azalea": "#F19CBB",
-  "Cardinal Red": "#C41E3A",
-  "Cherry Red": "#DE3163",
-  "Dark Chocolate": "#3C1414",
-  "Garnet": "#733635",
-  "Heliconia": "#D5006C",
-  "Kiwi": "#8EE53F",
-  "Orchid": "#DA70D6",
-};
+import {
+  COLOR_HEX_MAP,
+  getAvailableOptions,
+  getBlankMockup,
+  looksLikeQuantity,
+  assignDonorVariants,
+  getProductType
+} from "@/lib/variantUtils";
 
 interface Design {
   id: string;
@@ -131,24 +80,11 @@ const DesignDetail = () => {
     if (!product) return;
 
     // Check if this product has color options
-    const opts = (() => {
-      const enabledVariants = (product.variants || []).filter((v: any) => v.is_enabled);
-      const colors = new Set<string>();
-      enabledVariants.forEach((variant: any) => {
-        const parts = variant.title.split(' / ').map((p: string) => p.trim());
-        parts.forEach((part: string) => {
-          const v = part.trim().toLowerCase();
-          const isSize = /^\d+oz$/i.test(v) || /^\d*x?[sml]$/i.test(v) || /^\d+xl$/i.test(v) || /^one size$/i.test(v) || /\d+["″]?\s*[x×]\s*\d+/i.test(v);
-          const isQty = /^\d+\s*pcs?$/i.test(v);
-          const isStyle = ['glossy', 'matte', 'coated (both sides)', 'coated (one side)', 'uncoated'].includes(v);
-          if (!isSize && !isQty && !isStyle) colors.add(part);
-        });
-      });
-      return { hasColors: colors.size > 0 };
-    })();
+    const opts = getAvailableOptions(product.variants || [], product.title);
+    const hasColors = opts.colors.length > 0;
 
     // If product has colors, wait for color selection
-    if (opts.hasColors && !selectedColor) return;
+    if (hasColors && !selectedColor) return;
 
     const colorForMockup = selectedColor || 'Default';
 
@@ -251,57 +187,19 @@ const DesignDetail = () => {
         .from("products")
         .select("*")
         .eq("is_active", true)
-        .not("printify_product_id", "is", null)
         .order("title");
 
       if (productsError) throw productsError;
 
       const allProducts = productsData || [];
 
-      // For products with 0 enabled variants, inherit from matching Placeholder products
-      const getProductType = (title: string): string => {
-        const lower = title.toLowerCase();
-        if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
-        if (lower.includes('tee') || lower.includes('shirt')) return 'tee';
-        if (lower.includes('mug')) return 'mug';
-        if (lower.includes('tote') || lower.includes('bag')) return 'tote';
-        if (lower.includes('card') || lower.includes('greeting')) return 'card';
-        if (lower.includes('blanket')) return 'unknown'; // HIDDEN: investigating print quality
-        return 'unknown';
-      };
-
-      // Find donor products (with the most enabled variants per type)
-      const donorByType: Record<string, any> = {};
-      for (const p of allProducts) {
-        const type = getProductType(p.title);
-        const variants = Array.isArray(p.variants) ? p.variants : [];
-        const enabledCount = variants.filter((v: any) => v.is_enabled).length;
-        if (enabledCount > 0) {
-          const currentCount = donorByType[type]
-            ? (Array.isArray(donorByType[type].variants) ? donorByType[type].variants : []).filter((v: any) => v.is_enabled).length
-            : 0;
-          if (enabledCount > currentCount) {
-            donorByType[type] = p;
-          }
-        }
-      }
-
-      // Inherit variants and filter
-      for (const p of allProducts) {
-        const variants = Array.isArray(p.variants) ? p.variants : [];
-        if (variants.filter((v: any) => v.is_enabled).length === 0) {
-          const type = getProductType(p.title);
-          const donor = donorByType[type];
-          if (donor) {
-            p.variants = donor.variants;
-          }
-        }
-      }
+      // Apply donor variants using shared utility
+      let finalProducts = assignDonorVariants(allProducts);
 
       // Show only ONE product per type - prefer base product (not Custom/Placeholder)
       const seenTypes = new Set<string>();
       const baseProducts: any[] = [];
-      const sorted = [...allProducts].sort((a: any, b: any) => {
+      const sorted = [...finalProducts].sort((a: any, b: any) => {
         const aLower = a.title.toLowerCase();
         const bLower = b.title.toLowerCase();
         const aIsBase = !aLower.includes('placeholder') && !aLower.startsWith('custom ');
@@ -399,58 +297,6 @@ const DesignDetail = () => {
   const getDisplayPrice = (product: Product) => {
     const retail = product.retail_price || product.price || 0;
     return { price: retail, originalPrice: retail + 20 };
-  };
-
-  // Helper: check if a string looks like a size value
-  const looksLikeSize = (val: string) => {
-    const v = val.trim().toLowerCase();
-    if (/^\d+oz$/i.test(v)) return true;                   // 15oz, 11oz
-    if (/^\d*x?[sml]$/i.test(v)) return true;              // S, M, L, XS, XL
-    if (/^\d+xl$/i.test(v)) return true;                   // 2XL, 3XL
-    if (/^one size$/i.test(v)) return true;                 // One size
-    if (/\d+["″]?\s*[x×]\s*\d+/i.test(v)) return true;   // 30" × 40", 6.9" x 4.9", 15" x 16"
-    return false;
-  };
-
-  // Helper: check if a string looks like a quantity ("1 pc", "10 pcs")
-  const looksLikeQuantity = (val: string) => /^\d+\s*pcs?$/i.test(val.trim());
-
-  // Helper: check if a string looks like a style/finish (not color or size)
-  const looksLikeStyle = (val: string) => {
-    const v = val.trim().toLowerCase();
-    const styles = ['glossy', 'matte', 'coated (both sides)', 'coated (one side)', 'uncoated'];
-    return styles.includes(v);
-  };
-
-  // Parse variants to extract sizes, colors, and styles
-  const getAvailableOptions = (variants: any[]) => {
-    if (!variants) return { sizes: [] as string[], colors: [] as string[], styles: [] as string[] };
-
-    const enabledVariants = variants.filter((v: any) => v.is_enabled);
-
-    const sizes = new Set<string>();
-    const colors = new Set<string>();
-    const styles = new Set<string>();
-
-    enabledVariants.forEach((variant: any) => {
-      const parts = variant.title.split(' / ').map((p: string) => p.trim());
-      parts.forEach((part: string) => {
-        if (looksLikeQuantity(part)) return; // Skip quantity parts like "1 pc"
-        if (looksLikeSize(part)) {
-          sizes.add(part);
-        } else if (looksLikeStyle(part)) {
-          styles.add(part);
-        } else {
-          colors.add(part);
-        }
-      });
-    });
-
-    return {
-      sizes: Array.from(sizes).sort(),
-      colors: Array.from(colors).sort(),
-      styles: Array.from(styles).sort(),
-    };
   };
 
   // Find variant that matches all selected attributes
@@ -711,11 +557,14 @@ const DesignDetail = () => {
                           }`}
                       >
                         <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                          {product.images?.[0] ? (
-                            <img src={typeof product.images[0] === 'string' ? product.images[0] : product.images[0].src} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">—</div>
-                          )}
+                          <img
+                            src={getBlankMockup(
+                              product.images?.[0] ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].src) : undefined,
+                              product.title
+                            )}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <div>
                           <p className="text-sm font-bold leading-tight">

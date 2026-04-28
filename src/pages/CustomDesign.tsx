@@ -10,8 +10,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Upload, Check, Sparkles, Palette, Edit, ShoppingCart, Camera, Minus, Plus, Save } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import personalizationBlanketFallback from "@/assets/personalization-blanket.png";
 import { useSnarkyLoader } from "@/hooks/useSnarkyLoader";
+import {
+  extractColorFromVariant,
+  getUniqueColors,
+  getSizesForColor,
+  isApparelProduct,
+  getBlankMockup,
+  assignDonorVariants,
+  getProductType
+} from "@/lib/variantUtils";
 
 interface Variant {
   id: number;
@@ -130,122 +138,6 @@ export default function CustomDesign() {
   // Auth state
   const [authChecking, setAuthChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Size ordering
-  const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', '11OZ', '15OZ'];
-
-  const isSize = (str: string): boolean => {
-    const normalized = str.trim().toUpperCase();
-    return SIZE_ORDER.includes(normalized);
-  };
-
-  const getSizeOrderIndex = (size: string): number => {
-    const normalized = size.trim().toUpperCase();
-    const index = SIZE_ORDER.indexOf(normalized);
-    return index === -1 ? 999 : index;
-  };
-
-  // Strip trailing quantity like "1 pc", "5 pcs", "10 pack" from variant titles.
-  // Printify greeting card variants look like: "6.9" x 4.9" / Glossy / 1 pc"
-  const stripQuantitySuffix = (s: string): string =>
-    s.replace(/\s*\/\s*\d+\s*(pcs?|pieces?|pack|cards?)?s?\s*$/i, '').trim();
-
-  const extractColorFromVariant = (variantTitle: string): string => {
-    const cleaned = stripQuantitySuffix(variantTitle);
-    const parts = cleaned.split('/').map(p => p.trim());
-    if (parts.length === 1) {
-      // Single-dimension variant (e.g. just a size like "S" or format like "4×6")
-      return parts[0];
-    }
-    if (parts.length === 2) {
-      if (isSize(parts[0])) return parts[1]; // "S / Black" → "Black"
-      if (isSize(parts[1])) return parts[0]; // "Black / S" → "Black"
-      return parts[0];                        // "6.9" x 4.9" / Glossy" → "6.9" x 4.9""
-    }
-    // 3+ parts (shouldn't happen after stripQuantitySuffix but just in case)
-    return parts[0];
-  };
-
-  const extractSizeFromVariant = (variantTitle: string): string => {
-    const cleaned = stripQuantitySuffix(variantTitle);
-    const parts = cleaned.split('/').map(p => p.trim());
-    if (parts.length === 2) {
-      if (isSize(parts[0])) return parts[0];
-      if (isSize(parts[1])) return parts[1];
-      return parts[1];
-    }
-    // Don't fabricate a size — return the raw title so callers can detect "no real size"
-    return variantTitle;
-  };
-
-  // Core shirt colours — case-insensitive whitelist to keep the picker tidy.
-  const BASIC_SHIRT_COLORS_LOWER = [
-    'white', 'black', 'navy', 'gray', 'grey', 'heather gray', 'heather grey',
-    'red', 'royal blue', 'forest green', 'dark heather', 'sport grey',
-    'charcoal', 'ash', 'military green', 'maroon', 'purple', 'gold',
-  ];
-
-  const getUniqueColors = (variants: Variant[], productTitle?: string): string[] => {
-    const enabledVariants = variants.filter(v => v.is_enabled);
-    const colors = enabledVariants.map(v => extractColorFromVariant(v.title));
-    const unique = [...new Set(colors)];
-
-    const t = (productTitle || '').toLowerCase();
-
-    if (t.includes('tee') || t.includes('shirt')) {
-      // Case-insensitive whitelist match; fall back to first 8 if nothing matches
-      const filtered = unique.filter(c =>
-        BASIC_SHIRT_COLORS_LOWER.includes(c.toLowerCase())
-      );
-      return filtered.length > 0 ? filtered : unique.slice(0, 8);
-    }
-
-    if (t.includes('card') || t.includes('greeting')) {
-      // Greeting card variants are size/finish combos — cap at 6 clearest options
-      return unique.slice(0, 6);
-    }
-
-    return unique;
-  };
-
-  const getSizesForColor = (variants: Variant[], color: string): Variant[] => {
-    return variants
-      .filter(v => v.is_enabled && extractColorFromVariant(v.title) === color)
-      .sort((a, b) => {
-        const sizeA = extractSizeFromVariant(a.title);
-        const sizeB = extractSizeFromVariant(b.title);
-        return getSizeOrderIndex(sizeA) - getSizeOrderIndex(sizeB);
-      });
-  };
-
-
-
-  // Check if product is apparel (for Virtual Try-On eligibility)
-  const isApparelProduct = (product: Product | null): boolean => {
-    if (!product) return false;
-    const category = (product.category || '').toLowerCase();
-    const title = (product.title || '').toLowerCase();
-
-    const apparelKeywords = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater', 'apparel', 'clothing'];
-    const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap', 'blanket', 'card', 'greeting'];
-
-    // Check if it's explicitly non-apparel
-    for (const keyword of nonApparelKeywords) {
-      if (category.includes(keyword) || title.includes(keyword)) {
-        return false;
-      }
-    }
-
-    // Check if it's apparel
-    for (const keyword of apparelKeywords) {
-      if (category.includes(keyword) || title.includes(keyword)) {
-        return true;
-      }
-    }
-
-    // Default to false for unknown categories — only show try-on for confirmed apparel
-    return false;
-  };
 
   // Check auth state - show prompt instead of redirecting
   useEffect(() => {
@@ -427,53 +319,15 @@ export default function CustomDesign() {
         })) : [],
       }));
 
-      // For products with 0 enabled variants, try to inherit from a matching
-      // "Placeholder Design" product that has variants already configured
-      const typeKeywords = ['hoodie', 'sweatshirt', 'tee', 'shirt', 'mug', 'tote', 'bag', 'card', 'greeting', 'blanket'];
-
-      const getProductType = (title: string): string => {
-        const lower = title.toLowerCase();
-        if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
-        if (lower.includes('tee') || lower.includes('shirt')) return 'tee';
-        if (lower.includes('mug')) return 'mug';
-        if (lower.includes('tote') || lower.includes('bag')) return 'tote';
-        if (lower.includes('card') || lower.includes('greeting')) return 'card';
-        if (lower.includes('blanket')) return 'unknown'; // HIDDEN: investigating print quality
-        return 'unknown';
-      };
-
-      // Find donor products (those with the most enabled variants per type)
-      const donorByType: Record<string, Product> = {};
-      for (const p of allProducts) {
-        const type = getProductType(p.title);
-        const enabledCount = p.variants.filter(v => v.is_enabled).length;
-        if (enabledCount > 0) {
-          const currentDonor = donorByType[type];
-          const currentDonorCount = currentDonor ? currentDonor.variants.filter(v => v.is_enabled).length : 0;
-          if (enabledCount > currentDonorCount) {
-            donorByType[type] = p;
-          }
-        }
-      }
-
-      // Always give every product the best (largest) variant set for its type.
-      // This ensures the display product shows all colours even if its own
-      // Printify placeholder was configured with only one colour.
-      for (const p of allProducts) {
-        const type = getProductType(p.title);
-        const donor = donorByType[type];
-        if (donor && donor.id !== p.id && donor.variants.length > p.variants.length) {
-          console.log(`Assigning ${donor.variants.length} variants from "${donor.title}" to "${p.title}"`);
-          p.variants = donor.variants;
-        }
-      }
+      // Apply donor variants using shared utility
+      let finalProducts = assignDonorVariants(allProducts);
 
       // Show only ONE product per type - prefer the base product (not Custom/Placeholder versions)
       const seenTypes = new Set<string>();
       const baseProducts: typeof allProducts = [];
 
       // Sort: prefer products WITHOUT "placeholder" or "custom" in the name, then by shortest title
-      const sorted = [...allProducts].sort((a, b) => {
+      const sorted = [...finalProducts].sort((a, b) => {
         const aLower = a.title.toLowerCase();
         const bLower = b.title.toLowerCase();
         const aIsBase = !aLower.includes('placeholder') && !aLower.startsWith('custom ');
@@ -491,13 +345,13 @@ export default function CustomDesign() {
         }
       }
 
-      const finalProducts = baseProducts.length > 0 ? baseProducts : allProducts;
-      setProducts(finalProducts);
+      const finalProductsToSet = baseProducts.length > 0 ? baseProducts : finalProducts;
+      setProducts(finalProductsToSet);
 
       // Auto-select product if ?product= URL param is provided (e.g., from landing pages)
       const productParam = searchParams.get('product');
       if (productParam && !selectedProduct) {
-        const match = finalProducts.find(p => getProductType(p.title) === productParam.toLowerCase());
+        const match = finalProductsToSet.find(p => getProductType(p.title) === productParam.toLowerCase());
         if (match) {
           console.log('Auto-selecting product from URL param:', productParam, '->', match.title);
           setSelectedProduct(match);
@@ -727,21 +581,6 @@ export default function CustomDesign() {
     }
   };
 
-  // Returns the best blank product image for the Custom Design page.
-  // Priority: local clean blank shot → Printify catalog URL (lifestyle photos, last resort)
-  // Printify blueprint images are marketing/lifestyle photos, not clean white blanks,
-  // so local curated images are preferred here where the user is placing their own design.
-  const getBlankMockup = (templateImageUrl: string | undefined, title: string) => {
-    const t = title.toLowerCase();
-    if (t.includes('hoodie') || t.includes('sweatshirt')) return '/images/hoodie-mockup.png';
-    if (t.includes('mug')) return '/images/mug-mockup.png';
-    if (t.includes('card') || t.includes('greeting')) return '/images/greeting-card-mockup.png';
-    if (t.includes('tote') || t.includes('bag')) return '/images/tote-mockup.png';
-    if (t.includes('tee') || t.includes('shirt')) return '/images/shirt-mockup.png';
-    if (t.includes('blanket')) return personalizationBlanketFallback;
-    // Unknown product type — fall back to whatever Printify gave us
-    return templateImageUrl || '';
-  };
 
   const [mockupError, setMockupError] = useState<string | null>(null);
 

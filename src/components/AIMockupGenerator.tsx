@@ -11,16 +11,7 @@ interface AIMockupGeneratorProps {
   productColor?: string;
 }
 
-function isWearable(title: string): boolean {
-  const lower = title.toLowerCase();
-  return (
-    lower.includes('shirt') ||
-    lower.includes('tee') ||
-    lower.includes('hoodie') ||
-    lower.includes('sweatshirt') ||
-    lower.includes('jersey')
-  );
-}
+import { isApparelProduct } from "@/lib/variantUtils";
 
 function getProductLabel(title: string): string {
   const lower = title.toLowerCase();
@@ -43,7 +34,7 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
   const snarkyMessage = useSnarkyLoader(generating);
 
   const title = productTitle || "T-Shirt";
-  const wearable = isWearable(title);
+  const wearable = isApparelProduct(null, title);
   const label = getProductLabel(title);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
