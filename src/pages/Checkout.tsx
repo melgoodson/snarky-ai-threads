@@ -141,6 +141,7 @@ const Checkout = () => {
         printifyProductId: designData.printifyProductId,
         variantId: undefined,
         designImageUrl: designData.designImageUrl || designData.image || designData.mockupUrl, // Pass design artwork
+        productImageUrl: designData.productImageUrl,
       }]
       : [];
 
@@ -436,19 +437,43 @@ const Checkout = () => {
                   const imageUrl = typeof item.image === 'string'
                     ? item.image
                     : (item.image as any)?.src || '/placeholder.svg';
-                  // Use mockup preview if available (AI-generated product mockup)
-                  const mockupSrc = item.mockupUrl || (designData?.mockupUrl);
+                  // Use a real mockup if available. Otherwise compose the product base image
+                  // with the custom artwork so checkout does not show raw artwork alone.
+                  const legacyDesignData = items.length === 0 ? designData : null;
+                  const mockupSrc = item.mockupUrl || legacyDesignData?.mockupUrl;
+                  const productPreviewSrc = item.productImageUrl || legacyDesignData?.productImageUrl;
+                  const designPreviewSrc = item.designImageUrl;
+                  const hasFallbackPreview = !mockupSrc && productPreviewSrc && designPreviewSrc;
 
                   return (
                     <div key={item.id} className="space-y-3">
                       {/* AI Mockup Preview */}
-                      {mockupSrc && (
+                      {mockupSrc ? (
                         <div className="rounded-lg overflow-hidden border border-border bg-muted">
                           <img
                             src={mockupSrc}
                             alt={`${item.title} mockup preview`}
                             className="w-full h-auto object-contain"
                           />
+                          <p className="text-xs text-muted-foreground text-center py-1">Product Preview</p>
+                        </div>
+                      ) : hasFallbackPreview && (
+                        <div className="rounded-lg overflow-hidden border border-border bg-muted">
+                          <div className="relative aspect-square">
+                            <img
+                              src={productPreviewSrc}
+                              alt={`${item.title} base product`}
+                              className="h-full w-full object-cover"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center p-12">
+                              <img
+                                src={designPreviewSrc}
+                                alt={`${item.title} custom design`}
+                                className="max-h-[70%] max-w-[70%] object-contain opacity-90"
+                                style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                              />
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground text-center py-1">Product Preview</p>
                         </div>
                       )}

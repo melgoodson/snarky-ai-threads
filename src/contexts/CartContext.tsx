@@ -13,6 +13,7 @@ export interface CartItem {
   variantId?: string;
   designImageUrl?: string; // The actual design artwork URL for printing
   mockupUrl?: string; // AI-generated product mockup preview
+  productImageUrl?: string; // Base product image used for fallback previews
 }
 
 interface CartContextType {
@@ -41,6 +42,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         image: item.image?.startsWith('data:') ? '' : item.image,
         designImageUrl: item.designImageUrl?.startsWith('data:') ? '' : item.designImageUrl,
         mockupUrl: item.mockupUrl?.startsWith('data:') ? '' : item.mockupUrl,
+        productImageUrl: item.productImageUrl?.startsWith('data:') ? '' : item.productImageUrl,
       }));
       localStorage.setItem('cart', JSON.stringify(itemsToStore));
     } catch (e) {

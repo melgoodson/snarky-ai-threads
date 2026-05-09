@@ -6,6 +6,7 @@ import { ArrowRight, Camera, Shield, Truck, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 import { ImageCarousel } from "@/components/ImageCarousel";
+import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
@@ -67,6 +68,8 @@ const ShirtLanding = () => {
                         </div>
                     </div>
                 </section>
+
+                <AiCustomGiftCTA location="shirts_page" variant="compact" />
 
                 {/* How It Works — numbered steps like blankets */}
                 <section className="py-16 md:py-24 bg-card/50">

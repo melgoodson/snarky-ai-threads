@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Button } from "@/components/ui/button";
 import { Coffee, Monitor, MessageSquare, Clock } from "lucide-react";
+import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
 
 const CoworkerGiftsLanding = () => {
     return (
@@ -35,6 +36,8 @@ const CoworkerGiftsLanding = () => {
                         </div>
                     </div>
                 </section>
+
+                <AiCustomGiftCTA location="funny_coworker_gifts_category" variant="compact" />
 
                 {/* Office Humor Block */}
                 <section className="py-16 bg-background">

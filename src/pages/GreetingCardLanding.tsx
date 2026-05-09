@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Sparkles, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
 
 const OCCASIONS = [
     { emoji: "🎂", title: "Birthdays", desc: "Because 'Happy Birthday' in Comic Sans just won't cut it" },
@@ -65,6 +66,8 @@ const GreetingCardLanding = () => {
                         </div>
                     </div>
                 </section>
+
+                <AiCustomGiftCTA location="greeting_cards_page" variant="compact" />
 
                 {/* Specs */}
                 <section className="py-16 md:py-24 bg-card/50">

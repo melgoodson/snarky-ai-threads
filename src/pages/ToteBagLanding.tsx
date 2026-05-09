@@ -6,6 +6,7 @@ import { ArrowRight, ShoppingBag, Leaf, Ruler, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 import { ImageCarousel } from "@/components/ImageCarousel";
+import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
 
 const HERO_IMAGES = [
     "/images/carousel/tote-hero-1.jpg",
@@ -58,6 +59,8 @@ const ToteBagLanding = () => {
                         </div>
                     </div>
                 </section>
+
+                <AiCustomGiftCTA location="tote_bags_page" variant="compact" />
 
                 {/* Features */}
                 <section className="py-16 md:py-24 bg-card/50">

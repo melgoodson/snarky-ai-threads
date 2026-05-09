@@ -11,8 +11,10 @@ import { toast } from "sonner";
 import { Loader2, Upload, Check, Sparkles, Palette, Edit, ShoppingCart, Camera, Minus, Plus, Save } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useSnarkyLoader } from "@/hooks/useSnarkyLoader";
+import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
 import {
   extractColorFromVariant,
+  extractSizeFromVariant,
   getUniqueColors,
   getSizesForColor,
   isApparelProduct,
@@ -92,12 +94,16 @@ export default function CustomDesign() {
   const [searchParams] = useSearchParams();
   const { addItem } = useCart();
 
+  const promptFromUrl = searchParams.get('prompt') || "";
+  const sourceFromUrl = searchParams.get('source') || "";
+  const showAiLandingCta = sourceFromUrl !== "ai-custom-clothing";
+
   // Flow state
   const [currentStep, setCurrentStep] = useState<FlowStep>('create');
 
   // Step 1: Create Design
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
-  const [customPrompt, setCustomPrompt] = useState("");
+  const [customPrompt, setCustomPrompt] = useState(promptFromUrl);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [uploadedDesign, setUploadedDesign] = useState<string | null>(null);
   const [generatingDesign, setGeneratingDesign] = useState(false);
@@ -824,14 +830,28 @@ export default function CustomDesign() {
       const selectedSize = extractSizeFromVariant(selectedVariant.title);
       const selectedColor = extractColorFromVariant(selectedVariant.title);
 
-      // Use Printify's mockup if available, then AI preview, then design image as last fallback
-      const displayImage = customProductData.mockupImageUrl || mockupPreview || approvedDesign.imageUrl;
       // Use Printify's confirmed design URL (what will actually be printed)
       const confirmedDesignUrl = customProductData.uploadedImagePreview || approvedDesign.imageUrl;
+      const printifyMockupUrl =
+        customProductData.mockupImageUrl &&
+          customProductData.mockupImageUrl !== confirmedDesignUrl &&
+          customProductData.mockupImageUrl !== approvedDesign.imageUrl
+          ? customProductData.mockupImageUrl
+          : undefined;
+      const productImageUrl =
+        getBlankMockup(selectedProduct.template_image_url, selectedProduct.title) ||
+        selectedProduct.images?.[0] ||
+        "";
+
+      // Use a real product mockup if available. If Printify only gives back the raw
+      // uploaded design, keep the product image so checkout can render a fallback composite.
+      const displayImage = printifyMockupUrl || mockupPreview || productImageUrl || approvedDesign.imageUrl;
 
       console.log('Order consistency check:', {
         printifyMockup: customProductData.mockupImageUrl,
+        printifyMockupUsed: printifyMockupUrl,
         aiMockup: mockupPreview,
+        productImageUrl,
         displayImage,
         printifyDesignUrl: customProductData.uploadedImagePreview,
         originalDesignUrl: approvedDesign.imageUrl,
@@ -847,8 +867,9 @@ export default function CustomDesign() {
           size: selectedSize,
           image: displayImage,
           // mockupUrl is stored separately so Cart & Checkout can show a proper preview.
-          // Prefer Printify CDN URL (persists through page refresh) over base64 AI preview.
-          mockupUrl: customProductData.mockupImageUrl || mockupPreview || undefined,
+          // Prefer a true Printify mockup over the AI preview; ignore raw uploaded artwork.
+          mockupUrl: printifyMockupUrl || mockupPreview || undefined,
+          productImageUrl: productImageUrl || undefined,
           printifyProductId: customProductData.printifyProductId,
           variantId: String(selectedVariant.id),
           designImageUrl: confirmedDesignUrl,
@@ -901,6 +922,10 @@ export default function CustomDesign() {
                   </p>
                 </div>
               </Card>
+
+              {showAiLandingCta && (
+                <AiCustomGiftCTA location="custom_design_page" variant="compact" contained={false} />
+              )}
 
               {/* Progress Steps */}
               <div className="flex justify-center items-center gap-2 flex-wrap">

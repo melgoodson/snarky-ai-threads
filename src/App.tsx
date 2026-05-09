@@ -49,6 +49,7 @@ import GreetingCardLanding from "./pages/GreetingCardLanding";
 import CategoryLanding from "./pages/CategoryLanding";
 import WhiteElephantLanding from "./pages/WhiteElephantLanding";
 import CoworkerGiftsLanding from "./pages/CoworkerGiftsLanding";
+import AiCustomClothing from "./pages/AiCustomClothing";
 import { BestSellersPopup } from "./components/BestSellersPopup";
 
 const queryClient = new QueryClient();
@@ -110,6 +111,7 @@ const App = () => (
             <Route path="/greeting-cards" element={<GreetingCardLanding />} />
             <Route path="/category/white-elephant-gifts" element={<WhiteElephantLanding />} />
             <Route path="/category/funny-coworker-gifts" element={<CoworkerGiftsLanding />} />
+            <Route path="/ai-custom-clothing" element={<AiCustomClothing />} />
             <Route path="/category/:categorySlug" element={<CategoryLanding />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

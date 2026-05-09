@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { EmailCapture } from "@/components/EmailCapture";
+import {
+  AI_CUSTOM_CLOTHING_PATH,
+  trackAiLandingInternalClick,
+} from "@/utils/aiLanding";
 
 export const Footer = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -12,7 +16,7 @@ export const Footer = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: roles } = await (supabase as any)
+      const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
@@ -71,6 +75,15 @@ export const Footer = () => {
           <div>
             <h4 className="font-bold mb-4 text-foreground">SHOP</h4>
             <ul className="space-y-2">
+              <li>
+                <Link
+                  to={AI_CUSTOM_CLOTHING_PATH}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => trackAiLandingInternalClick("footer_shop", AI_CUSTOM_CLOTHING_PATH, "AI Custom Gifts")}
+                >
+                  AI Custom Gifts
+                </Link>
+              </li>
               <li>
                 <Link to="/new-arrivals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   New Arrivals

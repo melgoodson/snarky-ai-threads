@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Button } from "@/components/ui/button";
+import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
 
 const CATEGORY_DATA: Record<string, { title: string; subtitle: string; description: string; metaDesc: string; copyText1: string; copyText2: string; keywords: string; }> = {
   "funny-gifts": {
@@ -89,11 +90,18 @@ const CATEGORY_DATA: Record<string, { title: string; subtitle: string; descripti
   }
 };
 
+const AI_CTA_LOCATIONS: Record<string, string> = {
+  "funny-gifts": "funny_gifts_category",
+  "gag-gifts": "gag_gifts_category",
+  "funny-gifts-under-25": "gifts_under_25_category",
+};
+
 const CategoryLanding = () => {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
   
   const category = categorySlug ? CATEGORY_DATA[categorySlug] : undefined;
+  const aiCtaLocation = categorySlug ? AI_CTA_LOCATIONS[categorySlug] : undefined;
 
   if (!category) {
     return (
@@ -133,6 +141,10 @@ const CategoryLanding = () => {
             </p>
           </div>
         </section>
+
+        {aiCtaLocation && (
+          <AiCustomGiftCTA location={aiCtaLocation} variant="compact" />
+        )}
 
         {/* Product Grid */}
         <section className="container mx-auto px-4 py-12">

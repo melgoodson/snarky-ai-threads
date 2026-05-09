@@ -8,6 +8,7 @@ import { WebsiteReviews } from "@/components/WebsiteReviews";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Footer } from "@/components/Footer";
 import { EmailCapture } from "@/components/EmailCapture";
+import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
 
 const Index = () => {
   const orgSchema = {
@@ -55,6 +56,7 @@ const Index = () => {
       </div>
       <main className="flex-1">
         <Hero />
+        <AiCustomGiftCTA location="homepage_banner" variant="homepage" />
         <HeroUGCVideo />
         <ProductShowcase />
         <UGCTestimonials />

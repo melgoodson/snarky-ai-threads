@@ -17,6 +17,69 @@ if (!fs.existsSync(DIST_DIR)) {
 const templatePath = path.join(DIST_DIR, 'index.html');
 const baseHtml = fs.readFileSync(templatePath, 'utf8');
 
+const aiCustomClothingFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "What is AI custom clothing?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "AI custom clothing is apparel personalized from your own idea, photo, joke, or prompt. AI helps turn that input into a design concept you can place on a shirt, hoodie, or gift."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "How do AI custom shirts work?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Start with your idea or image, use AI to shape the design, choose the shirt or product, then review the custom item before ordering."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "Can I make a shirt from an inside joke?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. Inside jokes, original phrases, birthday roasts, work rants, and group chat ideas are exactly the kind of personal moments that make custom gifts land."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "Can I create custom pet gifts?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. You can use your own pet photo or pet-inspired idea to create custom shirts, mugs, totes, cards, and other gift concepts."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "What products can I personalize?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "You can start with shirts, hoodies, mugs, blankets, tote bags, greeting cards, pet gifts, coworker gifts, and other personalized gift ideas."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "Can I use copyrighted characters, logos, celebrities, or memes?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "You can use your own ideas, photos, jokes, and original prompts. Do not upload copyrighted logos, characters, celebrity likenesses, trademarked artwork, or designs you do not have rights to use."
+      }
+    }
+  ]
+};
+
+const aiCustomClothingPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "AI Custom Clothing & One-of-One Gifts",
+  url: "https://www.snarkyazzhumans.com/ai-custom-clothing",
+  description: "Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
+};
+
 const SEO_ROUTES = [
   {
     path: '/',
@@ -33,7 +96,37 @@ const SEO_ROUTES = [
       <li><a href="/mugs">Snarky Coffee Mugs</a></li>
       <li><a href="/tote-bags">Custom Tote Bags</a></li>
       <li><a href="/greeting-cards">Snarky Greeting Cards</a></li>
+      <li><a href="/ai-custom-clothing">AI Custom Gifts</a></li>
     </ul>`
+  },
+  {
+    path: '/ai-custom-clothing',
+    title: 'AI Custom Clothing & One-of-One Gifts | Snarky Azz Humans',
+    desc: 'Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts.',
+    canonical: 'https://www.snarkyazzhumans.com/ai-custom-clothing',
+    schemas: [aiCustomClothingPageSchema, aiCustomClothingFaqSchema],
+    body: `<h1>Make a One-of-One Gift From the Thing Everyone Is Talking About</h1>
+    <p>Turn a trend, inside joke, pet photo, work rant, birthday roast, or wild idea into AI-designed clothing and gifts made for exactly one person.</p>
+    <h2>How AI Custom Clothing Works</h2>
+    <ol>
+      <li>Bring the idea.</li>
+      <li>AI helps shape the design.</li>
+      <li>Pick the product.</li>
+      <li>We print and ship it.</li>
+    </ol>
+    <h2>Gift Ideas</h2>
+    <ul>
+      <li><a href="/custom-design?product=tee">AI Custom T-Shirts</a></li>
+      <li><a href="/custom-design?product=hoodie">Custom Hoodies</a></li>
+      <li><a href="/mugs">Funny Mugs</a></li>
+      <li><a href="/blankets">Custom Photo Blankets</a></li>
+      <li><a href="/tote-bags">Tote Bags</a></li>
+      <li><a href="/greeting-cards">Greeting Cards</a></li>
+      <li><a href="/category/funny-coworker-gifts">Coworker Gifts</a></li>
+    </ul>
+    <h2>Copyright-Safe Custom Gifts</h2>
+    <p>You can use your own ideas, photos, jokes, and original prompts. Do not upload copyrighted logos, characters, celebrity likenesses, trademarked artwork, or designs you do not have rights to use.</p>
+    <p><a href="/custom-design">Create Your One-of-One Gift</a></p>`
   },
   {
     path: '/shirts',
@@ -189,6 +282,40 @@ SEO_ROUTES.forEach(route => {
     /<meta\s+name="description"\s+content=".*?"\s*\/?>/,
     `<meta name="description" content="${route.desc}">`
   );
+
+  outputHtml = outputHtml.replace(
+    /<meta\s+property="og:title"\s+content="[\s\S]*?">/,
+    `<meta property="og:title" content="${route.title}">`
+  );
+
+  outputHtml = outputHtml.replace(
+    /<meta\s+name="twitter:title"\s+content="[\s\S]*?">/,
+    `<meta name="twitter:title" content="${route.title}">`
+  );
+
+  outputHtml = outputHtml.replace(
+    /<meta\s+property="og:description"[\s\S]*?>/,
+    `<meta property="og:description" content="${route.desc}">`
+  );
+
+  outputHtml = outputHtml.replace(
+    /<meta\s+name="twitter:description"[\s\S]*?>/,
+    `<meta name="twitter:description" content="${route.desc}">`
+  );
+
+  if (route.canonical) {
+    outputHtml = outputHtml.replace(
+      '</head>',
+      `  <link rel="canonical" href="${route.canonical}">\n  <meta property="og:url" content="${route.canonical}">\n</head>`
+    );
+  }
+
+  if (route.schemas) {
+    const schemaHtml = route.schemas
+      .map(schema => `  <script type="application/ld+json">${JSON.stringify(schema).replace(/</g, '\\u003c')}</script>`)
+      .join('\n');
+    outputHtml = outputHtml.replace('</head>', `${schemaHtml}\n</head>`);
+  }
 
   // 3. Replace the entire crawler block content with unique body content
   outputHtml = outputHtml.replace(

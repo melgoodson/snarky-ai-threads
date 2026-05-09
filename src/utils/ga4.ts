@@ -27,8 +27,8 @@ export const initGA4 = () => {
   window.dataLayer = window.dataLayer || [];
   // Ensure we don't overwrite an existing gtag function (e.g. from Google Ads)
   if (!window.gtag) {
-    window.gtag = function gtag() {
-      window.dataLayer.push(arguments);
+    window.gtag = function gtag(...args: unknown[]) {
+      window.dataLayer.push(args);
     };
   }
 
@@ -46,4 +46,10 @@ export const trackPageView = (path: string) => {
   window.gtag('config', GA_MEASUREMENT_ID, {
     page_path: path,
   });
+};
+
+export const trackEvent = (eventName: string, params?: Record<string, unknown>) => {
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
+
+  window.gtag('event', eventName, params || {});
 };

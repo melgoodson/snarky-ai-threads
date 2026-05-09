@@ -1,14 +1,17 @@
-import { Menu, Shield, User, X, ChevronDown, Shirt } from "lucide-react";
+import { Menu, User, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Cart } from "@/components/Cart";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  AI_CUSTOM_CLOTHING_PATH,
+  trackAiLandingInternalClick,
+} from "@/utils/aiLanding";
+import {
   Sheet,
   SheetContent,
   SheetTrigger,
-  SheetClose,
 } from "@/components/ui/sheet";
 
 const SHOP_CATEGORIES = [
@@ -22,10 +25,15 @@ const SHOP_CATEGORIES = [
   { label: "Collections", to: "/collections", emoji: "📦" },
 ];
 
-export const Header = () => {
+interface HeaderProps {
+  brandAsHeading?: boolean;
+}
+
+export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const BrandTitle = brandAsHeading ? "h1" : "div";
 
   useEffect(() => {
     checkAdminStatus();
@@ -49,7 +57,7 @@ export const Header = () => {
 
       setIsLoggedIn(true);
 
-      const { data: roles } = await (supabase as any)
+      const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
@@ -141,6 +149,16 @@ export const Header = () => {
         )}
 
         <Link
+          to={AI_CUSTOM_CLOTHING_PATH}
+          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+          onClick={() => {
+            trackAiLandingInternalClick("header_nav", AI_CUSTOM_CLOTHING_PATH, "AI Custom Gifts");
+            onClose?.();
+          }}
+        >
+          AI CUSTOM GIFTS
+        </Link>
+        <Link
           to="/custom-design"
           className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           onClick={onClose}
@@ -191,11 +209,17 @@ export const Header = () => {
         <div className="border-b border-border bg-background">
           <div className="container px-4 py-3">
             <Link to="/" className="block text-center hover:opacity-80 transition-opacity">
-              <h1 className="text-xl md:text-2xl font-black tracking-tighter">
-                <span className="text-primary">SNARKY A$$ HUMANS</span>{" "}
-                <span className="text-foreground">PRESENTS SNARKY A$$</span>{" "}
-                <span className="text-primary">APPAREL</span>
-              </h1>
+              <BrandTitle className="text-sm leading-tight sm:text-xl md:text-2xl font-black tracking-normal">
+                <span className="text-primary">SNARKY A$$ HUMANS</span>
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> </span>
+                <span className="text-foreground">PRESENTS</span>
+                <span className="hidden sm:inline text-foreground"> SNARKY A$$</span>
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> </span>
+                <span className="text-primary sm:hidden">SNARKY A$$ APPAREL</span>
+                <span className="hidden text-primary sm:inline">APPAREL</span>
+              </BrandTitle>
             </Link>
           </div>
         </div>
