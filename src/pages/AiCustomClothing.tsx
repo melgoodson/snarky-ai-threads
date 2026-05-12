@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
@@ -9,13 +9,16 @@ import {
   Gift,
   Heart,
   Image,
+  Moon,
   Package,
   PawPrint,
   Shield,
   Shirt,
   ShoppingBag,
   Sparkles,
+  Sun,
   Truck,
+  Zap,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -28,41 +31,28 @@ import ugcVideo from "@/assets/ugc_440.mp4";
 const PAGE_KEY = "ai_custom_clothing";
 const CUSTOMIZER_PATH = "/custom-design?source=ai-custom-clothing";
 const VIDEO_POSTER = "/images/carousel/shirt-hero-new-1.jpg";
+const HERO_SCREENSHOT = "/images/ai-custom-clothing/hero-idea-screenshot.jpeg";
+const HERO_SHIRT_MOCKUP = "/images/ai-custom-clothing/pile4-shirt-mockup.png";
+const MEME_SHIRT_PROMPT = "Turn this trending roommate dishes meme idea into an original funny shirt design.";
 
-const heroProducts = [
-  {
-    src: "/images/shirt-mockup.png",
-    alt: "AI custom shirt mockup for a one-of-one gift",
-    label: "Shirts",
-  },
-  {
-    src: "/images/mug-mockup.png",
-    alt: "Custom mug mockup for a personalized joke gift",
-    label: "Mugs",
-  },
-  {
-    src: "/images/tote-mockup.png",
-    alt: "Custom tote bag mockup with a personalized design",
-    label: "Totes",
-  },
-  {
-    src: "/images/greeting-card-mockup.png",
-    alt: "Custom greeting card mockup for a personal gift",
-    label: "Cards",
-  },
+const GEN_STEPS = [
+  { src: "/images/ai-custom-clothing/hero-idea-screenshot.jpeg", label: "Original" },
+  { src: "/images/ai-custom-clothing/gen-step-2.jpeg", label: "Draft" },
+  { src: "/images/ai-custom-clothing/gen-step-3.jpeg", label: "Refined" },
+  { src: "/images/ai-custom-clothing/gen-step-4.jpeg", label: "✨ Final" },
 ];
 
 const howItWorks = [
   {
     step: "01",
-    title: "Bring the idea",
-    description: "Start with a trend, pet photo, inside joke, work rant, roast, or rough prompt.",
+    title: "Spot the trend",
+    description: "Start with the meme-worthy moment, group chat joke, pet face, work rant, or rough prompt.",
     icon: Sparkles,
   },
   {
     step: "02",
-    title: "AI helps shape the design",
-    description: "Turn the thought into a design direction that fits the person and the product.",
+    title: "Make it yours",
+    description: "AI helps turn the spark into an original design direction that fits the person and the product.",
     icon: Image,
   },
   {
@@ -91,75 +81,67 @@ const productPathways: Array<{
     title: "AI Custom T-Shirts",
     description: "Turn the joke, trend, or roast into a wearable main character moment.",
     to: `${CUSTOMIZER_PATH}&product=tee`,
-    image: "/images/shirt-mockup.png",
-    alt: "Blank shirt mockup for AI custom t-shirts",
+    image: "/images/carousel/snarky-humans-1.png",
+    alt: "Snarky Azz Humans custom t-shirt with a bold printed design",
     icon: Shirt,
   },
   {
     title: "Custom Hoodies",
     description: "Make the idea warmer, louder, and easier to gift.",
     to: `${CUSTOMIZER_PATH}&product=hoodie`,
-    image: "/images/hoodie-mockup.png",
-    alt: "Blank hoodie mockup for a custom AI clothing gift",
+    image: "/images/carousel/hoodie-hero-2.jpg",
+    alt: "Custom hoodie with Snarky Humans artwork",
     icon: Shirt,
   },
   {
     title: "Funny Mugs",
     description: "For meeting haters, caffeine loyalists, and people with opinions.",
     to: "/mugs",
-    image: "/images/mug-mockup.png",
-    alt: "Custom mug mockup for funny personalized gifts",
+    image: "/images/carousel/mug-hero-2.jpg",
+    alt: "Funny Snarky Humans mug with a printed design",
     icon: Coffee,
-  },
-  {
-    title: "Custom Photo Blankets",
-    description: "Turn a family photo, pet face, or birthday memory into a cozy gift.",
-    to: "/blankets",
-    image: "/images/carousel/blanket-hero-1.jpg",
-    alt: "Custom photo blanket gift example",
-    icon: Image,
   },
   {
     title: "Tote Bags",
     description: "For the friend who brings snacks, drama, and a reusable bag.",
     to: "/tote-bags",
-    image: "/images/tote-mockup.png",
-    alt: "Custom tote bag mockup for a personalized gift",
+    image: "/images/carousel/tote-hero-2.jpg",
+    alt: "Custom tote bag with a printed caffeine and spite design",
     icon: ShoppingBag,
   },
   {
     title: "Greeting Cards",
     description: "Make the card as specific as the gift and twice as memorable.",
     to: "/greeting-cards",
-    image: "/images/greeting-card-mockup.png",
-    alt: "Custom greeting card mockup for personal messages",
+    image: "/images/carousel/greeting-card-hero-1.jpg",
+    alt: "Assorted custom greeting cards with funny designs",
     icon: Gift,
   },
   {
     title: "Pet Gifts",
     description: "Put the pet's face, side-eye, or chaos energy where it belongs.",
     to: `${CUSTOMIZER_PATH}&prompt=${encodeURIComponent("Make a custom pet gift from my pet photo.")}`,
-    image: "/images/mug-mockup.png",
-    alt: "Mug mockup for custom pet photo gifts",
+    image: "/images/carousel/mug-hero-2.jpg",
+    alt: "Custom printed mug for personalized pet gifts",
     icon: PawPrint,
   },
   {
     title: "Coworker Gifts",
     description: "Make the meeting joke, desk drama, or office survival gift official.",
     to: "/category/funny-coworker-gifts",
-    image: "/images/carousel/mug-hero-1.jpg",
-    alt: "Funny coworker mug gift idea",
+    image: "/images/carousel/rbf-champion-1.png",
+    alt: "Funny coworker gift — RBF Champion snarky design",
     icon: Briefcase,
   },
 ];
 
 const promptExamples = [
+  "Turn a trending roommate dishes joke into a funny shirt.",
+  "Make a meme-inspired tee from this chaos moment.",
   "Make a shirt from my dog's judgmental face.",
   "Turn our group chat joke into a birthday gift.",
   "Make a mug for someone who hates meetings.",
-  "Create a blanket from this family photo but make it funny.",
   "Make a tote bag for the friend who brings chaos everywhere.",
-  "Create a white elephant gift people actually fight over.",
 ];
 
 const trustCards = [
@@ -209,7 +191,7 @@ const faqItems = [
   {
     question: "Can I use copyrighted characters, logos, celebrities, or memes?",
     answer:
-      "You can use your own ideas, photos, jokes, and original prompts. Do not upload copyrighted logos, characters, celebrity likenesses, trademarked artwork, or designs you do not have rights to use.",
+      "You can make original, meme-inspired jokes from your own ideas, photos, and prompts. Do not upload copyrighted logos, characters, celebrity likenesses, trademarked artwork, or designs you do not have rights to use.",
   },
 ];
 
@@ -232,12 +214,351 @@ const pageSchema = {
   name: "AI Custom Clothing & One-of-One Gifts",
   url: "https://www.snarkyazzhumans.com/ai-custom-clothing",
   description:
-    "Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts.",
+    "Turn trending meme-worthy moments, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts.",
 };
 
 function promptDestination(prompt: string) {
   return `${CUSTOMIZER_PATH}&prompt=${encodeURIComponent(prompt)}`;
 }
+
+// ─── Hero Section Component ────────────────────────────────────────────────
+function HeroSection({
+  trackCtaClick,
+  trackEvent,
+  pageKey,
+  memeShirtPrompt,
+  promptDestination,
+}: {
+  trackCtaClick: (placement: string) => void;
+  trackEvent: (event: string, props: Record<string, string>) => void;
+  pageKey: string;
+  memeShirtPrompt: string;
+  promptDestination: (prompt: string) => string;
+}) {
+  const [visible, setVisible] = useState(false);
+  const [genStep, setGenStep] = useState(0);
+  const [generating, setGenerating] = useState(false);
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
+
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 80); return () => clearTimeout(t); }, []);
+
+  // Cycle through generation steps: each step shows for 2s, then 0.6s shimmer before next
+  useEffect(() => {
+    const advance = () => {
+      setGenerating(true);
+      setTimeout(() => {
+        setGenStep(prev => (prev + 1) % GEN_STEPS.length);
+        setGenerating(false);
+      }, 600);
+    };
+    const id = setInterval(advance, 2600);
+    return () => clearInterval(id);
+  }, []);
+
+  const fadeLeft: React.CSSProperties = {
+    opacity: visible ? 1 : 0,
+    transform: visible ? "translateX(0)" : "translateX(-28px)",
+    transition: "opacity 0.65s ease, transform 0.65s ease",
+  };
+  const fadeRight: React.CSSProperties = {
+    opacity: visible ? 1 : 0,
+    transform: visible ? "translateX(0)" : "translateX(28px)",
+    transition: "opacity 0.65s ease 0.15s, transform 0.65s ease 0.15s",
+  };
+
+  return (
+    <section className="relative overflow-hidden border-y border-border bg-[#09090b]">
+      <div className="grid lg:grid-cols-2" style={{ height: "calc(100dvh - 130px)", minHeight: 480 }}>
+
+        {/* ── LEFT: Phone mockup ── */}
+        <div
+          className="relative flex flex-col items-center justify-between gap-3 bg-[#09090b] px-8 py-6 overflow-hidden"
+          style={{ height: "100%" }}
+        >
+          {/* Ambient glow */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden>
+            <div className="h-80 w-80 rounded-full bg-orange-500/8 blur-3xl" />
+          </div>
+
+          {/* Top text */}
+          <div className="relative z-10 w-full text-center" style={fadeLeft}>
+            <span className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-orange-400">
+              <Moon className="h-3 w-3" />
+              Midnight scroll
+            </span>
+            <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
+              You saw it on TikTok at midnight.
+            </h1>
+            <p className="mt-1 text-xs font-medium text-white/50">
+              Too good to leave trapped on your screen.
+            </p>
+          </div>
+
+          {/* Phone — dominant visual */}
+          <div
+            className="relative z-10 flex-1 flex items-center justify-center w-full"
+            style={fadeLeft}
+          >
+            <div
+              className="relative rounded-[2.4rem] p-[3px]"
+              style={{
+                maxWidth: 220,
+                width: "100%",
+                background: "linear-gradient(145deg, #555, #1c1c1c)",
+                boxShadow: "0 28px 80px rgba(0,0,0,0.95), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.04)",
+              }}
+            >
+              {/* Notch */}
+              <div className="absolute left-1/2 top-[10px] z-20 h-[14px] w-[56px] -translate-x-1/2 rounded-full bg-black" />
+              <div className="overflow-hidden rounded-[2.1rem] bg-black">
+                {/* Status bar */}
+                <div className="flex items-center justify-between px-5 pb-1 pt-5 text-[0.6rem] font-semibold text-white/50">
+                  <span>9:41</span>
+                  <span>▪▪▪</span>
+                </div>
+                {/* TikTok nav */}
+                <div className="flex justify-center gap-5 pb-1 text-[0.6rem] font-black uppercase text-white/40">
+                  <span>Following</span>
+                  <span className="border-b-[1.5px] border-white text-white">For You</span>
+                </div>
+                {/* Screenshot */}
+                <div className="relative" style={{ aspectRatio: "9/14" }}>
+                  <img
+                    src={HERO_SCREENSHOT}
+                    alt="Original meme screenshot — Roommate's Favorite Game: Sink Isn't Full Yet"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    loading="eager"
+                  />
+                  {/* Viral badge */}
+                  <div
+                    className="absolute right-2 top-2 rounded-full px-2 py-0.5 text-[0.55rem] font-black uppercase text-white"
+                    style={{ background: "linear-gradient(135deg,#ff0050,#ff4080)", boxShadow: "0 0 10px rgba(255,0,80,0.5)" }}
+                  >
+                    🔥 VIRAL
+                  </div>
+                  {/* Bottom overlay */}
+                  <div
+                    className="absolute inset-x-0 bottom-0 px-3 py-2"
+                    style={{ background: "linear-gradient(to top,rgba(0,0,0,0.9) 60%,transparent)" }}
+                  >
+                    <p className="text-[0.6rem] font-bold text-white">@snarkyazzhumans</p>
+                    <div className="mt-1 flex gap-2 text-[0.55rem] font-semibold text-white/70">
+                      <span>❤️ 2.4M</span><span>💬 18K</span><span>↗ 94K</span>
+                    </div>
+                  </div>
+                </div>
+                {/* Bottom bar */}
+                <div className="flex justify-around py-2 text-[0.7rem] text-white/30">
+                  <span>🏠</span><span>🔍</span><span>＋</span><span>💬</span><span>👤</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT: Design progression + shirt ── */}
+        <div
+          className="relative flex flex-col items-center justify-between gap-3 bg-[#0d0d0f] px-8 py-6 overflow-hidden"
+          style={{ height: "100%" }}
+        >
+          {/* Mobile zap */}
+          <div
+            className="absolute -top-5 left-1/2 z-20 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full text-white shadow-xl lg:hidden"
+            style={{ background: "#f97316", boxShadow: "0 0 20px rgba(249,115,22,0.7)" }}
+          >
+            <Zap className="h-6 w-6 fill-current" />
+          </div>
+
+          {/* Ambient glow */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
+            <div className="absolute right-0 top-1/2 h-64 w-64 -translate-y-1/2 translate-x-1/3 rounded-full bg-primary/10 blur-3xl" />
+          </div>
+
+          {/* Top: label + headline */}
+          <div className="relative z-10 w-full text-center" style={fadeRight}>
+            <span className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-orange-400">
+              <Sun className="h-3 w-3" />
+              Morning drop
+            </span>
+            <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
+              Now it's on your shirt by morning.
+            </h2>
+            <p className="mt-1 text-xs font-medium text-white/50">
+              Be the first one wearing the punchline.
+            </p>
+          </div>
+
+          {/* Progression strip */}
+          <div className="relative z-10 w-full" style={fadeRight}>
+            <p className="mb-3 text-center text-[0.6rem] font-black uppercase tracking-widest text-orange-400/80">
+              ✦ AI refines your idea in seconds ✦
+            </p>
+            <div className="flex items-end justify-center gap-3">
+              {GEN_STEPS.map((step, i) => {
+                const isActive = i === genStep;
+                const isHovered = hoveredStep === i;
+                return (
+                  <React.Fragment key={step.src}>
+                    <div className="flex flex-col items-center gap-1">
+                      {/* Fixed-size outer shell — overflow visible so scale doesn't clip */}
+                      <div
+                        style={{ width: 72, height: 72, flexShrink: 0, position: "relative", zIndex: isHovered ? 30 : 1 }}
+                        onMouseEnter={() => setHoveredStep(i)}
+                        onMouseLeave={() => setHoveredStep(null)}
+                      >
+                        <div
+                          style={{
+                            width: 72,
+                            height: 72,
+                            borderRadius: 12,
+                            overflow: "hidden",
+                            border: isActive
+                              ? "2.5px solid #f97316"
+                              : isHovered
+                              ? "2.5px solid rgba(249,115,22,0.7)"
+                              : "2px solid rgba(255,255,255,0.1)",
+                            boxShadow: isHovered
+                              ? "0 0 0 3px rgba(249,115,22,0.25), 0 0 24px rgba(249,115,22,0.7)"
+                              : isActive
+                              ? "0 0 16px rgba(249,115,22,0.55)"
+                              : "none",
+                            transform: isHovered ? "scale(1.55)" : "scale(1)",
+                            transformOrigin: "center bottom",
+                            transition: "transform 0.22s cubic-bezier(0.34,1.56,0.64,1), border-color 0.2s, box-shadow 0.2s",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <img
+                            src={step.src}
+                            alt={step.label}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                            loading="lazy"
+                          />
+                          {/* Generating shimmer */}
+                          {generating && i === (genStep + 1) % GEN_STEPS.length && (
+                            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.65)" }}>
+                              <div style={{ display: "flex", gap: 4 }}>
+                                {[0, 1, 2].map(d => (
+                                  <div key={d} style={{ width: 6, height: 6, borderRadius: "50%", background: "#fb923c", animation: `sahDot 0.8s ease-in-out ${d * 0.15}s infinite` }} />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {/* Label — sits outside the scale area, always readable */}
+                      <p
+                        style={{
+                          fontSize: "0.48rem",
+                          fontWeight: 900,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          color: isActive || isHovered ? "#fb923c" : "rgba(255,255,255,0.4)",
+                          transition: "color 0.2s",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {step.label}
+                      </p>
+                    </div>
+                    {i < GEN_STEPS.length - 1 && (
+                      <ArrowRight className="h-3 w-3 flex-shrink-0 text-orange-500/40 mb-5" />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Shirt mockup */}
+          <div className="relative z-10 flex-1 flex items-center justify-center w-full" style={fadeRight}>
+            <div className="relative" style={{ maxWidth: 240, width: "100%" }}>
+              {/* NEW DROP badge */}
+              <div
+                className="absolute -right-2 -top-3 z-20 rounded-full px-2.5 py-1 text-[0.65rem] font-black uppercase text-white"
+                style={{ background: "hsl(0 84% 55%)", boxShadow: "0 0 16px hsl(0 84% 55%/0.65)", animation: "sahPulse 2.2s ease-in-out infinite" }}
+              >
+                🔥 NEW DROP
+              </div>
+              <div
+                style={{ transform: "rotate(-1.5deg)", transition: "transform 0.3s ease" }}
+                onMouseEnter={e => (e.currentTarget.style.transform = "rotate(0deg) scale(1.02)")}
+                onMouseLeave={e => (e.currentTarget.style.transform = "rotate(-1.5deg) scale(1)")}
+              >
+                <img
+                  src={HERO_SHIRT_MOCKUP}
+                  alt="Roommate's Favorite Game — AI-designed shirt"
+                  className="w-full drop-shadow-2xl"
+                  loading="eager"
+                />
+              </div>
+              <p className="mt-1.5 text-center text-[0.6rem] font-bold text-white/35">
+                ✓ Premium tee · Printed on demand · Ships 3–5 days
+              </p>
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <div className="relative z-10 flex w-full max-w-sm flex-col gap-2 sm:flex-row" style={fadeRight}>
+            <Button asChild variant="hero" size="lg" className="group min-w-0 flex-1 whitespace-normal px-4 text-center text-sm">
+              <Link
+                to={promptDestination(memeShirtPrompt)}
+                aria-label="Make a meme-inspired custom shirt"
+                onClick={() => trackCtaClick("hero_primary")}
+              >
+                <span className="min-w-0">Make a Meme-Inspired Shirt</span>
+                <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="min-w-0 w-full px-4 text-sm sm:w-auto sm:px-6">
+              <a
+                href="#gift-ideas"
+                aria-label="See AI custom clothing gift ideas"
+                onClick={() => trackEvent("ai_custom_clothing_cta_click", { page: pageKey, placement: "hero_secondary" })}
+              >
+                See Gift Ideas
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop lightning bolt divider ── */}
+      <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-20 -translate-x-1/2 lg:block">
+        <div
+          className="h-full w-full"
+          style={{
+            background: "#f97316",
+            clipPath: "polygon(48% 0,78% 0,56% 42%,86% 42%,36% 100%,50% 56%,18% 56%)",
+            filter: "drop-shadow(0 0 18px rgba(249,115,22,0.8)) drop-shadow(0 0 40px rgba(249,115,22,0.4))",
+            animation: "sahBoltPulse 2.5s ease-in-out infinite",
+          }}
+        />
+      </div>
+
+      {/* Keyframes */}
+      <style>{`
+        @keyframes sahPulse {
+          0%,100%{box-shadow:0 0 16px hsl(0 84% 55%/0.6);}
+          50%{box-shadow:0 0 28px hsl(0 84% 55%/0.35);}
+        }
+        @keyframes sahBoltPulse {
+          0%,100%{filter:drop-shadow(0 0 18px rgba(249,115,22,0.8)) drop-shadow(0 0 40px rgba(249,115,22,0.4));}
+          50%{filter:drop-shadow(0 0 28px rgba(249,115,22,1)) drop-shadow(0 0 60px rgba(249,115,22,0.6));}
+        }
+        @keyframes sahDot {
+          0%,100%{transform:translateY(0);opacity:0.4;}
+          50%{transform:translateY(-4px);opacity:1;}
+        }
+        @keyframes sahFadeDown {
+          from{opacity:0;transform:translateX(-50%) translateY(-6px);}
+          to{opacity:1;transform:translateX(-50%) translateY(0);}
+        }
+      `}</style>
+    </section>
+  );
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 const AiCustomClothing = () => {
   const videoPlayedRef = useRef(false);
@@ -263,15 +584,16 @@ const AiCustomClothing = () => {
         <title>AI Custom Clothing & One-of-One Gifts | Snarky Azz Humans</title>
         <meta
           name="description"
-          content="Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
+          content="Turn trending meme-worthy moments, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
         />
         <link rel="canonical" href="https://www.snarkyazzhumans.com/ai-custom-clothing" />
         <meta property="og:title" content="AI Custom Clothing & One-of-One Gifts | Snarky Azz Humans" />
         <meta
           property="og:description"
-          content="Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
+          content="Turn trending meme-worthy moments, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
         />
         <meta property="og:url" content="https://www.snarkyazzhumans.com/ai-custom-clothing" />
+        <meta property="og:image" content="https://www.snarkyazzhumans.com/images/ai-custom-clothing/roommate-sink-design.jpeg" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify(pageSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -280,82 +602,7 @@ const AiCustomClothing = () => {
       <Header brandAsHeading={false} />
 
       <main className="flex-1 pb-24 md:pb-0">
-        <section className="relative overflow-hidden bg-gradient-to-br from-background via-card to-background py-16 md:py-24">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.08)_0%,transparent_70%)]" />
-          <div className="container relative z-10 px-4">
-            <div className="grid gap-12 md:grid-cols-2 md:items-center">
-              <div className="max-w-[20rem] sm:max-w-3xl">
-                <span className="block max-w-xs text-sm font-bold uppercase tracking-widest text-primary sm:max-w-none">
-                  AI custom clothing and personalized gifts
-                </span>
-                <h1 className="mt-4 max-w-full break-words text-3xl font-black leading-tight tracking-normal sm:text-4xl md:text-6xl lg:text-7xl">
-                  <span className="block sm:inline">Make a One-of-One Gift</span>{" "}
-                  <span className="block sm:inline">From the Thing</span>{" "}
-                  <span className="block sm:inline">Everyone Is Talking About</span>
-                </h1>
-                <p className="mt-6 max-w-full text-base font-medium leading-relaxed text-muted-foreground md:text-xl">
-                  Turn a trend, inside joke, pet photo, work rant, birthday roast, or wild idea into AI-designed clothing and gifts made for exactly one person.
-                </p>
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                  <Button asChild variant="hero" size="xl" className="group min-w-0 w-full whitespace-normal px-3 text-center text-sm sm:w-auto sm:px-10 sm:text-lg">
-                    <Link
-                      to={CUSTOMIZER_PATH}
-                      aria-label="Create your one-of-one custom gift"
-                      onClick={() => trackCtaClick("hero_primary")}
-                    >
-                      <span className="min-w-0">Create Your One-of-One Gift</span>
-                      <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1 sm:h-5 sm:w-5" />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="xl" className="min-w-0 w-full px-4 text-base sm:w-auto sm:px-10 sm:text-lg">
-                    <a
-                      href="#gift-ideas"
-                      aria-label="See AI custom clothing gift ideas"
-                      onClick={() => trackEvent("ai_custom_clothing_cta_click", { page: PAGE_KEY, placement: "hero_secondary" })}
-                    >
-                      See Gift Ideas
-                    </a>
-                  </Button>
-                </div>
-                <ul className="mt-5 grid gap-2 text-sm font-semibold text-muted-foreground sm:grid-cols-3">
-                  <li className="rounded-lg border border-border bg-card/60 px-3 py-2">
-                    Use your own ideas and photos
-                  </li>
-                  <li className="rounded-lg border border-border bg-card/60 px-3 py-2">
-                    AI-assisted design help
-                  </li>
-                  <li className="rounded-lg border border-border bg-card/60 px-3 py-2">
-                    Original prompts only
-                  </li>
-                </ul>
-              </div>
-
-              <div className="relative mx-auto w-full max-w-[20rem] md:max-w-lg">
-                <div className="absolute -inset-4 rounded-lg bg-primary/10 blur-2xl" />
-                <div className="relative rounded-lg border border-border bg-card/90 p-4 shadow-2xl">
-                  <div className="grid grid-cols-2 gap-3">
-                    {heroProducts.map((item) => (
-                      <div key={item.label} className="min-w-0 overflow-hidden rounded-lg border border-border bg-background">
-                        <img src={item.src} alt={item.alt} className="aspect-square w-full min-w-0 object-cover" loading="eager" />
-                        <div className="border-t border-border px-3 py-2 text-xs font-bold uppercase tracking-widest text-primary">
-                          {item.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 rounded-lg border border-primary/20 bg-background/80 p-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-primary">Idea in</p>
-                    <p className="mt-1 text-lg font-black">"My dog looks like he pays rent here."</p>
-                    <p className="mt-3 text-xs font-bold uppercase tracking-widest text-primary">Gift out</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      A shirt, mug, tote, or card that feels suspiciously specific.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HeroSection trackCtaClick={trackCtaClick} trackEvent={trackEvent} pageKey={PAGE_KEY} memeShirtPrompt={MEME_SHIRT_PROMPT} promptDestination={promptDestination} />
 
         <section className="py-16 md:py-24">
           <div className="container px-4">
@@ -363,14 +610,14 @@ const AiCustomClothing = () => {
               <div>
                 <span className="text-sm font-bold uppercase tracking-widest text-primary">Trend to shirt story</span>
                 <h2 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
-                  From "That Would Be Hilarious" to "I Need That on a Shirt"
+                  From "Send This to the Group Chat" to "I Need That on a Shirt"
                 </h2>
                 <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                   <p>
-                    Someone sees a trend, joke, pet moment, or personal idea and immediately pictures the friend who would lose it.
+                    Someone sees a trend, joke, pet moment, or chaotic roommate behavior and immediately pictures the friend who would lose it.
                   </p>
                   <p>
-                    Then the idea becomes bigger than a text. It could be a shirt, mug, blanket, tote, card, or gift that makes the moment real.
+                    Then the idea becomes bigger than a text. It could be a shirt, mug, blanket, tote, card, or gift that turns the moment into proof.
                   </p>
                   <p>
                     Snarky Azz Humans helps turn that spark into a custom product built around the person, the moment, and the joke.
