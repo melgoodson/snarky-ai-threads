@@ -70,7 +70,7 @@ function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
     };
 
     return (
-        <div className="flex-shrink-0 w-[300px] md:w-[340px] group select-none">
+        <div className="flex-shrink-0 w-[220px] sm:w-[260px] md:w-[300px] lg:w-[340px] group select-none">
             {/* Video container */}
             <div
                 className={`relative w-full ${testimonial.aspect} rounded-xl overflow-hidden border border-border bg-black cursor-pointer shadow-md`}
@@ -131,7 +131,7 @@ export const UGCTestimonials = () => {
         <section className="py-16 md:py-24 bg-card/50 overflow-hidden">
             <div className="container px-4">
                 <div className="text-center mb-12 relative z-10">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
+                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight mb-4">
                         REAL HUMANS. <span className="text-primary">REAL SNARK.</span>
                     </h2>
                     <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto">

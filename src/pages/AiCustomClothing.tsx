@@ -267,13 +267,18 @@ function HeroSection({
   };
 
   return (
-    <section className="relative overflow-hidden border-y border-border bg-[#09090b]">
-      <div className="grid lg:grid-cols-2" style={{ height: "calc(100dvh - 130px)", minHeight: 480 }}>
+    <section className="relative lg:overflow-hidden border-y border-border bg-[#09090b]">
+      <style>{`
+        @media (min-width: 1024px) {
+          .sah-hero-grid { height: calc(100dvh - 130px); min-height: 480px; }
+          .sah-hero-col  { height: 100%; }
+        }
+      `}</style>
+      <div className="sah-hero-grid grid lg:grid-cols-2">
 
         {/* ── LEFT: Phone mockup ── */}
         <div
-          className="relative flex flex-col items-center justify-between gap-3 bg-[#09090b] px-8 py-6 overflow-hidden"
-          style={{ height: "100%" }}
+          className="sah-hero-col relative flex flex-col items-center justify-between gap-3 bg-[#09090b] px-6 py-8 sm:px-8 lg:overflow-hidden"
         >
           {/* Ambient glow */}
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden>
@@ -358,8 +363,7 @@ function HeroSection({
 
         {/* ── RIGHT: Design progression + shirt ── */}
         <div
-          className="relative flex flex-col items-center justify-between gap-3 bg-[#0d0d0f] px-8 py-6 overflow-hidden"
-          style={{ height: "100%" }}
+          className="sah-hero-col relative flex flex-col items-center justify-between gap-3 bg-[#0d0d0f] px-6 py-8 sm:px-8 lg:overflow-hidden"
         >
           {/* Mobile zap */}
           <div

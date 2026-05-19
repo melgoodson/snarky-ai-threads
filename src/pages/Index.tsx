@@ -49,9 +49,10 @@ const Index = () => {
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       </Helmet>
       <Header />
-      <div className="bg-primary text-primary-foreground py-3 px-4 text-center">
-        <p className="text-sm md:text-base font-medium">
-          Snarky customizations not found anywhere else, try CUSTOMIZE in the menu and use the power of AI to craft your own Snarky designs!
+      <div className="bg-primary text-primary-foreground py-2.5 px-4 text-center">
+        <p className="text-xs sm:text-sm md:text-base font-medium leading-snug">
+          <span className="sm:hidden">✨ AI-powered snarky customs — try CUSTOMIZE!</span>
+          <span className="hidden sm:inline">Snarky customizations not found anywhere else — try CUSTOMIZE in the menu and use AI to craft your own Snarky designs!</span>
         </p>
       </div>
       <main className="flex-1">

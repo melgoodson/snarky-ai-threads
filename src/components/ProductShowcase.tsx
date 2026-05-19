@@ -195,8 +195,8 @@ const CategoryCard = ({ category }: { category: ProductCategory }) => {
             </div>
 
             {/* Info */}
-            <div className="p-6 md:p-8">
-                <h3 className="text-2xl md:text-3xl font-black tracking-tight">
+            <div className="p-4 sm:p-6 md:p-8">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight">
                     {category.title}{" "}
                     <span className="text-primary">{category.highlight}</span>
                 </h3>
@@ -223,7 +223,7 @@ export const ProductShowcase = () => {
         <section className="py-16 md:py-24">
             <div className="container px-4">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
+                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight mb-4">
                         SHOP BY <span className="text-primary">PRODUCT</span>
                     </h2>
                     <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto">
