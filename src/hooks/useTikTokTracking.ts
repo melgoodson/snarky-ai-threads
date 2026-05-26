@@ -7,6 +7,7 @@ const TTCLID_PARAM_KEY = 'ttclid';
 const STORED_TTCLID_KEY = 'sah_ttclid';
 const STORED_USER_EMAIL = 'sah_user_email';
 const STORED_USER_PHONE = 'sah_user_phone';
+const STORED_TEST_CODE_KEY = 'sah_tiktok_test_code';
 
 // Helper to get cookies in the browser
 function getCookie(name: string): string | null {
@@ -39,12 +40,16 @@ export function useTikTokTracking() {
   const location = useLocation();
   const isFirstRender = useRef(true);
 
-  // Store ttclid in session storage if present in URL
+  // Store ttclid & test_event_code in session storage if present in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ttclid = params.get(TTCLID_PARAM_KEY);
     if (ttclid) {
       sessionStorage.setItem(STORED_TTCLID_KEY, ttclid);
+    }
+    const testCode = params.get('test_event_code');
+    if (testCode) {
+      sessionStorage.setItem(STORED_TEST_CODE_KEY, testCode);
     }
   }, [location.search]);
 
@@ -76,10 +81,13 @@ export function useTikTokTracking() {
       if (email) localStorage.setItem(STORED_USER_EMAIL, email);
       if (phone) localStorage.setItem(STORED_USER_PHONE, phone);
 
+      const testCode = sessionStorage.getItem(STORED_TEST_CODE_KEY);
+
       const payload = {
         event: eventName,
         event_id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
+        test_event_code: testCode || undefined,
         context: {
           ad: {
             callback: ttclid || null,

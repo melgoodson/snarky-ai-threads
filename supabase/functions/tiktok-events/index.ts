@@ -57,6 +57,7 @@ serve(async (req) => {
       event,
       event_id,
       timestamp,
+      test_event_code,
       context = {},
       properties = {},
     } = body;
@@ -87,11 +88,12 @@ serve(async (req) => {
     const hashedExtId = await hashIfNeeded(userExtId, "external_id");
 
     // Build the request payload for TikTok Events API
-    const tiktokPayload = {
+    const tiktokPayload: Record<string, any> = {
       pixel_code: pixelId,
       event,
       event_id: event_id || crypto.randomUUID(),
       timestamp: timestamp || new Date().toISOString(),
+      test_event_code: test_event_code || Deno.env.get("TIKTOK_TEST_EVENT_CODE") || null,
       context: {
         ad: {
           callback: context.ad?.callback || null,
