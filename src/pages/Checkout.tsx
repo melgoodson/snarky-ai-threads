@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTikTokTracking } from '@/hooks/useTikTokTracking';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import {
@@ -42,6 +43,7 @@ type CheckoutItem = CartItem;
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
+  const { trackTikTokEvent } = useTikTokTracking();
 
   const [loading, setLoading] = useState(false);
   const [designData, setDesignData] = useState<any>(null);
@@ -153,6 +155,23 @@ const Checkout = () => {
     0
   );
 
+  // Track InitiateCheckout
+  useEffect(() => {
+    if (checkoutItems.length > 0) {
+      trackTikTokEvent('InitiateCheckout', {
+        value: effectiveTotal,
+        currency: 'USD',
+        contents: checkoutItems.map(item => ({
+          price: item.price,
+          quantity: item.quantity,
+          content_id: item.productId || item.printifyProductId,
+          content_type: 'product',
+          content_name: item.title,
+        })),
+      });
+    }
+  }, [checkoutItems.length, effectiveTotal, trackTikTokEvent]);
+
   if (!designData && checkoutItems.length === 0) {
     return null;
   }
@@ -179,6 +198,22 @@ const Checkout = () => {
       toast.error('Please fix the form errors');
       return;
     }
+
+    // Track AddPaymentInfo
+    trackTikTokEvent('AddPaymentInfo', {
+      value: effectiveTotal,
+      currency: 'USD',
+      contents: checkoutItems.map(item => ({
+        price: item.price,
+        quantity: item.quantity,
+        content_id: item.productId || item.printifyProductId,
+        content_type: 'product',
+        content_name: item.title,
+      })),
+    }, {
+      email: formData.email,
+      phone_number: formData.phone,
+    });
 
     setLoading(true);
 
@@ -237,6 +272,22 @@ const Checkout = () => {
 
       // Show popup alert before opening Stripe checkout
       if (checkoutData?.url) {
+        // Track PlaceAnOrder
+        trackTikTokEvent('PlaceAnOrder', {
+          value: effectiveTotal,
+          currency: 'USD',
+          contents: checkoutItems.map(item => ({
+            price: item.price,
+            quantity: item.quantity,
+            content_id: item.productId || item.printifyProductId,
+            content_type: 'product',
+            content_name: item.title,
+          })),
+        }, {
+          email: formData.email,
+          phone_number: formData.phone,
+        });
+
         setCheckoutUrl(checkoutData.url);
         setShowPopupAlert(true);
         setLoading(false);

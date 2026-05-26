@@ -1,5 +1,18 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+
+const TTP_COOKIE_KEY = '_ttp';
+const STORED_TTCLID_KEY = 'sah_ttclid';
+const STORED_USER_EMAIL = 'sah_user_email';
+const STORED_USER_PHONE = 'sah_user_phone';
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
 
 export interface CartItem {
   id: string;
@@ -53,6 +66,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [items]);
 
   const addItem = (newItem: Omit<CartItem, 'id' | 'quantity'>) => {
+    // Dispatch AddToCart event to TikTok Events API
+    try {
+      const ttp = getCookie(TTP_COOKIE_KEY);
+      const ttclid = sessionStorage.getItem(STORED_TTCLID_KEY);
+      const email = localStorage.getItem(STORED_USER_EMAIL);
+      const phone = localStorage.getItem(STORED_USER_PHONE);
+
+      void supabase.functions.invoke('tiktok-events', {
+        body: {
+          event: 'AddToCart',
+          event_id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          context: {
+            ad: { callback: ttclid || null },
+            user: { email: email || null, phone_number: phone || null, ttp: ttp || null },
+            page: { url: window.location.href, referrer: document.referrer || null }
+          },
+          properties: {
+            value: newItem.price,
+            currency: 'USD',
+            contents: [{
+              price: newItem.price,
+              quantity: 1,
+              content_id: newItem.productId || newItem.printifyProductId,
+              content_type: 'product',
+              content_name: newItem.title
+            }]
+          }
+        }
+      }).catch(() => {});
+    } catch (e) {
+      console.debug('TikTok AddToCart error:', e);
+    }
+
     setItems(prev => {
       const existing = prev.find(
         item => item.productId === newItem.productId && item.size === newItem.size

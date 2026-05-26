@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTikTokTracking } from '@/hooks/useTikTokTracking';
 import { toast } from 'sonner';
 
 interface Order {
@@ -28,6 +29,7 @@ const OrderConfirmation = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const { trackTikTokEvent } = useTikTokTracking();
   // Track the resolved order ID so we don't re-fetch after navigate() changes the URL param
   const resolvedOrderIdRef = useRef<string | null>(null);
 
@@ -146,17 +148,28 @@ const OrderConfirmation = () => {
     fetchOrder();
   }, [orderId, navigate]);
 
-  // Fire Google Ads conversion event when order is confirmed
+  // Fire Google Ads and TikTok conversion events when order is confirmed
   useEffect(() => {
-    if (order && order.status === 'paid' && typeof window.gtag === 'function') {
-      window.gtag('event', 'conversion', {
-        'send_to': 'AW-17942816999/PodlCPXCl_gbEOfR5utC',
-        'value': order.total_amount,
-        'currency': 'USD',
-        'transaction_id': order.id,
+    if (order && order.status === 'paid') {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'conversion', {
+          'send_to': 'AW-17942816999/PodlCPXCl_gbEOfR5utC',
+          'value': order.total_amount,
+          'currency': 'USD',
+          'transaction_id': order.id,
+        });
+      }
+
+      // Track TikTok Purchase
+      trackTikTokEvent('Purchase', {
+        value: order.total_amount,
+        currency: 'USD',
+      }, {
+        email: order.email,
+        external_id: order.id,
       });
     }
-  }, [order]);
+  }, [order, trackTikTokEvent]);
 
   if (loading) {
     return (

@@ -7,6 +7,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { CartProvider } from "./contexts/CartContext";
 import { useExternalTracking } from "@/hooks/useExternalTracking";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { useTikTokTracking } from "@/hooks/useTikTokTracking";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
@@ -57,6 +58,7 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   useExternalTracking();
   useGA4Tracking();
+  useTikTokTracking();
   return null;
 };
 
