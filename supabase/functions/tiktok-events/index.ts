@@ -87,44 +87,55 @@ serve(async (req) => {
     const hashedPhone = await hashIfNeeded(userPhone, "phone");
     const hashedExtId = await hashIfNeeded(userExtId, "external_id");
 
-    // Build the request payload for TikTok Events API
-    const tiktokPayload: Record<string, any> = {
-      pixel_code: pixelId,
-      event,
-      event_id: event_id || crypto.randomUUID(),
-      timestamp: timestamp || new Date().toISOString(),
-      test_event_code: test_event_code || Deno.env.get("TIKTOK_TEST_EVENT_CODE") || null,
-      context: {
-        ad: {
-          callback: context.ad?.callback || null,
-        },
-        user: {
-          email: hashedEmail,
-          phone_number: hashedPhone,
-          external_id: hashedExtId,
-          ip: ip || context.user?.ip || null,
-          user_agent: userAgent || context.user?.user_agent || null,
-          ttp: context.user?.ttp || null,
-        },
-        page: {
-          url: context.page?.url || null,
-          referrer: context.page?.referrer || null,
-        },
-      },
-      properties: {
-        value: properties.value !== undefined ? Number(properties.value) : null,
-        currency: properties.currency || "USD",
-        query: properties.query || null,
-        contents: Array.isArray(properties.contents)
-          ? properties.contents.map((item: any) => ({
-              price: item.price !== undefined ? Number(item.price) : null,
-              quantity: item.quantity !== undefined ? Number(item.quantity) : null,
-              content_id: item.content_id ? String(item.content_id) : null,
-              content_type: item.content_type || "product",
-              content_name: item.content_name || null,
-            }))
-          : [],
-      },
+    // Build the request payload for TikTok Events API (v1.3 standard batch payload format)
+    const activeTestCode = test_event_code || Deno.env.get("TIKTOK_TEST_EVENT_CODE") || null;
+    const tiktokPayload = {
+      event_source: "web",
+      event_source_id: pixelId,
+      test_event_code: activeTestCode,
+      data: [
+        {
+          event,
+          event_id: event_id || crypto.randomUUID(),
+          event_time: timestamp ? Math.floor(new Date(timestamp).getTime() / 1000) : Math.floor(Date.now() / 1000),
+          context: {
+            ad: {
+              callback: context.ad?.callback || null,
+            },
+            user: {
+              email: hashedEmail,
+              phone_number: hashedPhone,
+              external_id: hashedExtId,
+              ip: ip || context.user?.ip || null,
+              user_agent: userAgent || context.user?.user_agent || null,
+              ttp: context.user?.ttp || null,
+            },
+            page: {
+              url: context.page?.url || null,
+              referrer: context.page?.referrer || null,
+            },
+          },
+          properties: (() => {
+            const propsObj: Record<string, any> = {
+              value: properties.value !== undefined ? Number(properties.value) : null,
+              currency: properties.currency || "USD",
+            };
+            if (properties.query) {
+              propsObj.query = String(properties.query);
+            }
+            if (Array.isArray(properties.contents) && properties.contents.length > 0) {
+              propsObj.contents = properties.contents.map((item: any) => ({
+                price: item.price !== undefined ? Number(item.price) : null,
+                quantity: item.quantity !== undefined ? Number(item.quantity) : null,
+                content_id: item.content_id ? String(item.content_id) : null,
+                content_type: item.content_type || "product",
+                content_name: item.content_name || null,
+              }));
+            }
+            return propsObj;
+          })(),
+        }
+      ]
     };
 
     console.log(`[TikTok Events API] Payload built for "${event}":`, JSON.stringify(tiktokPayload, null, 2));
