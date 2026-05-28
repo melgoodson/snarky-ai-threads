@@ -22,6 +22,11 @@ interface Order {
   status: string;
   created_at: string;
   shipping_address: any;
+  order_items?: Array<{
+    price: number;
+    quantity: number;
+    printify_product_id: string;
+  }>;
 }
 
 const OrderConfirmation = () => {
@@ -106,7 +111,7 @@ const OrderConfirmation = () => {
       if (session) {
         const { data, error } = await supabase
           .from('orders')
-          .select('*')
+          .select('*, order_items(*)')
           .eq('id', orderIdToFetch)
           .maybeSingle();
 
@@ -164,6 +169,12 @@ const OrderConfirmation = () => {
       trackTikTokEvent('Purchase', {
         value: order.total_amount,
         currency: 'USD',
+        contents: order.order_items?.map((item: any) => ({
+          price: Number(item.price),
+          quantity: item.quantity,
+          content_id: item.printify_product_id,
+          content_type: 'product',
+        })) || [],
       }, {
         email: order.email,
         external_id: order.id,

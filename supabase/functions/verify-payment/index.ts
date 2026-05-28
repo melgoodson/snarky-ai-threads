@@ -50,7 +50,7 @@ serve(async (req) => {
     // Check if order is already paid (avoid duplicate processing)
     const { data: existingOrder } = await supabaseClient
       .from("orders")
-      .select("*")
+      .select("*, order_items(*)")
       .eq("id", orderId)
       .single();
 
@@ -79,8 +79,9 @@ serve(async (req) => {
         fulfillment_status: "pending"
       })
       .eq("id", orderId)
-      .select()
+      .select("*, order_items(*)")
       .single();
+
 
     if (updateError || !order) {
       console.error("Error updating order:", updateError);

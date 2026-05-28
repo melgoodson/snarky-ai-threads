@@ -65,7 +65,13 @@ export function useTikTokTracking() {
       const ttclid = sessionStorage.getItem(STORED_TTCLID_KEY);
 
       // 2. Fetch logged in user details if not explicitly provided
-      let email = customerInfo.email || localStorage.getItem(STORED_USER_EMAIL);
+      let email = customerInfo.email;
+      // If email is masked (contains asterisks), ignore it and fall back to stored email
+      if (email && email.includes('***')) {
+        email = null;
+      }
+      email = email || localStorage.getItem(STORED_USER_EMAIL);
+      
       let phone = customerInfo.phone_number || localStorage.getItem(STORED_USER_PHONE);
       let externalId = customerInfo.external_id;
 
@@ -126,31 +132,33 @@ export function useTikTokTracking() {
     }
   }, []);
 
-  // Track standard page views (ViewContent)
+  // Track standard page views (PageView) in browser for SPA navigation
   useEffect(() => {
-    // Small delay to allow page elements (like document.title) to settle
-    const sendViewContent = () => {
-      // Don't track admin pages or thank you pages as standard ViewContent
-      if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/order-confirmation')) {
-        return;
-      }
+    // Don't track admin pages as standard PageView
+    if (location.pathname.startsWith('/admin')) {
+      return;
+    }
 
-      // ViewContent tracking
-      trackTikTokEvent('ViewContent', {
-        value: 0,
-        currency: 'USD',
-      });
+    const sendPageView = () => {
+      // Trigger browser-side page view for SPA routing
+      if (typeof window !== 'undefined' && (window as any).ttq) {
+        try {
+          (window as any).ttq.page();
+          console.debug('[TikTok SPA PageView] Tracked path:', location.pathname);
+        } catch (e) {
+          console.debug('Error triggering browser TikTok page view:', e);
+        }
+      }
     };
 
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      sendViewContent();
       return;
     }
 
-    const timer = setTimeout(sendViewContent, 100);
+    const timer = setTimeout(sendPageView, 100);
     return () => clearTimeout(timer);
-  }, [location.pathname, trackTikTokEvent]);
+  }, [location.pathname]);
 
   return {
     trackTikTokEvent,

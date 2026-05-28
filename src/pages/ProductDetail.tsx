@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ImageCarousel } from "@/components/ImageCarousel";
 import { useCart } from "@/contexts/CartContext";
+import { useTikTokTracking } from "@/hooks/useTikTokTracking";
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
@@ -529,11 +530,30 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { trackTikTokEvent } = useTikTokTracking();
   const product = PRODUCT_DATA[id as keyof typeof PRODUCT_DATA];
   const [selectedSize, setSelectedSize] = useState<string>("M");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [mockupPreview, setMockupPreview] = useState<string | null>(null);
   const [generatingMockup, setGeneratingMockup] = useState(false);
+
+  // Track TikTok ViewContent event on page view
+  useEffect(() => {
+    if (product && id) {
+      trackTikTokEvent('ViewContent', {
+        value: product.price,
+        currency: 'USD',
+        contents: [{
+          price: product.price,
+          quantity: 1,
+          content_id: id,
+          content_type: 'product',
+          content_name: product.title
+        }]
+      });
+    }
+  }, [id, product, trackTikTokEvent]);
+
 
   // Auto-generate mockup when color is selected
   useEffect(() => {

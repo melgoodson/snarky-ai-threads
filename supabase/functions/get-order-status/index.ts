@@ -33,7 +33,7 @@ serve(async (req) => {
 
         const { data: order, error } = await supabaseClient
             .from("orders")
-            .select("id, email, total_amount, status, created_at, shipping_address")
+            .select("id, email, total_amount, status, created_at, shipping_address, order_items(*)")
             .eq("id", orderId)
             .single();
 
