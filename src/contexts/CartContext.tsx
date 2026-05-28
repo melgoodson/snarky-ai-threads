@@ -72,11 +72,41 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const ttclid = sessionStorage.getItem(STORED_TTCLID_KEY);
       const email = localStorage.getItem(STORED_USER_EMAIL);
       const phone = localStorage.getItem(STORED_USER_PHONE);
+      const eventId = crypto.randomUUID();
 
+      // 1. Browser-side hybrid pixel tracking (standard client pixel)
+      if (typeof window !== 'undefined' && (window as any).ttq) {
+        try {
+          if (email || phone) {
+            (window as any).ttq.identify({
+              email: email || undefined,
+              phone_number: phone || undefined,
+            });
+          }
+          (window as any).ttq.track('AddToCart', {
+            value: newItem.price,
+            currency: 'USD',
+            contents: [{
+              price: newItem.price,
+              quantity: 1,
+              content_id: newItem.productId || newItem.printifyProductId,
+              content_type: 'product',
+              content_name: newItem.title
+            }]
+          }, {
+            event_id: eventId
+          });
+          console.log(`[TikTok Browser Event] AddToCart tracked with event_id: ${eventId}`);
+        } catch (sdkError) {
+          console.debug('Error in browser-side AddToCart tracking:', sdkError);
+        }
+      }
+
+      // 2. Server-side hybrid Events API tracking (Supabase Edge Function)
       void supabase.functions.invoke('tiktok-events', {
         body: {
           event: 'AddToCart',
-          event_id: crypto.randomUUID(),
+          event_id: eventId,
           timestamp: new Date().toISOString(),
           context: {
             ad: { callback: ttclid || null },

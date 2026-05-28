@@ -9,6 +9,15 @@ const STORED_USER_EMAIL = 'sah_user_email';
 const STORED_USER_PHONE = 'sah_user_phone';
 const STORED_TEST_CODE_KEY = 'sah_tiktok_test_code';
 
+// Helper to SHA-256 hash text client-side for ttq.identify
+async function sha256(text: string): Promise<string> {
+  const normalized = text.trim().toLowerCase();
+  const msgBuffer = new TextEncoder().encode(normalized);
+  const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 // Helper to get cookies in the browser
 function getCookie(name: string): string | null {
   const value = `; ${document.cookie}`;
@@ -88,10 +97,11 @@ export function useTikTokTracking() {
       if (phone) localStorage.setItem(STORED_USER_PHONE, phone);
 
       const testCode = sessionStorage.getItem(STORED_TEST_CODE_KEY);
+      const eventId = crypto.randomUUID();
 
       const payload = {
         event: eventName,
-        event_id: crypto.randomUUID(),
+        event_id: eventId,
         timestamp: new Date().toISOString(),
         test_event_code: testCode || undefined,
         context: {
@@ -119,7 +129,33 @@ export function useTikTokTracking() {
 
       console.log(`[TikTok Event Triggered] ${eventName}`, payload);
 
-      // Fire async request to Supabase edge function
+      // 1. Browser-side hybrid pixel tracking (standard client pixel)
+      if (typeof window !== 'undefined' && (window as any).ttq) {
+        try {
+          const identifyObj: Record<string, string> = {};
+          if (email) identifyObj.email = await sha256(email);
+          if (phone) identifyObj.phone_number = await sha256(phone);
+          if (externalId) identifyObj.external_id = await sha256(externalId);
+
+          if (Object.keys(identifyObj).length > 0) {
+            (window as any).ttq.identify(identifyObj);
+            console.log(`[TikTok Browser Identify] Hashed matching PII sent:`, Object.keys(identifyObj));
+          }
+
+          (window as any).ttq.track(eventName, {
+            value: properties.value !== undefined ? Number(properties.value) : undefined,
+            currency: properties.currency || 'USD',
+            contents: properties.contents || [],
+          }, {
+            event_id: eventId,
+          });
+          console.log(`[TikTok Browser Event] ${eventName} tracked with event_id: ${eventId}`);
+        } catch (sdkError) {
+          console.debug('Error in browser-side ttq tracking:', sdkError);
+        }
+      }
+
+      // 2. Server-side hybrid Events API tracking (Supabase Edge Function)
       const { error } = await supabase.functions.invoke('tiktok-events', {
         body: payload,
       });
