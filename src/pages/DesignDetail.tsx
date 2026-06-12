@@ -562,7 +562,7 @@ const DesignDetail = () => {
                               product.images?.[0] ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].src) : undefined,
                               product.title
                             )}
-                            alt=""
+                            alt={`${product.title} product thumbnail`}
                             className="w-full h-full object-cover"
                           />
                         </div>

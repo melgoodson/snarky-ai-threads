@@ -14,6 +14,11 @@ export const Cart = () => {
   const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCart();
   const navigate = useNavigate();
 
+  const FREE_SHIPPING_THRESHOLD = 50;
+  const isFreeShipping = totalPrice >= FREE_SHIPPING_THRESHOLD;
+  const amountNeeded = FREE_SHIPPING_THRESHOLD - totalPrice;
+  const progressPercentage = Math.min((totalPrice / FREE_SHIPPING_THRESHOLD) * 100, 100);
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -44,6 +49,26 @@ export const Cart = () => {
             </div>
           ) : (
             <>
+              <div className="p-4 bg-muted/40 rounded-xl border border-border/50 mb-4 space-y-2">
+                <p className="text-sm font-semibold flex justify-between">
+                  <span>
+                    {isFreeShipping 
+                      ? "🎉 You've unlocked FREE shipping!" 
+                      : `You're only $${amountNeeded.toFixed(2)} away from FREE shipping!`
+                    }
+                  </span>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    ${totalPrice.toFixed(2)} / $50
+                  </span>
+                </p>
+                <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                  <div 
+                    className="bg-primary h-full transition-all duration-500 ease-out" 
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+              </div>
+
               <div className="flex-1 overflow-auto space-y-4">
                 {items.map(item => {
                   const hasFallbackPreview = !item.mockupUrl && item.productImageUrl && item.designImageUrl;

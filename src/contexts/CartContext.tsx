@@ -110,7 +110,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           timestamp: new Date().toISOString(),
           context: {
             ad: { callback: ttclid || null },
-            user: { email: email || null, phone_number: phone || null, ttp: ttp || null },
+            user: {
+              email: email || null,
+              phone_number: phone || null,
+              external_id: localStorage.getItem('snarky_visitor_id') || null,
+              ttp: ttp || null
+            },
             page: { url: window.location.href, referrer: document.referrer || null }
           },
           properties: {

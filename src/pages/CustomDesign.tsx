@@ -22,6 +22,7 @@ import {
   assignDonorVariants,
   getProductType
 } from "@/lib/variantUtils";
+import { saveToIndexedDB, getFromIndexedDB, removeFromIndexedDB } from "@/utils/storage";
 
 interface Variant {
   id: number;
@@ -87,6 +88,81 @@ const PRESET_DESIGNS = [
 
 // Flow Steps
 type FlowStep = 'create' | 'approve' | 'product' | 'mockup' | 'review';
+
+const removeWhiteBackground = (dataUrl: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      const visited = new Uint8Array(width * height);
+      const queue: [number, number][] = [];
+      
+      const corners = [
+        [0, 0],
+        [width - 1, 0],
+        [0, height - 1],
+        [width - 1, height - 1]
+      ];
+      
+      const isWhite = (x: number, y: number) => {
+        const idx = (y * width + x) * 4;
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+        const a = data[idx + 3];
+        if (a < 10) return false;
+        return r > 240 && g > 240 && b > 240;
+      };
+      
+      for (const [cx, cy] of corners) {
+        if (isWhite(cx, cy)) {
+          queue.push([cx, cy]);
+          visited[cy * width + cx] = 1;
+        }
+      }
+      
+      let head = 0;
+      while (head < queue.length) {
+        const [x, y] = queue[head++];
+        const idx = (y * width + x) * 4;
+        data[idx + 3] = 0;
+        
+        const neighbors = [
+          [x + 1, y],
+          [x - 1, y],
+          [x, y + 1],
+          [x, y - 1]
+        ];
+        
+        for (const [nx, ny] of neighbors) {
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+            const vIdx = ny * width + nx;
+            if (!visited[vIdx] && isWhite(nx, ny)) {
+              visited[vIdx] = 1;
+              queue.push([nx, ny]);
+            }
+          }
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+};
 
 export default function CustomDesign() {
   const navigate = useNavigate();
@@ -170,10 +246,30 @@ export default function CustomDesign() {
       }
 
       // Restore session state if returning from Auth
-      const savedState = sessionStorage.getItem('customDesignState');
-      if (savedState) {
+      let state: any = null;
+      try {
+        const savedState = sessionStorage.getItem('customDesignState');
+        if (savedState) {
+          state = JSON.parse(savedState);
+          sessionStorage.removeItem('customDesignState');
+        }
+      } catch (e) {
+        console.error("Failed to parse sessionStorage state", e);
+      }
+
+      if (!state) {
         try {
-          const state = JSON.parse(savedState);
+          state = await getFromIndexedDB('customDesignState');
+          if (state) {
+            await removeFromIndexedDB('customDesignState');
+          }
+        } catch (e) {
+          console.error("Failed to get state from IndexedDB", e);
+        }
+      }
+
+      if (state) {
+        try {
           if (state.designDraft) setDesignDraft(state.designDraft);
           if (state.approvedDesign) setApprovedDesign(state.approvedDesign);
           if (state.currentStep) setCurrentStep(state.currentStep);
@@ -182,9 +278,6 @@ export default function CustomDesign() {
           if (state.quantity) setQuantity(state.quantity);
           if (state.savedDesignId) setSavedDesignId(state.savedDesignId);
           if (state.mockupPreview) setMockupPreview(state.mockupPreview);
-
-          // Clear it after using
-          sessionStorage.removeItem('customDesignState');
 
           // Auto-save if it was pending
           const pendingAction = sessionStorage.getItem('customDesignPendingAction');
@@ -195,7 +288,13 @@ export default function CustomDesign() {
             toast.success("State restored! You can now click save or checkout.");
           } else if (pendingAction === 'checkout') {
             sessionStorage.removeItem('customDesignPendingAction');
-            toast.success("State restored! You can now continue to checkout.");
+            toast.success("State restored! Creating your custom product and proceeding to checkout...");
+            proceedToCheckout(
+              state.selectedProduct,
+              state.approvedDesign,
+              state.selectedVariant,
+              state.quantity
+            );
           }
         } catch (e) {
           console.error("Failed to parse restored state", e);
@@ -266,12 +365,12 @@ export default function CustomDesign() {
     }
   }, [searchParams]);
 
-  // Fetch products when entering product step
+  // Fetch products when entering product, mockup, or review steps
   useEffect(() => {
-    if (currentStep === 'product') {
+    if ((currentStep === 'product' || currentStep === 'mockup' || currentStep === 'review') && products.length === 0) {
       fetchProducts();
     }
-  }, [currentStep]);
+  }, [currentStep, products.length]);
 
   // Auto-generate mockup when product is selected
   useEffect(() => {
@@ -456,8 +555,10 @@ export default function CustomDesign() {
       if (data?.image) {
         setSavedDesignId(null);
 
+        const cleanedImage = await removeWhiteBackground(data.image);
+
         setDesignDraft({
-          imageUrl: data.image,
+          imageUrl: cleanedImage,
           promptText: prompt.trim(),
           createdAt: new Date(),
         });
@@ -510,9 +611,15 @@ export default function CustomDesign() {
 
       if (!user) {
         toast.error("Please sign in to save designs");
-        sessionStorage.setItem('customDesignState', JSON.stringify({
+        const stateObj = {
           designDraft, approvedDesign, currentStep, selectedProduct, selectedVariant, quantity, savedDesignId, mockupPreview, uploadedDesign
-        }));
+        };
+        await saveToIndexedDB('customDesignState', stateObj);
+        try {
+          sessionStorage.setItem('customDesignState', JSON.stringify(stateObj));
+        } catch (e) {
+          console.warn("Could not save full customDesignState to sessionStorage (payload too large). Fallback to IndexedDB was successful.");
+        }
         sessionStorage.setItem('customDesignPendingAction', 'save');
         navigate("/auth", { state: { returnTo: '/custom-design' } });
         return false;
@@ -780,17 +887,47 @@ export default function CustomDesign() {
     }
   };
 
-  const proceedToCheckout = async () => {
-    if (!selectedProduct || !approvedDesign || !selectedVariant) {
+  const handleCrossSellSelect = (product: Product) => {
+    setSelectedProduct(product);
+    setSelectedVariant(product.variants.find(v => v.is_enabled) || null);
+    setMockupPreview(null);
+    setTryOnMockup(null);
+    setCurrentStep('product');
+    toast.success(`Switched product to ${product.title.replace("– Placeholder Design", "").trim()}! Adjust options below.`);
+  };
+
+  async function proceedToCheckout(
+    productParam?: any,
+    designParam?: ApprovedDesign | null,
+    variantParam?: Variant | null,
+    qtyParam?: number
+  ) {
+    const isEvent = productParam && (
+      typeof productParam === 'object' &&
+      ('nativeEvent' in productParam || 'target' in productParam || 'type' in productParam)
+    );
+
+    const prod = (productParam !== undefined && !isEvent) ? productParam : selectedProduct;
+    const design = designParam !== undefined ? designParam : approvedDesign;
+    const variant = variantParam !== undefined ? variantParam : selectedVariant;
+    const qty = qtyParam !== undefined ? qtyParam : quantity;
+
+    if (!prod || !design || !variant) {
       toast.error("Please complete all steps before checkout");
       return;
     }
 
     if (!isAuthenticated) {
       toast.error("Please sign in to complete your checkout");
-      sessionStorage.setItem('customDesignState', JSON.stringify({
+      const stateObj = {
         designDraft, approvedDesign, currentStep, selectedProduct, selectedVariant, quantity, savedDesignId, mockupPreview, uploadedDesign
-      }));
+      };
+      await saveToIndexedDB('customDesignState', stateObj);
+      try {
+        sessionStorage.setItem('customDesignState', JSON.stringify(stateObj));
+      } catch (e) {
+        console.warn("Could not save full customDesignState to sessionStorage (payload too large). Fallback to IndexedDB was successful.");
+      }
       sessionStorage.setItem('customDesignPendingAction', 'checkout');
       navigate("/auth", { state: { returnTo: '/custom-design' } });
       return;
@@ -800,52 +937,59 @@ export default function CustomDesign() {
     toast.info("Creating your custom product...");
 
     try {
-      const { data: customProductData, error: customProductError } = await supabase.functions.invoke(
-        "create-custom-printify-product",
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-custom-printify-product`,
         {
-          body: {
-            designImageUrl: approvedDesign.imageUrl,
-            baseProductId: selectedProduct.id,
-            variantId: selectedVariant.id,
-            customTitle: `Custom ${selectedProduct.title}`,
-            productColor: extractColorFromVariant(selectedVariant.title),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token || ''}`,
           },
+          body: JSON.stringify({
+            designImageUrl: design.imageUrl,
+            baseProductId: prod.id,
+            variantId: variant.id,
+            customTitle: prod.title.toLowerCase().startsWith('custom') ? prod.title : `Custom ${prod.title}`,
+            productColor: extractColorFromVariant(variant.title),
+          }),
         }
       );
 
-      if (customProductError) {
-        const errorMsg = typeof customProductError === 'object'
-          ? (customProductError as any)?.message || JSON.stringify(customProductError)
-          : String(customProductError);
-        console.error("Custom product creation error:", errorMsg);
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        const errorMsg = errJson.error || `Edge Function returned status code ${response.status}`;
+        console.error("Custom product creation error details:", errJson);
         throw new Error(errorMsg);
       }
+
+      const customProductData = await response.json();
       if (!customProductData?.success || !customProductData?.printifyProductId) {
         throw new Error(customProductData?.error || "Failed to create custom product on Printify");
       }
 
       toast.success("Custom product created!");
 
-      const basePrice = Number(selectedProduct.retail_price || selectedProduct.price) || 0;
-      const selectedSize = extractSizeFromVariant(selectedVariant.title);
-      const selectedColor = extractColorFromVariant(selectedVariant.title);
+      const basePrice = Number(prod.retail_price || prod.price) || 0;
+      const selectedSize = extractSizeFromVariant(variant.title);
+      const selectedColor = extractColorFromVariant(variant.title);
 
       // Use Printify's confirmed design URL (what will actually be printed)
-      const confirmedDesignUrl = customProductData.uploadedImagePreview || approvedDesign.imageUrl;
+      const confirmedDesignUrl = customProductData.uploadedImagePreview || design.imageUrl;
       const printifyMockupUrl =
         customProductData.mockupImageUrl &&
           customProductData.mockupImageUrl !== confirmedDesignUrl &&
-          customProductData.mockupImageUrl !== approvedDesign.imageUrl
+          customProductData.mockupImageUrl !== design.imageUrl
           ? customProductData.mockupImageUrl
           : undefined;
       const productImageUrl =
-        getBlankMockup(selectedProduct.template_image_url, selectedProduct.title) ||
-        selectedProduct.images?.[0] ||
+        getBlankMockup(prod.template_image_url, prod.title) ||
+        prod.images?.[0] ||
         "";
 
       // Use a real product mockup if available. If Printify only gives back the raw
       // uploaded design, keep the product image so checkout can render a fallback composite.
-      const displayImage = printifyMockupUrl || mockupPreview || productImageUrl || approvedDesign.imageUrl;
+      const displayImage = printifyMockupUrl || mockupPreview || productImageUrl || design.imageUrl;
 
       console.log('Order consistency check:', {
         printifyMockup: customProductData.mockupImageUrl,
@@ -854,15 +998,15 @@ export default function CustomDesign() {
         productImageUrl,
         displayImage,
         printifyDesignUrl: customProductData.uploadedImagePreview,
-        originalDesignUrl: approvedDesign.imageUrl,
+        originalDesignUrl: design.imageUrl,
         confirmedDesignUrl,
       });
 
       // Add items to cart based on quantity
-      for (let i = 0; i < quantity; i++) {
+      for (let i = 0; i < qty; i++) {
         addItem({
-          productId: selectedProduct.id,
-          title: `Custom ${selectedProduct.title} - ${selectedColor}`,
+          productId: prod.id,
+          title: `${prod.title.toLowerCase().startsWith('custom') ? prod.title : `Custom ${prod.title}`} - ${selectedColor}`,
           price: basePrice,
           size: selectedSize,
           image: displayImage,
@@ -871,7 +1015,7 @@ export default function CustomDesign() {
           mockupUrl: printifyMockupUrl || mockupPreview || undefined,
           productImageUrl: productImageUrl || undefined,
           printifyProductId: customProductData.printifyProductId,
-          variantId: String(selectedVariant.id),
+          variantId: String(variant.id),
           designImageUrl: confirmedDesignUrl,
         });
       }
@@ -883,7 +1027,7 @@ export default function CustomDesign() {
     } finally {
       setCreatingPrintifyProduct(false);
     }
-  };
+  }
 
   const getStepNumber = (step: FlowStep): number => {
     const steps: FlowStep[] = ['create', 'approve', 'product', 'mockup', 'review'];
@@ -1549,7 +1693,7 @@ export default function CustomDesign() {
                         <div className="space-y-3">
                           <Button
                             size="lg"
-                            onClick={proceedToCheckout}
+                            onClick={() => proceedToCheckout()}
                             disabled={creatingPrintifyProduct}
                             className="w-full"
                           >
@@ -1620,6 +1764,70 @@ export default function CustomDesign() {
                       </div>
                     </div>
                   </Card>
+
+                  {/* Dynamic Product Cross-Sell Slider */}
+                  {products.length > 1 && (
+                    <Card className="max-w-4xl mx-auto p-8 space-y-6">
+                      <div className="text-center space-y-2">
+                        <h3 className="text-2xl font-black text-foreground">Love your design? Try it on other products!</h3>
+                        <p className="text-muted-foreground text-sm">
+                          You can easily put this exact design on hoodies, mugs, tote bags, or greeting cards.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {products
+                          .filter(p => p.id !== selectedProduct.id)
+                          .map((product) => {
+                            const fallbackImg = getBlankMockup(product.template_image_url, product.title);
+                            const cleanTitle = product.title.replace("– Placeholder Design", "").trim();
+                            return (
+                              <div key={product.id} className="border border-border rounded-xl p-4 flex flex-col justify-between bg-card hover:border-primary/50 transition-colors">
+                                <div className="relative aspect-square bg-secondary rounded-lg overflow-hidden mb-3">
+                                  {fallbackImg ? (
+                                    <>
+                                      <img
+                                        src={fallbackImg}
+                                        alt={cleanTitle}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <div className="absolute inset-0 flex items-center justify-center p-6">
+                                        <img
+                                          src={approvedDesign.imageUrl}
+                                          alt="Your design"
+                                          className="max-w-[70%] max-h-[70%] object-contain opacity-90"
+                                          style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                        />
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <img
+                                      src={product.images?.[0] || "/placeholder.svg"}
+                                      alt={cleanTitle}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )}
+                                </div>
+                                <div className="space-y-3">
+                                  <div className="text-center">
+                                    <p className="font-bold text-xs line-clamp-1">{cleanTitle}</p>
+                                    <p className="text-primary font-black text-sm">${product.retail_price.toFixed(2)}</p>
+                                  </div>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="w-full text-xs font-semibold"
+                                    onClick={() => handleCrossSellSelect(product)}
+                                  >
+                                    Customize
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </Card>
+                  )}
 
                   {/* Edit Options */}
                   <div className="flex justify-center gap-4">

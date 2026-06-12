@@ -35,8 +35,49 @@ const OrderConfirmation = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const { trackTikTokEvent } = useTikTokTracking();
-  // Track the resolved order ID so we don't re-fetch after navigate() changes the URL param
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [claimPassword, setClaimPassword] = useState('');
+  const [claimLoading, setClaimLoading] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
   const resolvedOrderIdRef = useRef<string | null>(null);
+
+  const handleClaimAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+
+    if (claimPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    setClaimLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: order.email,
+        password: claimPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/profile`,
+        }
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        setClaimSuccess(true);
+        if (data.session) {
+          toast.success('Account created and order linked!');
+          setIsLoggedIn(true);
+        } else {
+          toast.success('Sign up successful! Check your email to verify your account.');
+        }
+      }
+    } catch (err) {
+      console.error('Error claiming account:', err);
+      toast.error('Failed to create account.');
+    } finally {
+      setClaimLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -47,6 +88,7 @@ const OrderConfirmation = () => {
 
       // Wait for auth session to be ready
       const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
 
       let orderIdToFetch = orderId;
       let verifiedOrder: Order | null = null;
@@ -232,6 +274,22 @@ const OrderConfirmation = () => {
               </p>
             </div>
 
+            {/* MelCat Snarky Note */}
+            <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl text-left flex gap-3 items-start">
+              <span className="text-2xl mt-0.5">🐱</span>
+              <div className="space-y-1">
+                <h4 className="font-bold text-sm text-primary flex items-center gap-1.5">
+                  MelCat says:
+                </h4>
+                <p className="text-xs text-muted-foreground italic leading-relaxed">
+                  {order.status === 'paid'
+                    ? "Congratulations, you successfully spent money on our stuff. We're printing it now, so try not to refresh this page 50 times. Yes, shipping was free — don't make a big deal out of it."
+                    : "No successful payment was found. You haven't paid yet, which means we aren't printing anything yet. Go back and pay, or don't... I'm just a cat."
+                  }
+                </p>
+              </div>
+            </div>
+
             <div className="bg-muted p-6 rounded-lg space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Order Number</span>
@@ -262,6 +320,39 @@ const OrderConfirmation = () => {
                 </div>
               </div>
             </div>
+
+            {/* Post-Purchase Claim Account Widget */}
+            {!isLoggedIn && (
+              <div className="border-t pt-6 text-left space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-base text-foreground">Claim Your Account</h3>
+                  <p className="text-sm text-muted-foreground font-normal">
+                    Create a password below to claim your account and track this order. Your email <strong>{order.email}</strong> is already pre-filled.
+                  </p>
+                </div>
+                {claimSuccess ? (
+                  <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-lg text-sm text-green-700 font-medium text-center">
+                    🎉 Account created successfully! Check your email to confirm registration and save this order to your profile.
+                  </div>
+                ) : (
+                  <form onSubmit={handleClaimAccount} className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="password"
+                      placeholder="Enter a secure password (min 6 chars)"
+                      value={claimPassword}
+                      onChange={(e) => setClaimPassword(e.target.value)}
+                      className="flex-1 px-4 py-2 border border-border rounded-lg text-sm bg-background"
+                      required
+                      minLength={6}
+                      disabled={claimLoading}
+                    />
+                    <Button type="submit" disabled={claimLoading} className="whitespace-nowrap">
+                      {claimLoading ? 'Registering...' : 'Claim Account'}
+                    </Button>
+                  </form>
+                )}
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button onClick={() => navigate(`/order-tracking/${orderId}`)} variant="default">

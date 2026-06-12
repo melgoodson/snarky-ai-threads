@@ -29,6 +29,31 @@ function isSha256(str: string): boolean {
   return /^[a-fA-F0-9]{64}$/.test(str);
 }
 
+function removeNullsAndUndefineds(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return undefined;
+  }
+  if (Array.isArray(obj)) {
+    const cleanedArr = obj.map(removeNullsAndUndefineds).filter((v) => v !== undefined);
+    return cleanedArr.length > 0 ? cleanedArr : undefined;
+  }
+  if (typeof obj === "object") {
+    const res: Record<string, any> = {};
+    let hasKeys = false;
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const val = removeNullsAndUndefineds(obj[key]);
+        if (val !== undefined) {
+          res[key] = val;
+          hasKeys = true;
+        }
+      }
+    }
+    return hasKeys ? res : undefined;
+  }
+  return obj;
+}
+
 async function hashIfNeeded(
   value: string | undefined | null,
   type: "email" | "phone" | "external_id"
@@ -89,7 +114,7 @@ serve(async (req) => {
 
     // Build the request payload for TikTok Events API (v1.3 standard batch payload format)
     const activeTestCode = test_event_code || Deno.env.get("TIKTOK_TEST_EVENT_CODE") || null;
-    const tiktokPayload = {
+    const rawPayload = {
       event_source: "web",
       event_source_id: pixelId,
       test_event_code: activeTestCode,
@@ -97,7 +122,13 @@ serve(async (req) => {
         {
           event,
           event_id: event_id || crypto.randomUUID(),
-          event_time: timestamp ? Math.floor(new Date(timestamp).getTime() / 1000) : Math.floor(Date.now() / 1000),
+          event_time: (() => {
+            if (timestamp) {
+              const parsed = new Date(timestamp).getTime();
+              if (!isNaN(parsed)) return Math.floor(parsed / 1000);
+            }
+            return Math.floor(Date.now() / 1000);
+          })(),
           context: {
             ad: {
               callback: context.ad?.callback || null,
@@ -137,6 +168,9 @@ serve(async (req) => {
         }
       ]
     };
+
+    // Clean payload of nulls and undefineds recursively
+    const tiktokPayload = removeNullsAndUndefineds(rawPayload) || {};
 
     console.log(`[TikTok Events API] Payload built for "${event}":`, JSON.stringify(tiktokPayload, null, 2));
 

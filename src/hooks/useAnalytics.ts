@@ -220,20 +220,18 @@ export function useAnalytics() {
     }
 
     try {
-      const { data } = await supabase
+      const pageViewId = crypto.randomUUID();
+      currentPageViewId.current = pageViewId;
+
+      await supabase
         .from('analytics_page_views')
         .insert({
+          id: pageViewId,
           session_id: sessionId.current,
           path: location.pathname,
           title: document.title,
           load_time_ms: loadTime,
-        })
-        .select('id')
-        .single();
-
-      if (data) {
-        currentPageViewId.current = data.id;
-      }
+        });
     } catch (error) {
       console.debug('Failed to track page view:', error);
     }

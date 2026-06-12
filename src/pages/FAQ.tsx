@@ -18,6 +18,29 @@ interface DatabaseFAQ {
   sort_order: number;
 }
 
+const seoDraftFaqs = [
+  {
+    q: "What is Snarky Azz Humans?",
+    a: "Snarky Azz Humans is a print-on-demand service that turns ordinary mugs, t-shirts, and blankets into snarky, conversation-starting merch. We handle design, printing, and shipping so you can focus on selling.",
+  },
+  {
+    q: "How do I upload a photo for custom printing?",
+    a: "Simply use our online upload tool on the product page. Drag and drop your image, adjust the placement, and preview the final design before adding to cart.",
+  },
+  {
+    q: "Is my photo stored or shared after upload?",
+    a: "We're Snarky, Not Shady. Your photo is not stored, sold, or shared. It is used only for the specific order you place and is deleted from our servers once the print is complete.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "We accept major credit cards, PayPal, and Apple Pay. All transactions are processed through a secure, PCI-compliant gateway.",
+  },
+  {
+    q: "Can I cancel or modify my order after it's placed?",
+    a: "Once an order is placed, it moves into production. We can't cancel or modify orders after that point. Please double-check your design and quantities before confirming.",
+  },
+] as const;
+
 const FAQ = () => {
   const [databaseFaqs, setDatabaseFaqs] = useState<DatabaseFAQ[]>([]);
 
@@ -209,19 +232,39 @@ const FAQ = () => {
     }
   });
 
+  const faqEntities = Object.entries(allFaqData).flatMap(([, questions]) =>
+    questions.map(({ q, a }) => ({
+      "@type": "Question",
+      "name": q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": a
+      }
+    }))
+  );
+
+  const seoDraftEntities = seoDraftFaqs.map(({ q, a }) => ({
+    "@type": "Question",
+    "name": q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": a
+    }
+  }));
+
+  const dedupedEntities = Array.from(
+    new Map(
+      [...seoDraftEntities, ...faqEntities].map((item) => [
+        item.name.trim().toLowerCase(),
+        item,
+      ])
+    ).values()
+  );
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": Object.entries(allFaqData).flatMap(([category, questions]) =>
-      questions.map(({ q, a }) => ({
-        "@type": "Question",
-        "name": q,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": a
-        }
-      }))
-    )
+    "mainEntity": dedupedEntities
   };
 
   return (

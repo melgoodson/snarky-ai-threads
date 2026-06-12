@@ -92,18 +92,24 @@ export function useTikTokTracking() {
         }
       }
 
+      // Fallback externalId to anonymous visitor ID if user is not logged in
+      if (!externalId) {
+        externalId = localStorage.getItem('snarky_visitor_id') || null;
+      }
+
       // Cache email and phone locally for subsequent events
       if (email) localStorage.setItem(STORED_USER_EMAIL, email);
       if (phone) localStorage.setItem(STORED_USER_PHONE, phone);
 
       const testCode = sessionStorage.getItem(STORED_TEST_CODE_KEY);
+      const cleanTestCode = (testCode && testCode !== 'undefined' && testCode !== 'null') ? testCode : undefined;
       const eventId = crypto.randomUUID();
 
       const payload = {
         event: eventName,
         event_id: eventId,
         timestamp: new Date().toISOString(),
-        test_event_code: testCode || undefined,
+        test_event_code: cleanTestCode,
         context: {
           ad: {
             callback: ttclid || null,

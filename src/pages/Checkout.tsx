@@ -555,7 +555,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
-                    <span>Calculated at fulfillment</span>
+                    <span className="text-green-600 font-semibold">FREE</span>
                   </div>
                   <div className="flex justify-between text-lg font-black border-t pt-2">
                     <span>TOTAL</span>

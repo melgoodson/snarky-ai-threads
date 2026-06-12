@@ -1002,7 +1002,11 @@ export default function AdminOrders() {
                           <div key={item.id} className="flex gap-3 p-3 rounded-lg bg-muted/50">
                             {img && (
                               <div className="w-14 h-14 rounded-md overflow-hidden bg-background flex-shrink-0 border">
-                                <img src={img} alt="" className="w-full h-full object-cover" />
+                                <img
+                                  src={img}
+                                  alt={`${item.products?.title || "Custom product"} order item preview`}
+                                  className="w-full h-full object-cover"
+                                />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">

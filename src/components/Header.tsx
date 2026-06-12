@@ -246,7 +246,7 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
                     </Link>
                   ) : (
                     <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                      Sign In
+                      Sign Up
                     </Link>
                   )}
                 </div>
@@ -271,8 +271,8 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
                   Profile
                 </Button>
               ) : (
-                <Button variant="outline" onClick={() => navigate('/auth')}>
-                  Sign In
+                <Button variant="default" onClick={() => navigate('/auth')}>
+                  Sign Up
                 </Button>
               )}
             </div>
