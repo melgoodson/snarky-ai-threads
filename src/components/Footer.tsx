@@ -38,8 +38,8 @@ export const Footer = () => {
   return (
     <footer className="border-t border-border bg-card mt-20">
       <div className="container px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
+          <div className="space-y-4 col-span-1 sm:col-span-2 md:col-span-1">
             <h3 className="text-xl font-black tracking-tighter">
               SNARKY A$$ <span className="text-primary">APPAREL</span>
             </h3>
@@ -120,6 +120,37 @@ export const Footer = () => {
           </div>
 
           <div>
+            <h4 className="font-bold mb-4 text-foreground">GIFT GUIDES</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/category/funny-coworker-gifts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Coworker Gifts
+                </Link>
+              </li>
+              <li>
+                <Link to="/category/funny-teacher-shirts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Teacher Shirts
+                </Link>
+              </li>
+              <li>
+                <Link to="/category/snarky-mom-gifts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Snarky Mom Gifts
+                </Link>
+              </li>
+              <li>
+                <Link to="/category/sarcastic-christmas-gifts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Christmas Gifts
+                </Link>
+              </li>
+              <li>
+                <Link to="/category/white-elephant-gifts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  White Elephant
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
             <h4 className="font-bold mb-4 text-foreground">SUPPORT</h4>
             <ul className="space-y-2">
               <li>
@@ -173,6 +204,6 @@ export const Footer = () => {
           <p>&copy; {new Date().getFullYear()} Snarky A$$ Apparel. All rights reserved.</p>
         </div>
       </div>
-    </footer >
+    </footer>
   );
 };

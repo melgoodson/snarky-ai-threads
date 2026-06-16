@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { CartProvider } from "./contexts/CartContext";
 import { useExternalTracking } from "@/hooks/useExternalTracking";
@@ -59,6 +61,52 @@ const AppContent = () => {
   useExternalTracking();
   useGA4Tracking();
   useTikTokTracking();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes("error=")) {
+      try {
+        const hashParams = new URLSearchParams(hash.substring(1));
+        const error = hashParams.get("error");
+        const errorCode = hashParams.get("error_code");
+        const errorDescription = hashParams.get("error_description");
+
+        if (errorCode || error) {
+          const rawDescription = errorDescription || error || "Authentication failed";
+          const message = decodeURIComponent(rawDescription.replace(/\+/g, " "));
+
+          let friendlyTitle = "Authentication Error";
+          let friendlyDescription = message;
+
+          if (errorCode === "otp_expired") {
+            friendlyTitle = "Sign-in Link Expired or Already Used";
+            friendlyDescription = "Security scanners in your email app may have checked the link, or it has expired. Please request a new magic link.";
+          }
+
+          toast.error(friendlyTitle, {
+            description: friendlyDescription,
+            duration: 8000,
+          });
+
+          // Clean up the URL hash so it doesn't persist
+          const url = new URL(window.location.href);
+          url.hash = "";
+          window.history.replaceState({}, document.title, url.toString());
+
+          // Redirect to the login/auth page to let user request a new one
+          if (location.pathname !== "/auth") {
+            navigate("/auth", { replace: true });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to parse auth error from URL hash:", err);
+      }
+    }
+  }, [location, navigate]);
+
   return null;
 };
 

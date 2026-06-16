@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Tag, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Tag, Sparkles, Loader2, Truck, ShieldCheck, RefreshCw, Star, Package } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
+import { WebsiteReviews } from "@/components/WebsiteReviews";
 
 import {
   COLOR_HEX_MAP,
@@ -674,8 +675,8 @@ const DesignDetail = () => {
 
                   {/* Add to Cart - always visible */}
                   <Button
-                    size="xl"
-                    className="w-full group text-lg font-bold"
+                    size="lg"
+                    className="w-full group text-lg font-bold h-12"
                     onClick={handleAddToCart}
                     disabled={
                       (currentOptions.sizes.length > 0 || currentOptions.colors.length > 0 || currentOptions.styles.length > 0)
@@ -689,7 +690,58 @@ const DesignDetail = () => {
                     }
                   >
                     Add to Cart
-                  </Button>                </>
+                  </Button>
+
+                  {/* Gifting Occasions & Recommendation Badge */}
+                  {(() => {
+                    let badgeText = "";
+                    const desc = design.description?.toLowerCase() || "";
+                    const title = design.title?.toLowerCase() || "";
+                    const productTitle = currentProduct?.title?.toLowerCase() || "";
+
+                    if (title.includes("father") || title.includes("dad") || productTitle.includes("father") || productTitle.includes("dad")) {
+                      badgeText = "🎁 Best Gift for Dad & Men";
+                    } else if (productTitle.includes("blanket")) {
+                      badgeText = "📸 Best Personalized Photo Gift";
+                    } else if (title.includes("rbf") || title.includes("work") || title.includes("meeting") || desc.includes("coworker") || desc.includes("office")) {
+                      badgeText = "💼 Ideal Gift for Coworkers & Friends";
+                    } else if (desc.includes("sarcasm") || desc.includes("humor") || title.includes("hugs") || title.includes("abduct")) {
+                      badgeText = "🐘 Perfect White Elephant/Gag Gift";
+                    }
+                    if (!badgeText) return null;
+                    return (
+                      <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 text-xs font-black px-3 py-1.5 rounded-full mt-2">
+                        <Star className="h-3 w-3 fill-primary animate-pulse" />
+                        {badgeText}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Trust Signals Banner */}
+                  <div className="border border-border bg-card rounded-xl p-4 mt-4 space-y-3 shadow-sm">
+                    <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-primary shrink-0" />
+                        <span>Made to Order</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-4 w-4 text-primary shrink-0" />
+                        <span>Ships in 5-7 Days</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 text-primary shrink-0" />
+                        <span>30-Day Returns</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                        <span>Secure Checkout</span>
+                      </div>
+                    </div>
+                    <div className="border-t border-border pt-3 text-center text-xs text-muted-foreground font-medium">
+                      Questions? Check our <a href="/shipping" className="text-primary hover:underline font-bold">Shipping Info</a>, <a href="/returns" className="text-primary hover:underline font-bold">Return Policy</a>, or <a href="/contact" className="text-primary hover:underline font-bold">Contact Support</a>.
+                    </div>
+                  </div>
+                </>
               )}
 
               {!currentProduct && (
@@ -699,6 +751,11 @@ const DesignDetail = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Customer Reviews Section */}
+        <div className="border-t border-border mt-16 pt-12">
+          <WebsiteReviews />
         </div>
       </main>
       <Footer />

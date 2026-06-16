@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Sparkles, Tag, Package } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Sparkles, Tag, Package, Truck, ShieldCheck, RefreshCw, Star } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,8 @@ import { Loader2 } from "lucide-react";
 import { ImageCarousel } from "@/components/ImageCarousel";
 import { useCart } from "@/contexts/CartContext";
 import { useTikTokTracking } from "@/hooks/useTikTokTracking";
+import { WebsiteReviews } from "@/components/WebsiteReviews";
+
 import rbfChampion from "@/assets/rbf-champion.png";
 import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
@@ -797,6 +799,52 @@ const ProductDetail = () => {
                 DESIGN YOUR BLANKET
               </Button>
             )}
+
+            {/* Gifting Occasions & Recommendation Badge */}
+            {(() => {
+              let badgeText = "";
+              if (product.category === "FATHERS" || id?.includes("father") || id?.includes("dad")) {
+                badgeText = "🎁 Best Gift for Dad & Men";
+              } else if (product.category === "PERSONALIZED GIFTS" || isBlanket) {
+                badgeText = "📸 Best Personalized Photo Gift";
+              } else if (product.category === "ATTITUDE" || product.category === "SNARKY HUMANS" || id?.includes("rbf")) {
+                badgeText = "💼 Ideal Gift for Coworkers & Friends";
+              } else if (product.category === "SARCASM" || product.category === "DARK HUMOR") {
+                badgeText = "🐘 Perfect White Elephant/Gag Gift";
+              }
+              if (!badgeText) return null;
+              return (
+                <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 text-xs font-black px-3 py-1.5 rounded-full mt-2">
+                  <Star className="h-3 w-3 fill-primary animate-pulse" />
+                  {badgeText}
+                </div>
+              );
+            })()}
+
+            {/* Trust Signals Banner */}
+            <div className="border border-border bg-card rounded-xl p-4 mt-4 space-y-3 shadow-sm">
+              <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-primary shrink-0" />
+                  <span>Made to Order</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-primary shrink-0" />
+                  <span>Ships in 5-7 Days</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4 text-primary shrink-0" />
+                  <span>30-Day Returns</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                  <span>Secure Checkout</span>
+                </div>
+              </div>
+              <div className="border-t border-border pt-3 text-center text-xs text-muted-foreground font-medium">
+                Questions? Check our <a href="/shipping" className="text-primary hover:underline font-bold">Shipping Info</a>, <a href="/returns" className="text-primary hover:underline font-bold">Return Policy</a>, or <a href="/contact" className="text-primary hover:underline font-bold">Contact Support</a>.
+              </div>
+            </div>
           </div>
         </div>
 
@@ -872,6 +920,11 @@ const ProductDetail = () => {
               />
             </TabsContent>
           </Tabs>
+        </div>
+
+        {/* Customer Reviews Section */}
+        <div className="border-t border-border mt-16 pt-12">
+          <WebsiteReviews />
         </div>
       </main>
       <Footer />

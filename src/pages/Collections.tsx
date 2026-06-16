@@ -16,15 +16,15 @@ const SNARKY_COLLECTIONS = [
 ];
 
 const PERSONALIZED_COLLECTIONS = [
-  { name: "Personalized Photo Blankets", slug: "/product/personalization-blanket", emoji: "📸", description: "Upload your photos — custom fleece & sherpa blankets", keywords: "personalized blanket, personalized gifts with photo, custom photo blanket" },
+  // { name: "Personalized Photo Blankets", slug: "/product/personalization-blanket", emoji: "📸", description: "Upload your photos — custom fleece & sherpa blankets", keywords: "personalized blanket, personalized gifts with photo, custom photo blanket" },
   { name: "Gifts for Him", slug: "/designs", emoji: "👨", description: "Personalized gifts for boyfriend, husband, or dad", keywords: "personalized gifts for him, personalized gifts for boyfriend, personalized gifts for men" },
   { name: "Gifts for Her", slug: "/designs", emoji: "👩", description: "Custom gifts for girlfriend, wife, or mom", keywords: "personalized gifts for her, personalized gifts for girlfriend" },
-  { name: "Gifts for Mom", slug: "/designs", emoji: "💝", description: "Thoughtful personalized gifts she'll actually love", keywords: "personalized gifts for mom, personalized gifts to mom" },
+  { name: "Gifts for Mom", slug: "/category/snarky-mom-gifts", emoji: "💝", description: "Thoughtful personalized gifts she'll actually love", keywords: "personalized gifts for mom, personalized gifts to mom" },
   { name: "Custom Mother's Day Gifts", slug: "/category/custom-mothers-day-gifts", emoji: "💐", description: "Personalized Mother's Day gifts for moms with a sense of humor", keywords: "custom mothers day gifts, funny gifts for mom" },
   { name: "Custom Gifts for Men", slug: "/category/custom-gifts-for-men", emoji: "🧔", description: "Funny & personalized gifts for guys who want nothing", keywords: "custom gifts for men, funny gifts for dad" },
-  { name: "Personalized Blanket Gifts", slug: "/category/personalized-blanket-gifts", emoji: "🛏️", description: "Custom photo blankets and personalized fleece throws", keywords: "personalized blanket gifts, custom photo blankets" },
-  { name: "Photo Gifts", slug: "/blankets", emoji: "🖼️", description: "Custom photo blankets, mugs & more", keywords: "personalized gifts with photo, personalized gifts with pictures, personalized gifts using photos" },
-  { name: "Christmas Gifts", slug: "/designs", emoji: "🎄", description: "Custom personalized holiday gifts", keywords: "personalized christmas gifts, personalized gifts christmas, personalized gifts xmas" },
+  // { name: "Personalized Blanket Gifts", slug: "/category/personalized-blanket-gifts", emoji: "🛏️", description: "Custom photo blankets and personalized fleece throws", keywords: "personalized blanket gifts, custom photo blankets" },
+  // { name: "Photo Gifts", slug: "/blankets", emoji: "🖼️", description: "Custom photo blankets, mugs & more", keywords: "personalized gifts with photo, personalized gifts with pictures, personalized gifts using photos" },
+  { name: "Christmas Gifts", slug: "/category/sarcastic-christmas-gifts", emoji: "🎄", description: "Custom personalized holiday gifts", keywords: "personalized christmas gifts, personalized gifts christmas, personalized gifts xmas" },
 ];
 
 const GIFT_COLLECTIONS = [
@@ -32,6 +32,7 @@ const GIFT_COLLECTIONS = [
   { name: "Gag Gifts", slug: "/category/gag-gifts", emoji: "🤡", description: "Prank gifts and funny stuff guaranteed to get a laugh", keywords: "gag gifts, prank gifts" },
   { name: "White Elephant Gifts", slug: "/category/white-elephant-gifts", emoji: "🐘", description: "The most stolen gifts at your holiday party", keywords: "white elephant gifts, secret santa gifts" },
   { name: "Funny Gifts for Coworkers", slug: "/category/funny-coworker-gifts", emoji: "👔", description: "Survive the office with these snarky coworker gifts", keywords: "funny gifts for coworkers, office gifts, coworker gifts" },
+  { name: "Funny Teacher Shirts", slug: "/category/funny-teacher-shirts", emoji: "👩‍🏫", description: "Attitude-packed apparel for the classroom", keywords: "funny teacher shirts, teacher appreciation gifts, sarcastic teacher tee, educator gag gifts" },
   { name: "Funny Gifts Under $25", slug: "/category/funny-gifts-under-25", emoji: "💵", description: "Cheap but hilarious gifts on a budget", keywords: "funny gifts under 25, cheap gag gifts" },
   { name: "Funny Gifts Under $50", slug: "/category/funny-gifts-under-50", emoji: "💰", description: "Premium snark without breaking the bank", keywords: "funny gifts under 50" },
 ];
@@ -39,7 +40,7 @@ const GIFT_COLLECTIONS = [
 const SHOP_BY_PRODUCT = [
   { name: "T-Shirts", slug: "/shirts", emoji: "👕", description: "Premium cotton tees with bold DTG prints", keywords: "personalized t shirts, custom t shirt printing for sarcastic designs" },
   { name: "Hoodies", slug: "/hoodies", emoji: "🧥", description: "Cozy pullover and zip-up custom hoodies", keywords: "personalized hoodie, custom hoodie" },
-  { name: "Blankets", slug: "/blankets", emoji: "🛏️", description: "Fleece & sherpa blankets with your photos", keywords: "personalization blanket, personalized blanket" },
+  // { name: "Blankets", slug: "/blankets", emoji: "🛏️", description: "Fleece & sherpa blankets with your photos", keywords: "personalization blanket, personalized blanket" },
   { name: "Tote Bags", slug: "/tote-bags", emoji: "👜", description: "Custom canvas tote bags", keywords: "personalized tote bags" },
   { name: "Mugs", slug: "/mugs", emoji: "☕", description: "Ceramic mugs in 11oz and 15oz", keywords: "personalized coffee mug, snarky coffee mug" },
   { name: "Greeting Cards", slug: "/greeting-cards", emoji: "💌", description: "5×7 coated cards for every occasion", keywords: "snarky birthday cards, funny sarcastic greeting cards" },

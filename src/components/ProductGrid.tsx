@@ -151,7 +151,7 @@ const getCurrentMonthData = () => {
   return MONTHLY_FEATURED[month] || MONTHLY_FEATURED[1]; // fallback to Feb
 };
 
-export const ProductGrid = () => {
+export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -159,7 +159,7 @@ export const ProductGrid = () => {
 
   useEffect(() => {
     fetchDesigns();
-  }, []);
+  }, [categorySlug]);
 
   const fetchDesigns = async () => {
     try {
@@ -170,7 +170,41 @@ export const ProductGrid = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setDesigns(data || []);
+      
+      let fetchedDesigns = data || [];
+
+      // Filter designs based on target gift persona or category keywords
+      if (categorySlug) {
+        const slug = categorySlug.toLowerCase();
+        if (slug.includes("coworker") || slug.includes("office")) {
+          // Sarcastic coworker designs
+          fetchedDesigns = fetchedDesigns.filter(d => 
+            ["RBF Champion", "Snarky Humans", "Dark", "White Idol Morning"].some(t => d.title.includes(t))
+          );
+        } else if (slug.includes("men") || slug.includes("dad")) {
+          // Custom gifts for men
+          fetchedDesigns = fetchedDesigns.filter(d => 
+            ["Fathers", "Sasquatches", "Abduct Me"].some(t => d.title.includes(t))
+          );
+        } else if (slug.includes("mom") || slug.includes("mother")) {
+          // Snarky mom designs
+          fetchedDesigns = fetchedDesigns.filter(d => 
+            ["RBF Champion", "Snarky Humans", "White Idol Morning", "Good Morning"].some(t => d.title.includes(t))
+          );
+        } else if (slug.includes("teacher")) {
+          // Sarcastic teacher designs
+          fetchedDesigns = fetchedDesigns.filter(d => 
+            ["RBF Champion", "Snarky Humans", "White Idol Morning", "Dark"].some(t => d.title.includes(t))
+          );
+        } else if (slug.includes("christmas") || slug.includes("white-elephant") || slug.includes("gag")) {
+          // Gag & holiday swap favorites
+          fetchedDesigns = fetchedDesigns.filter(d => 
+            ["Free Hugs", "Abduct Me", "Sasquatches", "Dark", "RBF Champion", "Snarky Humans"].some(t => d.title.includes(t))
+          );
+        }
+      }
+
+      setDesigns(fetchedDesigns);
     } catch (error) {
       // silently handle
     } finally {

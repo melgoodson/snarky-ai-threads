@@ -253,6 +253,34 @@ const SEO_ROUTES = [
     desc: 'Create luxurious personalized fleece and sherpa blankets printed edge-to-edge with your favorite photos. Warm, cozy, and completely custom.',
     body: `<h1>Personalized Photo Blankets & Custom Throws</h1>
     <p>Nothing says 'I put effort into this' quite like a personalized blanket gift. Whether you're plastering an embarrassing photo of your best friend across 60 inches of fleece, or making a heartfelt pet memorial throw.</p>`
+  },
+  {
+    path: '/category/funny-teacher-shirts',
+    title: 'Funny Teacher Shirts & Sarcastic Educator Tees | Snarky A$$ Apparel',
+    desc: 'Shop the best funny teacher shirts and sarcastic gifts for educators. High-quality graphic tees perfect for casual Fridays and teacher appreciation.',
+    body: `<h1>Funny Teacher Shirts & Sarcastic Gifts</h1>
+    <p>Teaching is hard work, and sometimes a sense of humor is the only way to get through grading papers. Our funny teacher shirts feature clever wordplay, coffee appreciation, and gentle classroom sarcasm.</p>`
+  },
+  {
+    path: '/category/snarky-mom-gifts',
+    title: 'Snarky Mom Gifts & Sarcastic Mother\'s Day Ideas | Snarky A$$ Apparel',
+    desc: 'Shop funny and snarky mom gifts. Sarcastic mom shirts, personalized coffee mugs, and hilarious Mother\'s Day ideas that will get a real laugh.',
+    body: `<h1>Snarky Mom Gifts & Sarcastic Mother\'s Day Ideas</h1>
+    <p>Ditch the boring flowers and basic candles. Celebrate mom life with gifts that actually reflect her personality—caffeine-fueled, chaotic, and wonderfully sarcastic.</p>`
+  },
+  {
+    path: '/category/sarcastic-christmas-gifts',
+    title: 'Sarcastic Christmas Gifts & Funny Gag Swaps | Snarky A$$ Apparel',
+    desc: 'Shop sarcastic Christmas gifts and funny holiday gag gifts. Find the perfect Secret Santa, White Elephant, and stocking stuffers for adults.',
+    body: `<h1>Sarcastic Christmas Gifts & Holiday Gag Swaps</h1>
+    <p>Don\'t be the person who brings a generic gift card. Bring the item everyone fights to steal at the White Elephant exchange. Our sarcastic Christmas collection features holiday-themed snark.</p>`
+  },
+  {
+    path: '/category/sarcastic-coworker-gifts',
+    title: 'Sarcastic Coworker Gifts & Office Humorous Presents | Snarky A$$ Apparel',
+    desc: 'Shop unique sarcastic coworker gifts. Sarcastic office shirts, funny colleague mugs, and hilarious farewell gifts for your work friends.',
+    body: `<h1>Sarcastic Coworker Gifts & Office Humor</h1>
+    <p>Make the corporate grind tolerable. Our sarcastic coworker gifts are perfect for secret Santa, office promotions, retirement, or farewell parties.</p>`
   }
 ];
 
