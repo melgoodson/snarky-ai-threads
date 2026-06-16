@@ -11,6 +11,7 @@ import { useExternalTracking } from "@/hooks/useExternalTracking";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { useTikTokTracking } from "@/hooks/useTikTokTracking";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Collections from "./pages/Collections";
@@ -106,6 +107,23 @@ const AppContent = () => {
       }
     }
   }, [location, navigate]);
+
+  // After email confirmation, Supabase redirects to the site root (the only reliably
+  // whitelisted URL). We stored the intended destination in localStorage ('auth_return_to')
+  // before sending the signup/magic-link email. Pick it up here and navigate.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const returnTo = localStorage.getItem('auth_return_to');
+        if (returnTo) {
+          localStorage.removeItem('auth_return_to');
+          // Small delay so the current route finishes mounting before we navigate
+          setTimeout(() => navigate(returnTo, { replace: true }), 50);
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return null;
 };

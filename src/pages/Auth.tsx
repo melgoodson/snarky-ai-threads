@@ -53,11 +53,16 @@ const Auth = () => {
 
     setLoading(true);
     try {
+      // Store the intended destination — email redirect is always to site root
+      // (Supabase only whitelists the root domain). App.tsx global listener picks this up.
+      if (returnTo && returnTo !== '/') {
+        localStorage.setItem('auth_return_to', returnTo);
+      }
       const { data, error } = await supabase.functions.invoke("send-auth-email", {
         body: {
           email,
           type: "magiclink",
-          redirectTo: getRedirectUrl(),
+          redirectTo: window.location.origin,
         },
       });
 
@@ -107,12 +112,17 @@ const Auth = () => {
           navigate(returnTo);
         }
       } else {
+        // Store the intended destination — email redirect is always to site root
+        // (Supabase only whitelists the root domain). App.tsx global listener picks this up.
+        if (returnTo && returnTo !== '/') {
+          localStorage.setItem('auth_return_to', returnTo);
+        }
         const { data, error } = await supabase.functions.invoke("send-auth-email", {
           body: {
             email,
             password,
             type: "signup",
-            redirectTo: getRedirectUrl(),
+            redirectTo: window.location.origin,
           },
         });
 
