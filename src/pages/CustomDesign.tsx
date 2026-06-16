@@ -313,11 +313,61 @@ export default function CustomDesign() {
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const authed = !!session?.user;
       setIsAuthenticated(authed);
       if (session?.user) {
         fetchUserDesigns(session.user.id);
+
+        // Handle email-confirmation / magic-link redirect.
+        // checkAuth() ran at mount BEFORE the auth token was processed (timing issue),
+        // so if there's still a pending action here we need to pick it up and resume.
+        if (_event === 'SIGNED_IN') {
+          const pendingAction = sessionStorage.getItem('customDesignPendingAction');
+          if (pendingAction === 'checkout' || pendingAction === 'save') {
+            sessionStorage.removeItem('customDesignPendingAction');
+
+            // Try IndexedDB first (survives across tabs), then sessionStorage fallback
+            let restoredState: any = null;
+            try {
+              restoredState = await getFromIndexedDB('customDesignState');
+              if (restoredState) await removeFromIndexedDB('customDesignState');
+            } catch {}
+            if (!restoredState) {
+              try {
+                const raw = sessionStorage.getItem('customDesignState');
+                if (raw) { restoredState = JSON.parse(raw); sessionStorage.removeItem('customDesignState'); }
+              } catch {}
+            }
+
+            if (restoredState) {
+              // Restore UI state
+              if (restoredState.designDraft) setDesignDraft(restoredState.designDraft);
+              if (restoredState.approvedDesign) setApprovedDesign(restoredState.approvedDesign);
+              if (restoredState.currentStep) setCurrentStep(restoredState.currentStep);
+              if (restoredState.selectedProduct) setSelectedProduct(restoredState.selectedProduct);
+              if (restoredState.selectedVariant) setSelectedVariant(restoredState.selectedVariant);
+              if (restoredState.quantity) setQuantity(restoredState.quantity);
+              if (restoredState.savedDesignId) setSavedDesignId(restoredState.savedDesignId);
+              if (restoredState.mockupPreview) setMockupPreview(restoredState.mockupPreview);
+
+              if (pendingAction === 'checkout') {
+                toast.success("Welcome! Resuming your order...");
+                // Small delay to let React flush the state updates before calling proceedToCheckout
+                setTimeout(() => {
+                  proceedToCheckout(
+                    restoredState.selectedProduct,
+                    restoredState.approvedDesign,
+                    restoredState.selectedVariant,
+                    restoredState.quantity
+                  );
+                }, 300);
+              } else {
+                toast.success("Welcome back! Your design has been restored.");
+              }
+            }
+          }
+        }
       } else {
         setUserDesigns([]);
       }
