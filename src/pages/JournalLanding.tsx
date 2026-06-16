@@ -2,29 +2,29 @@ import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Camera, Gift, Truck, Heart } from "lucide-react";
+import { ArrowRight, BookOpen, Heart, Truck, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIMockupGenerator } from "@/components/AIMockupGenerator";
-import personalizationBlanket from "@/assets/personalization-blanket.png";
+import notebookMockup from "/images/notebook-mockup.png";
 
 const OCCASIONS = [
-    { emoji: "❤️", title: "Valentine's Day", desc: "A gift that wraps them in your love" },
-    { emoji: "🎄", title: "Christmas", desc: "The personalized gift they'll actually keep" },
-    { emoji: "👩", title: "Mother's Day", desc: "Because she deserves more than flowers" },
-    { emoji: "👨", title: "Father's Day", desc: "For the dad who says he doesn't want anything" },
-    { emoji: "🎓", title: "Graduation", desc: "Celebrate their journey in cozy style" },
-    { emoji: "💍", title: "Wedding", desc: "A keepsake they'll snuggle with forever" },
+    { emoji: "📓", title: "Daily Journaling", desc: "Write down your goals, daily rants, or secrets" },
+    { emoji: "🎓", title: "Graduation & School", desc: "The perfect custom companion for lectures and notes" },
+    { emoji: "💼", title: "Office & Work", desc: "Bring some attitude to your boring team meetings" },
+    { emoji: "🎁", title: "Personalized Gift", desc: "A thoughtful notebook they'll actually use daily" },
+    { emoji: "🎨", title: "Sketches & Ideas", desc: "Capture your sudden bursts of creative genius" },
+    { emoji: "🎄", title: "Holiday Exchange", desc: "The white elephant gift that everyone will fight for" },
 ];
 
-const BlanketLanding = () => {
+const JournalLanding = () => {
     const navigate = useNavigate();
 
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Custom Photo Blankets | Personalized Gifts | Snarky A$$ Apparel</title>
-                <meta name="description" content="Design custom personalized photo blankets. Premium fleece and sherpa backing with edge-to-edge sublimation printing. The perfect thoughtful gift." />
-                <link rel="canonical" href="https://snarkyazzhumans.com/blankets" />
+                <title>Custom Hardcover Journals | Personalized Notebooks | Snarky A$$ Apparel</title>
+                <meta name="description" content="Design custom personalized hardcover journals and notebooks. Premium matte finish front and back with 150 ruled pages. The perfect funny or thoughtful gift." />
+                <link rel="canonical" href="https://snarkyazzhumans.com/journals" />
             </Helmet>
             <Header />
             <main className="flex-1">
@@ -34,16 +34,16 @@ const BlanketLanding = () => {
                     <div className="container px-4 relative z-10">
                         <div className="grid md:grid-cols-2 gap-12 items-center">
                             <div>
-                                <span className="text-sm font-bold text-primary uppercase tracking-widest">NEW • #1 Personalized Gift</span>
+                                <span className="text-sm font-bold text-primary uppercase tracking-widest">NEW • #1 Office Gift</span>
                                 <h1 className="text-5xl md:text-7xl font-black tracking-tighter mt-4 mb-6">
-                                    CUSTOM PHOTO <span className="text-primary">BLANKETS</span>
+                                    CUSTOM <span className="text-primary">JOURNALS</span>
                                 </h1>
                                 <p className="text-xl text-muted-foreground font-medium mb-8 leading-relaxed">
-                                    Turn your favorite photos into the coziest personalized gift ever. Premium fleece + sherpa backing. Vibrant edge-to-edge printing.
+                                    Write down your thoughts, rants, or million-dollar ideas in style. Premium matte hardcover. 150 ruled pages. Vibrant custom prints.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 items-start">
-                                    <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/product/personalization-blanket')}>
-                                        DESIGN YOUR BLANKET
+                                    <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design')}>
+                                        DESIGN YOUR JOURNAL
                                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                     </Button>
                                     <Button variant="outline" size="xl" className="text-lg" onClick={() => navigate('/designs')}>
@@ -51,15 +51,15 @@ const BlanketLanding = () => {
                                     </Button>
                                 </div>
                                 <div className="mt-6 flex items-center gap-2">
-                                    <p className="text-3xl font-black">Starting at <span className="text-primary">$49.99</span></p>
-                                    <span className="text-lg text-muted-foreground line-through">$69.99</span>
+                                    <p className="text-3xl font-black">Starting at <span className="text-primary">$19.99</span></p>
+                                    <span className="text-lg text-muted-foreground line-through">$29.99</span>
                                 </div>
                             </div>
                             <div className="flex justify-center">
                                 <img
-                                    src={personalizationBlanket}
-                                    alt="Custom personalized photo blanket with family photos"
-                                    className="w-full max-w-md rounded-xl shadow-2xl border border-border"
+                                    src={notebookMockup}
+                                    alt="Custom personalized hardcover journal notebook"
+                                    className="w-full max-w-sm rounded-xl shadow-2xl border border-border bg-white p-4"
                                 />
                             </div>
                         </div>
@@ -74,9 +74,9 @@ const BlanketLanding = () => {
                         </h2>
                         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                             {[
-                                { step: "01", icon: Camera, title: "Upload Photos", desc: "Choose 1–12 of your favorite photos. Family, pets, vacations — anything goes." },
-                                { step: "02", icon: Heart, title: "We Print & QC", desc: "Edge-to-edge sublimation printing. Every blanket is quality-checked before shipping." },
-                                { step: "03", icon: Truck, title: "Delivered to You", desc: "Ships within 5–7 business days. Arrives ready to gift or snuggle." },
+                                { step: "01", icon: BookOpen, title: "Choose Your Design", desc: "Select from our library of snarky templates or generate custom cover art using AI." },
+                                { step: "02", icon: Heart, title: "We Print & QC", desc: "High-definition matte finish printing on both front and back covers. Individually checked." },
+                                { step: "03", icon: Truck, title: "Delivered to You", desc: "Ethically printed on demand and shipped within 3–5 business days. Ready to use." },
                             ].map((item) => (
                                 <div key={item.step} className="text-center space-y-4">
                                     <div className="text-5xl font-black text-primary/20">{item.step}</div>
@@ -91,26 +91,25 @@ const BlanketLanding = () => {
                     </div>
                 </section>
 
-                {/* Material & Sizes */}
+                {/* Specs */}
                 <section className="py-16 md:py-24">
                     <div className="container px-4">
                         <h2 className="text-4xl md:text-5xl font-black tracking-tight text-center mb-4">
-                            THREE <span className="text-primary">SIZES</span>
+                            PREMIUM <span className="text-primary">SPECS</span>
                         </h2>
                         <p className="text-muted-foreground text-lg text-center mb-12 font-medium max-w-xl mx-auto">
-                            Premium fleece front, cozy sherpa backing. Machine washable & dryer safe.
+                            Quality materials that make writing down your internal monologue feel extra satisfying.
                         </p>
                         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                             {[
-                                { size: '30" × 40"', label: "Baby / Lap", desc: "Perfect for baby gifts, stroller blankets, or a cozy lap throw.", price: "$49.99" },
-                                { size: '50" × 60"', label: "Classic Throw", desc: "The go-to couch blanket. Great for movie nights and napping.", price: "$59.99" },
-                                { size: '60" × 80"', label: "Full Size", desc: "Fits a queen bed. Maximum comfort, maximum photos.", price: "$69.99" },
+                                { spec: "5.7\" × 8\" (A5)", label: "Perfect Size", desc: "Fits easily into backpacks, messenger bags, or desk drawers for quick thoughts." },
+                                { spec: "150 Ruled Pages", label: "Premium Paper", desc: "Plenty of room for ideas, daily reflections, checklist tasks, or doodles." },
+                                { spec: "Matte Cover", label: "Durable Hardcover", desc: "Sturdy hardback binding with a premium smooth matte coating that feels amazing." },
                             ].map((item) => (
-                                <div key={item.size} className="bg-card border border-border rounded-xl p-8 text-center hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)]">
-                                    <h3 className="text-3xl font-black text-primary mb-2">{item.size}</h3>
+                                <div key={item.spec} className="bg-card border border-border rounded-xl p-8 text-center hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)]">
+                                    <h3 className="text-3xl font-black text-primary mb-2">{item.spec}</h3>
                                     <p className="text-lg font-bold mb-3">{item.label}</p>
-                                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">{item.desc}</p>
-                                    <p className="text-2xl font-black">{item.price}</p>
+                                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
                         </div>
@@ -124,7 +123,7 @@ const BlanketLanding = () => {
                             PERFECT FOR <span className="text-primary">EVERY OCCASION</span>
                         </h2>
                         <p className="text-muted-foreground text-lg text-center mb-12 font-medium">
-                            No generic gifts — just your memories, wrapped in softness.
+                            No generic notebooks — just pure attitude and custom style.
                         </p>
                         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                             {OCCASIONS.map((occ) => (
@@ -140,22 +139,22 @@ const BlanketLanding = () => {
                     </div>
                 </section>
 
-                {/* AI Try It On */}
+                {/* AI Preview */}
                 <section className="py-16 md:py-24">
                     <div className="container px-4">
                         <div className="max-w-2xl mx-auto">
                             <div className="text-center mb-8">
                                 <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
-                                    PREVIEW YOUR <span className="text-primary">BLANKET</span>
+                                    PREVIEW YOUR <span className="text-primary">JOURNAL</span>
                                 </h2>
                                 <p className="text-muted-foreground text-lg font-medium">
-                                    Upload a photo and see a preview of your custom blanket — powered by AI.
+                                    Upload a photo and see a preview of your custom notebook cover.
                                 </p>
                             </div>
                             <AIMockupGenerator
-                                productImage={personalizationBlanket}
-                                productTitle="Custom Photo Blanket"
-                                productColor="Custom"
+                                productImage={notebookMockup}
+                                productTitle="Custom Hardcover Journal"
+                                productColor="White"
                             />
                         </div>
                     </div>
@@ -165,19 +164,19 @@ const BlanketLanding = () => {
                 <section className="py-16 md:py-24 text-center">
                     <div className="container px-4">
                         <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-6">
-                            YOUR PHOTOS, <span className="text-primary">YOUR BLANKET</span>
+                            YOUR DESIGNS, <span className="text-primary">YOUR JOURNAL</span>
                         </h2>
                         <p className="text-muted-foreground text-lg mb-8 font-medium">
-                            The gift that actually means something.
+                            The custom notebook you'll actually want to carry around.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/product/personalization-blanket')}>
+                            <Button variant="hero" size="xl" className="group text-lg" onClick={() => navigate('/custom-design')}>
                                 DESIGN YOURS NOW
                                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                             </Button>
                             <Button variant="outline" size="xl" className="text-lg" onClick={() => navigate('/designs')}>
                                 BROWSE DESIGNS
-                            </Button>
+                              </Button>
                         </div>
                     </div>
                 </section>
@@ -187,4 +186,4 @@ const BlanketLanding = () => {
     );
 };
 
-export default BlanketLanding;
+export default JournalLanding;

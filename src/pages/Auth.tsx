@@ -53,15 +53,18 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: getRedirectUrl(),
+      const { data, error } = await supabase.functions.invoke("send-auth-email", {
+        body: {
+          email,
+          type: "magiclink",
+          redirectTo: getRedirectUrl(),
         },
       });
 
       if (error) {
         toast.error(error.message);
+      } else if (data?.error) {
+        toast.error(data.error);
       } else {
         setSent(true);
       }
@@ -104,24 +107,22 @@ const Auth = () => {
           navigate(returnTo);
         }
       } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: getRedirectUrl(),
+        const { data, error } = await supabase.functions.invoke("send-auth-email", {
+          body: {
+            email,
+            password,
+            type: "signup",
+            redirectTo: getRedirectUrl(),
           },
         });
 
         if (error) {
           toast.error(error.message);
+        } else if (data?.error) {
+          toast.error(data.error);
         } else {
-          if (data.session) {
-            toast.success('Account created and signed in!');
-            navigate(returnTo);
-          } else {
-            toast.success('Sign up successful! Check your email to verify your account.');
-            setSent(true);
-          }
+          toast.success('Sign up successful! Check your email to verify your account.');
+          setSent(true);
         }
       }
     } catch {

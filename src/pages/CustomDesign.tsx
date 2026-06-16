@@ -20,7 +20,10 @@ import {
   isApparelProduct,
   getBlankMockup,
   assignDonorVariants,
-  getProductType
+  getProductType,
+  cleanProductTitle,
+  isRealColor,
+  getAvailableOptions
 } from "@/lib/variantUtils";
 import { saveToIndexedDB, getFromIndexedDB, removeFromIndexedDB } from "@/utils/storage";
 
@@ -249,6 +252,7 @@ export default function CustomDesign() {
       let state: any = null;
       try {
         const savedState = sessionStorage.getItem('customDesignState');
+        console.log('Customizer [checkAuth]: Raw sessionStorage state:', savedState ? 'Found (length: ' + savedState.length + ')' : 'Not Found');
         if (savedState) {
           state = JSON.parse(savedState);
           sessionStorage.removeItem('customDesignState');
@@ -259,7 +263,9 @@ export default function CustomDesign() {
 
       if (!state) {
         try {
+          console.log('Customizer [checkAuth]: Checking IndexedDB for customDesignState...');
           state = await getFromIndexedDB('customDesignState');
+          console.log('Customizer [checkAuth]: IndexedDB state:', state ? 'Found' : 'Not Found');
           if (state) {
             await removeFromIndexedDB('customDesignState');
           }
@@ -269,6 +275,7 @@ export default function CustomDesign() {
       }
 
       if (state) {
+        console.log('Customizer [checkAuth]: Restoring state:', state);
         try {
           if (state.designDraft) setDesignDraft(state.designDraft);
           if (state.approvedDesign) setApprovedDesign(state.approvedDesign);
@@ -671,11 +678,16 @@ export default function CustomDesign() {
   };
 
   // Returns an image source the Supabase edge function can fetch.
-  // template_image_url is an absolute Printify CDN URL — always works.
+  // For journals/notebooks, always use the blank local mockup — their Printify
+  // template_image_url shows the EXISTING product design, not a blank canvas.
   // Local /images/* paths work on the dev server but NOT from remote edge functions;
   // we convert them to base64 data URLs so they travel in the request body.
   const getProductImageForAI = async (product: Product): Promise<string> => {
-    if (product.template_image_url) return product.template_image_url;
+    const titleLower = product.title.toLowerCase();
+    const isJournal = titleLower.includes('journal') || titleLower.includes('notebook') || titleLower.includes('hardcover');
+    // For journals, skip the Printify template URL (it has an existing design) and use the blank mockup
+    const templateUrl = isJournal ? null : product.template_image_url;
+    if (templateUrl) return templateUrl;
     const localPath = getBlankMockup(undefined, product.title);
     if (!localPath) return '';
     if (!localPath.startsWith('/')) return localPath;
@@ -736,7 +748,7 @@ export default function CustomDesign() {
           userImage: approvedDesign.imageUrl,
           productImage: productImageStr,
           productTitle: selectedProduct.title,
-          productColor: selectedColor,
+          productColor: selectedColor && isRealColor(selectedColor) ? selectedColor : 'White',
         },
       });
       const { data, error } = await Promise.race([apiCall, timeout]);
@@ -841,7 +853,7 @@ export default function CustomDesign() {
           userImage: photo,
           productImage: productRefImage,
           productTitle: selectedProduct.title,
-          productColor: selectedColor,
+          productColor: selectedColor && isRealColor(selectedColor) ? selectedColor : 'White',
         },
       });
       const { data, error } = await Promise.race([apiCall, timeout]);
@@ -893,7 +905,7 @@ export default function CustomDesign() {
     setMockupPreview(null);
     setTryOnMockup(null);
     setCurrentStep('product');
-    toast.success(`Switched product to ${product.title.replace("– Placeholder Design", "").trim()}! Adjust options below.`);
+    toast.success(`Switched product to ${cleanProductTitle(product.title)}! Adjust options below.`);
   };
 
   async function proceedToCheckout(
@@ -917,18 +929,30 @@ export default function CustomDesign() {
       return;
     }
 
-    if (!isAuthenticated) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
       toast.error("Please sign in to complete your checkout");
       const stateObj = {
-        designDraft, approvedDesign, currentStep, selectedProduct, selectedVariant, quantity, savedDesignId, mockupPreview, uploadedDesign
+        designDraft,
+        approvedDesign: design,
+        currentStep,
+        selectedProduct: prod,
+        selectedVariant: variant,
+        quantity: qty,
+        savedDesignId,
+        mockupPreview,
+        uploadedDesign
       };
+      console.log('Customizer [proceedToCheckout]: Saving stateObj before auth redirect:', stateObj);
       await saveToIndexedDB('customDesignState', stateObj);
       try {
         sessionStorage.setItem('customDesignState', JSON.stringify(stateObj));
+        console.log('Customizer [proceedToCheckout]: Successfully saved to sessionStorage');
       } catch (e) {
-        console.warn("Could not save full customDesignState to sessionStorage (payload too large). Fallback to IndexedDB was successful.");
+        console.warn("Could not save full customDesignState to sessionStorage (payload too large). Fallback to IndexedDB was successful.", e);
       }
       sessionStorage.setItem('customDesignPendingAction', 'checkout');
+      console.log('Customizer [proceedToCheckout]: Navigating to /auth with returnTo: /custom-design');
       navigate("/auth", { state: { returnTo: '/custom-design' } });
       return;
     }
@@ -951,7 +975,10 @@ export default function CustomDesign() {
             baseProductId: prod.id,
             variantId: variant.id,
             customTitle: prod.title.toLowerCase().startsWith('custom') ? prod.title : `Custom ${prod.title}`,
-            productColor: extractColorFromVariant(variant.title),
+            productColor: (() => {
+              const col = extractColorFromVariant(variant.title);
+              return isRealColor(col) ? col : 'White';
+            })(),
           }),
         }
       );
@@ -964,6 +991,7 @@ export default function CustomDesign() {
       }
 
       const customProductData = await response.json();
+      console.log('Custom product creation response:', customProductData);
       if (!customProductData?.success || !customProductData?.printifyProductId) {
         throw new Error(customProductData?.error || "Failed to create custom product on Printify");
       }
@@ -987,9 +1015,9 @@ export default function CustomDesign() {
         prod.images?.[0] ||
         "";
 
-      // Use a real product mockup if available. If Printify only gives back the raw
-      // uploaded design, keep the product image so checkout can render a fallback composite.
-      const displayImage = printifyMockupUrl || mockupPreview || productImageUrl || design.imageUrl;
+      // Use the AI-generated mockup preview so that Cart & Checkout display the exact image
+      // the user reviewed and approved, falling back to Printify's mockup if AI failed.
+      const displayImage = mockupPreview || printifyMockupUrl || productImageUrl || design.imageUrl;
 
       console.log('Order consistency check:', {
         printifyMockup: customProductData.mockupImageUrl,
@@ -1003,15 +1031,26 @@ export default function CustomDesign() {
       });
 
       // Add items to cart based on quantity
+      // NOTE: CartContext strips data: URLs before saving to localStorage (localStorage quota).
+      // So we stash the AI mockup in sessionStorage so Checkout can retrieve it directly.
+      if (mockupPreview && mockupPreview.startsWith('data:')) {
+        try {
+          sessionStorage.setItem('custom_mockup_preview', mockupPreview);
+        } catch {
+          // sessionStorage quota exceeded — skip, Checkout will fall back to Printify mockup
+        }
+      }
+
+      const cartItemId = crypto.randomUUID();
       for (let i = 0; i < qty; i++) {
         addItem({
           productId: prod.id,
-          title: `${prod.title.toLowerCase().startsWith('custom') ? prod.title : `Custom ${prod.title}`} - ${selectedColor}`,
+          title: `Custom ${cleanProductTitle(prod.title)} - ${selectedColor}`,
           price: basePrice,
           size: selectedSize,
           image: displayImage,
-          // mockupUrl is stored separately so Cart & Checkout can show a proper preview.
-          // Prefer a true Printify mockup over the AI preview; ignore raw uploaded artwork.
+          // mockupUrl: CartContext strips data: URLs, so the AI mockup will be empty after localStorage persist.
+          // We fall back to printifyMockupUrl here; the data: mockup is in sessionStorage ('custom_mockup_preview').
           mockupUrl: printifyMockupUrl || mockupPreview || undefined,
           productImageUrl: productImageUrl || undefined,
           printifyProductId: customProductData.printifyProductId,
@@ -1358,6 +1397,15 @@ export default function CustomDesign() {
                     <div className="flex justify-center py-12">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
+                  ) : products.length === 0 ? (
+                    <Card className="max-w-2xl mx-auto p-8 text-center space-y-4">
+                      <p className="text-muted-foreground font-medium">
+                        No products available. This may be due to a temporary database query delay.
+                      </p>
+                      <Button onClick={fetchProducts} size="lg">
+                        Retry Loading Products
+                      </Button>
+                    </Card>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {products.map((product) => (
@@ -1369,12 +1417,24 @@ export default function CustomDesign() {
                             }`}
                           onClick={() => {
                             setSelectedProduct(product);
-                            setSelectedVariant(null);
+                            const opts = getAvailableOptions(product.variants || []);
+                            if (opts.sizes.length === 0 && opts.colors.length === 0 && opts.styles.length === 0) {
+                              const enabledVariants = (product.variants || []).filter((v: any) => v.is_enabled);
+                              setSelectedVariant(enabledVariants[0] || null);
+                            } else {
+                              setSelectedVariant(null);
+                            }
                           }}
                         >
                           <div className="relative aspect-square bg-secondary">
                             <img
-                              src={getBlankMockup(product.template_image_url, product.title)}
+                              src={(() => {
+                                const tl = product.title.toLowerCase();
+                                const isJournal = tl.includes('journal') || tl.includes('notebook') || tl.includes('hardcover');
+                                return isJournal
+                                  ? getBlankMockup(undefined, product.title)
+                                  : getBlankMockup(product.template_image_url, product.title);
+                              })()}
                               alt={product.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -1397,7 +1457,7 @@ export default function CustomDesign() {
                           </div>
                           <div className="p-4 space-y-2">
                             <span className="text-xs font-semibold text-primary uppercase">{product.category}</span>
-                            <h3 className="font-bold text-lg text-foreground line-clamp-2">{product.title.replace("– Placeholder Design", "").trim()}</h3>
+                             <h3 className="font-bold text-lg text-foreground line-clamp-2">{cleanProductTitle(product.title)}</h3>
                             <p className="text-2xl font-black text-foreground">${product.retail_price.toFixed(2)}</p>
                           </div>
                         </Card>
@@ -1406,95 +1466,112 @@ export default function CustomDesign() {
                   )}
 
                   {/* Variant Selection */}
-                  {selectedProduct && selectedProduct.variants.filter(v => v.is_enabled).length > 0 && (
-                    <Card className="max-w-2xl mx-auto p-6">
-                      <h3 className="text-xl font-bold mb-4">Select Options</h3>
+                  {selectedProduct && selectedProduct.variants.filter(v => v.is_enabled).length > 0 && (() => {
+                    const hasColors = getUniqueColors(selectedProduct.variants, selectedProduct.title).length > 0;
+                    const hasSizes = selectedVariant && selectedProduct.variants.some(v => v.title.includes(' / '));
+                    const hasOptions = hasColors || hasSizes;
+                    return (
+                      <Card className="max-w-2xl mx-auto p-6">
+                        <h3 className="text-xl font-bold mb-4">
+                          {hasOptions ? "Select Options" : "Confirm Quantity"}
+                        </h3>
 
-                      {/* Color/Option Selection */}
-                      <div className="mb-6">
-                        <h4 className="font-semibold mb-3">
-                          {selectedProduct.variants.some(v => v.title.includes(' / ')) ? 'Color' : 'Size'}
-                        </h4>
-                        <div className="flex flex-wrap gap-3">
-                          {getUniqueColors(selectedProduct.variants, selectedProduct.title).map((color) => {
-                            const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title) === color;
-                            return (
-                              <button
-                                key={color}
-                                onClick={() => {
-                                  const firstVariant = getSizesForColor(selectedProduct.variants, color)[0];
-                                  if (firstVariant) setSelectedVariant(firstVariant);
-                                }}
-                                className={`px-4 py-2 rounded-lg border-2 transition-all ${isSelected
-                                  ? "border-primary bg-primary/10 font-semibold"
-                                  : "border-border hover:border-primary/50"
-                                  }`}
-                              >
-                                {color}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
+                        {/* Color/Option Selection */}
+                        {getUniqueColors(selectedProduct.variants, selectedProduct.title).length > 0 && (
+                          <div className="mb-6">
+                            <h4 className="font-semibold mb-3">
+                            {selectedProduct.title.toLowerCase().includes('card') || selectedProduct.title.toLowerCase().includes('greeting')
+                              ? 'Finish'
+                              : selectedProduct.variants.some(v => v.title.includes(' / '))
+                                ? 'Color'
+                                : 'Size'}
+                            </h4>
+                            <div className="flex flex-wrap gap-3">
+                              {getUniqueColors(selectedProduct.variants, selectedProduct.title).map((color) => {
+                                const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title) === color;
+                                return (
+                                  <button
+                                    key={color}
+                                    onClick={() => {
+                                      const firstVariant = getSizesForColor(selectedProduct.variants, color)[0];
+                                      if (firstVariant) setSelectedVariant(firstVariant);
+                                    }}
+                                    className={`px-4 py-2 rounded-lg border-2 transition-all ${isSelected
+                                      ? "border-primary bg-primary/10 font-semibold"
+                                      : "border-border hover:border-primary/50"
+                                      }`}
+                                  >
+                                    {color}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
 
-                      {/* Size Selection - only for products with Color / Size format */}
-                      {selectedVariant && selectedProduct.variants.some(v => v.title.includes(' / ')) && (
+                        {/* Size Selection - only for products with Color / Size format */}
+                        {selectedVariant && selectedProduct.variants.some(v => v.title.includes(' / ')) && (
+                          <div className="mb-6">
+                            <h4 className="font-semibold mb-3">Size</h4>
+                            <div className="flex flex-wrap gap-3">
+                              {getSizesForColor(selectedProduct.variants, extractColorFromVariant(selectedVariant.title)).map((variant) => {
+                                const size = extractSizeFromVariant(variant.title);
+                                const isSelected = selectedVariant.id === variant.id;
+                                return (
+                                  <button
+                                    key={variant.id}
+                                    onClick={() => setSelectedVariant(variant)}
+                                    className={`px-4 py-2 rounded-lg border-2 transition-all min-w-[60px] ${isSelected
+                                      ? "border-primary bg-primary/10 font-semibold"
+                                      : "border-border hover:border-primary/50"
+                                      }`}
+                                  >
+                                    {size}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Quantity */}
                         <div className="mb-6">
-                          <h4 className="font-semibold mb-3">Size</h4>
-                          <div className="flex flex-wrap gap-3">
-                            {getSizesForColor(selectedProduct.variants, extractColorFromVariant(selectedVariant.title)).map((variant) => {
-                              const size = extractSizeFromVariant(variant.title);
-                              const isSelected = selectedVariant.id === variant.id;
-                              return (
-                                <button
-                                  key={variant.id}
-                                  onClick={() => setSelectedVariant(variant)}
-                                  className={`px-4 py-2 rounded-lg border-2 transition-all min-w-[60px] ${isSelected
-                                    ? "border-primary bg-primary/10 font-semibold"
-                                    : "border-border hover:border-primary/50"
-                                    }`}
-                                >
-                                  {size}
-                                </button>
-                              );
-                            })}
+                          <h4 className="font-semibold mb-3">Quantity</h4>
+                          <div className="flex items-center border border-border rounded-lg overflow-hidden max-w-[120px] bg-background">
+                            <button
+                              type="button"
+                              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                              disabled={quantity <= 1}
+                              className="px-3 py-2.5 bg-secondary hover:bg-secondary/80 disabled:opacity-50 text-foreground transition-colors border-r border-border flex items-center justify-center"
+                              style={{ width: '40px', height: '40px' }}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </button>
+                            <span className="flex-1 text-center font-bold text-lg select-none px-2 text-foreground align-middle" style={{ minWidth: '40px' }}>
+                              {quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setQuantity(quantity + 1)}
+                              className="px-3 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground transition-colors border-l border-border flex items-center justify-center"
+                              style={{ width: '40px', height: '40px' }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
                           </div>
                         </div>
-                      )}
 
-                      {/* Quantity */}
-                      <div className="mb-6">
-                        <h4 className="font-semibold mb-3">Quantity</h4>
-                        <div className="flex items-center gap-4">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                            disabled={quantity <= 1}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="text-xl font-bold w-12 text-center">{quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setQuantity(quantity + 1)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <Button
-                        size="lg"
-                        onClick={() => setCurrentStep('mockup')}
-                        disabled={!selectedVariant}
-                        className="w-full"
-                      >
-                        Continue to Mockup
-                      </Button>
-                    </Card>
-                  )}
+                        <Button
+                          size="lg"
+                          onClick={() => setCurrentStep('mockup')}
+                          disabled={!selectedVariant}
+                          className="w-full"
+                        >
+                          Continue to Mockup
+                        </Button>
+                      </Card>
+                    );
+                  })()}
 
                   {/* Fallback: Show Continue button when product selected but no variants available */}
                   {selectedProduct && selectedProduct.variants.filter(v => v.is_enabled).length === 0 && (
@@ -1608,7 +1685,12 @@ export default function CustomDesign() {
                             // Only used if AI generation was skipped or failed
                             <>
                               {(() => {
-                                const fallbackImg = getBlankMockup(selectedProduct.template_image_url, selectedProduct.title);
+                                const titleLower = selectedProduct.title.toLowerCase();
+                                const isJournal = titleLower.includes('journal') || titleLower.includes('notebook') || titleLower.includes('hardcover');
+                                // For journals, always use the blank mockup — the Printify template URL has the existing design on it
+                                const fallbackImg = isJournal
+                                  ? getBlankMockup(undefined, selectedProduct.title)
+                                  : getBlankMockup(selectedProduct.template_image_url, selectedProduct.title);
                                 return fallbackImg ? (
                                   <>
                                     <img
@@ -1661,18 +1743,29 @@ export default function CustomDesign() {
                       {/* Product Details */}
                       <div className="space-y-6">
                         <div>
-                          <h3 className="text-2xl font-bold text-foreground">{selectedProduct.title}</h3>
+                          <h3 className="text-2xl font-bold text-foreground">{cleanProductTitle(selectedProduct.title)}</h3>
                           <p className="text-muted-foreground">{selectedProduct.brand}</p>
                         </div>
 
                         <div className="space-y-2">
-                          <p><span className="font-semibold">Color:</span> {extractColorFromVariant(selectedVariant.title)}</p>
                           {(() => {
+                            const color = extractColorFromVariant(selectedVariant.title);
                             const size = extractSizeFromVariant(selectedVariant.title);
-                            // Only show Size if a real size was extracted (not just the raw title echoed back)
-                            return size !== selectedVariant.title ? (
-                              <p><span className="font-semibold">Size:</span> {size}</p>
-                            ) : null;
+                            const titleL = selectedProduct.title.toLowerCase();
+                            const isJournal = titleL.includes('journal') || titleL.includes('notebook') || titleL.includes('hardcover');
+                            const isMug = titleL.includes('mug');
+                            // Hide Color for journals where the "color" is just "Journal" (not meaningful)
+                            const showColor = !isJournal || isRealColor(color);
+                            // Show Size only if it's a real extracted size (not echoing the raw title)
+                            const showSize = size !== selectedVariant.title && size.trim().length > 0;
+                            // For mugs, "Size" is actually oz capacity — label it as "Size"
+                            const sizeLabel = isMug ? 'Size' : isJournal ? 'Style' : 'Size';
+                            return (
+                              <>
+                                {showColor && <p><span className="font-semibold">Color:</span> {color}</p>}
+                                {showSize && <p><span className="font-semibold">{sizeLabel}:</span> {size}</p>}
+                              </>
+                            );
                           })()}
                           <p><span className="font-semibold">Quantity:</span> {quantity}</p>
                         </div>
@@ -1779,8 +1872,11 @@ export default function CustomDesign() {
                         {products
                           .filter(p => p.id !== selectedProduct.id)
                           .map((product) => {
-                            const fallbackImg = getBlankMockup(product.template_image_url, product.title);
-                            const cleanTitle = product.title.replace("– Placeholder Design", "").trim();
+                            const isJournal = product.title.toLowerCase().includes('journal') || product.title.toLowerCase().includes('notebook') || product.title.toLowerCase().includes('hardcover');
+                            const fallbackImg = isJournal
+                              ? getBlankMockup(undefined, product.title)
+                              : getBlankMockup(product.template_image_url, product.title);
+                            const cleanTitle = cleanProductTitle(product.title);
                             return (
                               <div key={product.id} className="border border-border rounded-xl p-4 flex flex-col justify-between bg-card hover:border-primary/50 transition-colors">
                                 <div className="relative aspect-square bg-secondary rounded-lg overflow-hidden mb-3">

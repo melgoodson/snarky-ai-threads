@@ -41,18 +41,43 @@ serve(async (req) => {
     let page = 1;
     while (true) {
       const productsResponse = await fetch(
-        `https://api.printify.com/v1/shops/${shopId}/products.json?page=${page}&limit=100`,
+        `https://api.printify.com/v1/shops/${shopId}/products.json?page=${page}&limit=50`,
         { headers: printifyHeaders }
       );
       if (!productsResponse.ok) throw new Error(`Failed to fetch products: ${productsResponse.statusText}`);
       const productsPage = await productsResponse.json();
       const pageData = productsPage.data || [];
       allProducts = allProducts.concat(pageData);
-      if (pageData.length < 100) break; // last page
+      if (pageData.length < 50) break; // last page
       page++;
     }
 
-    console.log(`Fetched ${allProducts.length} total shop products`);
+    // Fetch the target notebook from TikTok shop (27352889) if it belongs there
+    const extraProducts = [
+      { shopId: 27352889, productId: '69fd756b72bfa4db66033c8b' }
+    ];
+    for (const extra of extraProducts) {
+      try {
+        console.log(`Fetching extra product ${extra.productId} from shop ${extra.shopId}...`);
+        const extraRes = await fetch(
+          `https://api.printify.com/v1/shops/${extra.shopId}/products/${extra.productId}.json`,
+          { headers: printifyHeaders }
+        );
+        if (extraRes.ok) {
+          const extraProduct = await extraRes.json();
+          if (!allProducts.some(p => p.id === extraProduct.id)) {
+            allProducts.push(extraProduct);
+            console.log(`Added extra product "${extraProduct.title}" to sync list.`);
+          }
+        } else {
+          console.error(`Failed to fetch extra product ${extra.productId} from shop ${extra.shopId}: ${await extraRes.text()}`);
+        }
+      } catch (e) {
+        console.error(`Error fetching extra product ${extra.productId}:`, e);
+      }
+    }
+
+    console.log(`Fetched ${allProducts.length} total shop products to sync`);
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);

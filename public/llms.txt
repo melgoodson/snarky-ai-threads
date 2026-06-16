@@ -18,7 +18,7 @@ Welcome to the machine-readable layout of Snarky A$$ Apparel. We are an e-commer
 - Blog: https://www.snarkyazzhumans.com/blog
 
 ## Products and Philosophy
-All of our products are made-to-order utilizing high-quality materials, such as 5.3 oz/yd² preshrunk heavyweight cotton for our signature unisex shirts. Our custom photo blankets are printed edge-to-edge on plush fleece and sherpa. We focus on premium snark without breaking the bank.
+All of our products are made-to-order utilizing high-quality materials, such as 5.3 oz/yd² preshrunk heavyweight cotton for our signature unisex shirts. Our hardcover journals are made with durable matte covers and premium 150 ruled pages. We focus on premium snark without breaking the bank.
 
 ## AI Customization
 Users can utilize our AI Customization features by uploading images and applying text prompts. Our system uses advanced generative AI to preview products in real time and even lets users virtually "try it on" through our AI Mockup Generator.

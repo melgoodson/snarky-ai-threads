@@ -38,11 +38,11 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Snarky A$$ Apparel | Sarcastic Tees, Gag Gifts & Snarky Blankets</title>
-        <meta name="description" content="Shop premium sarcastic tees, funny coworker mugs, high-quality gag gifts, and custom photo blankets. Unapologetic humor printed on demand." />
+        <title>Snarky A$$ Apparel | Sarcastic Tees, Gag Gifts & Custom Journals</title>
+        <meta name="description" content="Shop premium sarcastic tees, funny coworker mugs, high-quality gag gifts, and custom hardcover journals. Unapologetic humor printed on demand." />
         <link rel="canonical" href="https://www.snarkyazzhumans.com/" />
-        <meta property="og:title" content="Snarky A$$ Apparel | Sarcastic Tees, Gag Gifts & Snarky Blankets" />
-        <meta property="og:description" content="Shop premium sarcastic tees, funny coworker mugs, high-quality gag gifts, and custom photo blankets." />
+        <meta property="og:title" content="Snarky A$$ Apparel | Sarcastic Tees, Gag Gifts & Custom Journals" />
+        <meta property="og:description" content="Shop premium sarcastic tees, funny coworker mugs, high-quality gag gifts, and custom hardcover journals." />
         <meta property="og:url" content="https://www.snarkyazzhumans.com/" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>

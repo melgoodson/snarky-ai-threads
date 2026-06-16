@@ -78,12 +78,39 @@ export const BASIC_SHIRT_COLORS_LOWER = [
   'charcoal', 'ash', 'military green', 'maroon', 'purple', 'gold',
 ];
 
+export const isRealColor = (color: string): boolean => {
+  const c = color.trim().toLowerCase();
+  const nonColorKeywords = [
+    'journal', 'notebook', 'mug', 'tote', 'bag', 'card', 'greeting', 
+    'blanket', 'default', 'one size', 'standard', 'glossy', 'matte',
+    '11oz', '15oz', '1pc', '5pcs', '10pcs'
+  ];
+  return (
+    c.length > 0 &&
+    !nonColorKeywords.includes(c) && 
+    !looksLikeSize(color) && 
+    !looksLikeQuantity(color) && 
+    !looksLikeStyle(color)
+  );
+};
+
 export const getUniqueColors = (variants: any[], productTitle?: string): string[] => {
   const enabledVariants = variants.filter(v => v.is_enabled);
   const colors = enabledVariants.map(v => extractColorFromVariant(v.title));
-  const unique = [...new Set(colors)];
-
+  
   const t = (productTitle || '').toLowerCase();
+  const isGreetingCard = t.includes('card') || t.includes('greeting');
+  const isMug = t.includes('mug');
+
+  const unique = [...new Set(colors)].filter(color => {
+    if (isGreetingCard) {
+      return color.trim().length > 0 && !looksLikeSize(color) && !looksLikeQuantity(color);
+    }
+    if (isMug) {
+      return color.trim().length > 0 && !looksLikeQuantity(color);
+    }
+    return isRealColor(color);
+  });
 
   if (t.includes('tee') || t.includes('shirt') || t.includes('hoodie') || t.includes('sweatshirt')) {
     // Case-insensitive whitelist match; fall back to first 8 if nothing matches
@@ -93,8 +120,7 @@ export const getUniqueColors = (variants: any[], productTitle?: string): string[
     return filtered.length > 0 ? filtered : unique.slice(0, 8);
   }
 
-  if (t.includes('card') || t.includes('greeting')) {
-    // Greeting card variants are size/finish combos — cap at 6 clearest options
+  if (isGreetingCard || isMug) {
     return unique.slice(0, 6);
   }
 
@@ -148,7 +174,7 @@ export const isApparelProduct = (product: any | null | undefined, titleOverride?
   const title = (titleOverride || (product?.title) || '').toLowerCase();
 
   const apparelKeywords = ['shirt', 'tee', 'hoodie', 'sweatshirt', 'jacket', 'tank', 'polo', 'sweater', 'apparel', 'clothing'];
-  const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap', 'blanket', 'card', 'greeting'];
+  const nonApparelKeywords = ['mug', 'cup', 'poster', 'sticker', 'phone', 'case', 'pillow', 'canvas', 'bag', 'tote', 'hat', 'cap', 'blanket', 'card', 'greeting', 'notebook', 'journal'];
 
   // Check if it's explicitly non-apparel
   for (const keyword of nonApparelKeywords) {
@@ -238,6 +264,7 @@ export const getBlankMockup = (templateImageUrl: string | undefined, title: stri
   if (t.includes('tote') || t.includes('bag')) return '/images/tote-mockup.png';
   if (t.includes('tee') || t.includes('shirt')) return '/images/shirt-mockup.png';
   if (t.includes('blanket')) return personalizationBlanketFallback;
+  if (t.includes('notebook') || t.includes('journal')) return '/images/notebook-mockup.png';
   // Unknown product type — fall back to whatever Printify gave us
   return templateImageUrl || '';
 };
@@ -250,6 +277,7 @@ export const getProductType = (title: string): string => {
   if (lower.includes('tote') || lower.includes('bag')) return 'tote';
   if (lower.includes('card') || lower.includes('greeting')) return 'card';
   if (lower.includes('blanket')) return 'unknown'; // HIDDEN: investigating print quality
+  if (lower.includes('notebook') || lower.includes('journal')) return 'notebook';
   return 'unknown';
 };
 
@@ -286,4 +314,36 @@ export const assignDonorVariants = (allProducts: any[]): any[] => {
     }
   }
   return allProducts;
+};
+
+export const cleanProductTitle = (title: string): string => {
+  let cleaned = title.replace("– Placeholder Design", "").trim();
+  cleaned = cleaned.replace("– Custom Design", "").trim();
+  const lower = cleaned.toLowerCase();
+  if (lower.includes('journal') || lower.includes('notebook')) {
+    return 'Hardcover Journal';
+  }
+  if (lower.includes('tote') || lower.includes('bag')) {
+    return 'Canvas Tote Bag';
+  }
+  if (lower.includes('card') || lower.includes('greeting')) {
+    return 'Greeting Card';
+  }
+  if (lower.includes('mug')) {
+    if (lower.includes('15oz')) return 'Glossy Mug 15oz';
+    if (lower.includes('11oz')) return 'Glossy Mug 11oz';
+    return 'Glossy Mug';
+  }
+  if (lower.includes('blanket')) {
+    return 'Personalized Blanket';
+  }
+  // Strip anything after a pipe or slash if present
+  if (cleaned.includes('|')) {
+    cleaned = cleaned.split('|')[0].trim();
+  }
+  if (cleaned.includes('/')) {
+    cleaned = cleaned.split('/')[0].trim();
+  }
+  cleaned = cleaned.replace(/^custom\s+/i, '');
+  return cleaned;
 };

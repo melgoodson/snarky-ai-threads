@@ -26,7 +26,7 @@ const STATIC_ROUTES = [
   "/designs",
   "/shirts",
   "/hoodies",
-  "/blankets",
+  "/journals",
   "/tote-bags",
   "/mugs",
   "/greeting-cards",

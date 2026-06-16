@@ -41,17 +41,15 @@ const PRODUCT_CATEGORIES: ProductCategory[] = [
         ],
         gradient: "from-blue-500/10 to-indigo-500/10",
     },
-    /* HIDDEN: investigating print quality
     {
-        title: "CUSTOM PHOTO",
-        highlight: "BLANKETS",
-        tagline: "Your memories, printed edge-to-edge on premium fleece. The gift that actually means something.",
-        cta: "Shop Blankets",
-        href: "/blankets",
-        images: ["/images/carousel/blanket-hero-1.jpg"],
+        title: "CUSTOM",
+        highlight: "JOURNALS",
+        tagline: "Write down your goals, daily rants, or secrets in style. Ruled pages, durable matte hardcover.",
+        cta: "Shop Journals",
+        href: "/journals",
+        images: ["/images/notebook-mockup.png"],
         gradient: "from-purple-500/10 to-pink-500/10",
     },
-    */
     {
         title: "SNARKY",
         highlight: "TOTE BAGS",

@@ -77,22 +77,22 @@ const aiCustomClothingPageSchema = {
   "@type": "WebPage",
   name: "AI Custom Clothing & One-of-One Gifts",
   url: "https://www.snarkyazzhumans.com/ai-custom-clothing",
-  description: "Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
+  description: "Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, journals, totes, greeting cards, and personalized gifts."
 };
 
 const SEO_ROUTES = [
   {
     path: '/',
-    title: 'Snarky A$$ Apparel | Snarky T-Shirts, Personalized Gifts & Custom Photo Blankets',
-    desc: 'Shop snarky t-shirts, personalized gifts with photos, custom blankets, mugs & greeting cards. Bold designs for people who speak their mind. Free shipping over $50.',
+    title: 'Snarky A$$ Apparel | Snarky T-Shirts, Personalized Gifts & Custom Hardcover Journals',
+    desc: 'Shop snarky t-shirts, personalized gifts, custom hardcover journals, mugs & greeting cards. Bold designs for people who speak their mind. Free shipping over $50.',
     body: `<h1>Snarky A$$ Apparel</h1>
-    <p>Shop snarky t-shirts, personalized gifts with photos, custom blankets, mugs, and greeting cards. Bold designs for people who speak their mind.</p>
+    <p>Shop snarky t-shirts, personalized gifts, custom hardcover journals, mugs, and greeting cards. Bold designs for people who speak their mind.</p>
     <h2>Main Collections</h2>
     <ul>
       <li><a href="/collections">All Collections</a></li>
       <li><a href="/shirts">Funny T-Shirts & Sarcastic Shirts</a></li>
       <li><a href="/hoodies">Snarky Hoodies</a></li>
-      <li><a href="/blankets">Custom Photo Blankets</a></li>
+      <li><a href="/journals">Custom Hardcover Journals</a></li>
       <li><a href="/mugs">Snarky Coffee Mugs</a></li>
       <li><a href="/tote-bags">Custom Tote Bags</a></li>
       <li><a href="/greeting-cards">Snarky Greeting Cards</a></li>
@@ -102,7 +102,7 @@ const SEO_ROUTES = [
   {
     path: '/ai-custom-clothing',
     title: 'AI Custom Clothing & One-of-One Gifts | Snarky Azz Humans',
-    desc: 'Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts.',
+    desc: 'Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, journals, totes, greeting cards, and personalized gifts.',
     canonical: 'https://www.snarkyazzhumans.com/ai-custom-clothing',
     schemas: [aiCustomClothingPageSchema, aiCustomClothingFaqSchema],
     body: `<h1>Make a One-of-One Gift From the Thing Everyone Is Talking About</h1>
@@ -119,7 +119,7 @@ const SEO_ROUTES = [
       <li><a href="/custom-design?product=tee">AI Custom T-Shirts</a></li>
       <li><a href="/custom-design?product=hoodie">Custom Hoodies</a></li>
       <li><a href="/mugs">Funny Mugs</a></li>
-      <li><a href="/blankets">Custom Photo Blankets</a></li>
+      <li><a href="/journals">Custom Hardcover Journals</a></li>
       <li><a href="/tote-bags">Tote Bags</a></li>
       <li><a href="/greeting-cards">Greeting Cards</a></li>
       <li><a href="/category/funny-coworker-gifts">Coworker Gifts</a></li>
@@ -138,12 +138,12 @@ const SEO_ROUTES = [
     <ul><li><a href="/collections">Back to Collections</a></li><li><a href="/">Home</a></li></ul>`
   },
   {
-    path: '/blankets',
-    title: 'Custom Photo Blankets & Personalized Gifts | Snarky A$$ Apparel',
-    desc: 'Design luxurious personalized photo blankets. Premium fleece and sherpa throws make the perfect custom gift for anyone you actually tolerate.',
-    body: `<h1>Custom Personalized Photo Blankets</h1>
-    <p>Design luxurious personalized photo blankets. Premium fleece and sherpa throws make the perfect custom gift for anyone you actually tolerate.</p>
-    <p>Upload a funny photo or a heartfelt memory, and we will print it edge-to-edge.</p>
+    path: '/journals',
+    title: 'Custom Hardcover Journals & Personalized Notebooks | Snarky A$$ Apparel',
+    desc: 'Design custom hardcover journals and notebooks. Premium matte finishes make the perfect personalized gift for writing down all your snarky thoughts.',
+    body: `<h1>Custom Hardcover Journals & Notebooks</h1>
+    <p>Design custom hardcover journals and notebooks. Premium matte finishes make the perfect personalized gift for writing down all your snarky thoughts.</p>
+    <p>Choose our templates or design your own notebook cover using our AI mockup generator.</p>
     <ul><li><a href="/collections">Back to Collections</a></li><li><a href="/">Home</a></li></ul>`
   },
   {
@@ -181,10 +181,10 @@ const SEO_ROUTES = [
   {
     path: '/collections',
     title: 'All Snarky Collections | Custom Gag Gifts & Humor | Snarky A$$ Apparel',
-    desc: 'Browse our entire catalog of funny gifts, ranging from custom photo blankets and Mother\'s Day gifts to brutally honest gag gifts for coworkers.',
+    desc: 'Browse our entire catalog of funny gifts, ranging from custom hardcover journals and Mother\'s Day gifts to brutally honest gag gifts for coworkers.',
     body: `<h1>All Snarky Collections & Gift Guides</h1>
     <p>Browse our entire catalog of funny gifts, gag gifts, custom apparel, and personalized items.</p>
-    <ul><li><a href="/category/gag-gifts">Gag Gifts</a></li><li><a href="/shirts">Funny Shirts</a></li><li><a href="/blankets">Photo Blankets</a></li></ul>`
+    <ul><li><a href="/category/gag-gifts">Gag Gifts</a></li><li><a href="/shirts">Funny Shirts</a></li><li><a href="/journals">Hardcover Journals</a></li></ul>`
   },
   {
     path: '/category/gag-gifts',
@@ -202,7 +202,7 @@ const SEO_ROUTES = [
     <h2>WHY OUR GIFTS WIN</h2>
     <ul>
       <li>Unfiltered Humor: Pure edge and sarcasm.</li>
-      <li>Premium Quality: Heavyweight cotton, plush blankets, and durable ceramics.</li>
+      <li>Premium Quality: Heavyweight cotton, premium journals, and durable ceramics.</li>
       <li>Budget Friendly: Under $25 and under $50 options to fit party rules.</li>
     </ul>`
   },
@@ -243,16 +243,16 @@ const SEO_ROUTES = [
   {
     path: '/category/custom-mothers-day-gifts',
     title: 'Custom Mother\'s Day Gifts | Funny Mom Gifts | Snarky A$$ Apparel',
-    desc: 'Ditch the generic flowers. Treat Mom to premium custom Mother\'s day gifts, sarcastic mom apparel, and beautiful custom photo blankets.',
+    desc: 'Ditch the generic flowers. Treat Mom to premium custom Mother\'s day gifts, sarcastic mom apparel, and beautiful custom hardcover journals.',
     body: `<h1>Custom Mother's Day Gifts (Because You Were an Awful Teenager)</h1>
     <p>Being a mom requires surviving on caffeine, chaos, and a sharp sense of humor. Celebrate her survival skills with our premium custom Mother's Day gifts.</p>`
   },
   {
-    path: '/category/personalized-blanket-gifts',
-    title: 'Personalized Custom Blankets | Perfect Photo Gifts | Snarky A$$ Apparel',
-    desc: 'Create luxurious personalized fleece and sherpa blankets printed edge-to-edge with your favorite photos. Warm, cozy, and completely custom.',
-    body: `<h1>Personalized Photo Blankets & Custom Throws</h1>
-    <p>Nothing says 'I put effort into this' quite like a personalized blanket gift. Whether you're plastering an embarrassing photo of your best friend across 60 inches of fleece, or making a heartfelt pet memorial throw.</p>`
+    path: '/category/personalized-notebook-gifts',
+    title: 'Personalized Custom Notebooks & Journals | Snarky A$$ Apparel',
+    desc: 'Create beautiful custom hardcover notebooks and journals. The perfect personalized gift for students, coworkers, and writers.',
+    body: `<h1>Personalized Hardcover Journals & Custom Notebooks</h1>
+    <p>Nothing says 'I put effort into this' quite like a personalized journal or notebook gift. Perfect for birthdays, graduation, or a work promotion.</p>`
   },
   {
     path: '/category/funny-teacher-shirts',

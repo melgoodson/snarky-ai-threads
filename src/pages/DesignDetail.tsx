@@ -20,7 +20,9 @@ import {
   getBlankMockup,
   looksLikeQuantity,
   assignDonorVariants,
-  getProductType
+  getProductType,
+  cleanProductTitle,
+  isRealColor
 } from "@/lib/variantUtils";
 
 interface Design {
@@ -87,7 +89,7 @@ const DesignDetail = () => {
     // If product has colors, wait for color selection
     if (hasColors && !selectedColor) return;
 
-    const colorForMockup = selectedColor || 'Default';
+    const colorForMockup = selectedColor && isRealColor(selectedColor) ? selectedColor : 'White';
 
     setMockupPreview(null);
     setMockupError(false);
@@ -273,7 +275,7 @@ const DesignDetail = () => {
 
     const cartItem = {
       productId: product.id,
-      title: `${design.title} - ${product.title}`,
+      title: `${design.title} - ${cleanProductTitle(product.title)}`,
       price: retailPrice,
       size: variantTitle,
       image: resolveDesignImage(design.image_url),
@@ -569,7 +571,7 @@ const DesignDetail = () => {
                         </div>
                         <div>
                           <p className="text-sm font-bold leading-tight">
-                            {product.title.replace("– Placeholder Design", "").trim()}
+                            {cleanProductTitle(product.title)}
                           </p>
                           <p className="text-sm font-black text-primary">
                             {price ? `$${price.toFixed(2)}` : "TBD"}

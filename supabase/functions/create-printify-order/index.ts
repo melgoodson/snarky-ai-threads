@@ -52,7 +52,7 @@ serve(async (req) => {
     });
 
     const shops = await shopsResponse.json();
-    const shopId = shops[0]?.id;
+    let shopId = shops[0]?.id;
 
     if (!shopId) {
       throw new Error('No Printify shop found');
@@ -61,6 +61,32 @@ serve(async (req) => {
     // Helper: check if a string looks like a Printify product ID (long alphanumeric)
     const isPrintifyId = (id: string) => /^[a-f0-9]{24}$/.test(id);
     const isNumericId = (id: string) => /^\d+$/.test(id);
+
+    // Resolve shopId dynamically based on the order items (e.g. if an item is the notebook from another shop)
+    for (const item of order.order_items || []) {
+      if (item.printify_product_id && isPrintifyId(item.printify_product_id)) {
+        let foundShop = false;
+        for (const shop of shops) {
+          try {
+            const checkRes = await fetch(
+              `https://api.printify.com/v1/shops/${shop.id}/products/${item.printify_product_id}.json`,
+              { headers: { 'Authorization': `Bearer ${printifyApiToken}` } }
+            );
+            if (checkRes.ok) {
+              shopId = shop.id;
+              console.log(`Resolved shop ID ${shopId} (${shop.title}) for product ${item.printify_product_id}`);
+              foundShop = true;
+              break;
+            }
+          } catch (e) {
+            console.error(`Error checking product ${item.printify_product_id} in shop ${shop.id}:`, e);
+          }
+        }
+        if (foundShop && shopId !== shops[0]?.id) {
+          break; // Found a non-default shop, stop searching
+        }
+      }
+    }
 
     // Blueprint mapping for auto-creating products from hardcoded pages
     // Blueprint 6 = Gildan 5000 (Unisex Heavy Cotton Tee) — most common for t-shirts

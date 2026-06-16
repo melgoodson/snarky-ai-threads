@@ -34,11 +34,17 @@ const PRINT_PLACEMENT_CONFIG: Record<string, {
   'card': { scale: 0.95, x: 0.5, y: 0.5, maxScalePercent: 95, position: 'front' },
   'greeting': { scale: 0.95, x: 0.5, y: 0.5, maxScalePercent: 95, position: 'front' },
 
+  // Journals / Notebooks / Hardcover: Design must fit within the cover area
+  // Use a smaller scale and center it on the front cover (right half of full wrap-around cover)
+  'journal': { scale: 0.65, x: 0.75, y: 0.5, maxScalePercent: 60, position: 'front' },
+  'notebook': { scale: 0.65, x: 0.75, y: 0.5, maxScalePercent: 60, position: 'front' },
+  'hardcover': { scale: 0.65, x: 0.75, y: 0.5, maxScalePercent: 60, position: 'front' },
+
   // Candles: Wrapped design
   'candle': { scale: 0.90, x: 0.5, y: 0.5, maxScalePercent: 85, position: 'front' },
 
   // Default: Standard centered placement
-  'default': { scale: 0.85, x: 0.5, y: 0.45, maxScalePercent: 80, position: 'front' },
+  'default': { scale: 0.75, x: 0.5, y: 0.45, maxScalePercent: 70, position: 'front' },
 };
 
 // Get optimal print placement based on product type
@@ -149,7 +155,7 @@ serve(async (req) => {
     const placementConfig = getPlacementConfig(baseProduct.title);
     console.log('Using placement config for product:', placementConfig);
 
-    // Get shop ID from Printify
+    // Get all shops from Printify
     const shopsResponse = await fetch('https://api.printify.com/v1/shops.json', {
       headers: {
         'Authorization': `Bearer ${printifyApiToken}`,
@@ -166,8 +172,9 @@ serve(async (req) => {
       throw new Error('No Printify shops found');
     }
 
-    const shopId = shops[0].id;
-    console.log('Using shop ID:', shopId);
+    // Use first shop as default — will be overridden below if product is from a different shop
+    let shopId = shops[0].id;
+    console.log('Available shops:', shops.map((s: any) => `${s.id} (${s.title})`).join(', '));
 
     // Step 1: Upload design image to Printify
     console.log('Uploading design image to Printify...');
@@ -250,6 +257,7 @@ serve(async (req) => {
     let blueprintId: number;
     let printProviderId: number;
     let productVariants: any[];
+    let originalProduct: any = null;
 
     if (isBlueprint) {
       // It's a blueprint ID — look up print providers dynamically from catalog
@@ -302,29 +310,41 @@ serve(async (req) => {
       productVariants = catalogData.variants || [];
       console.log(`Found ${productVariants.length} variants for blueprint ${blueprintId}`);
     } else {
-      // It's a real shop product ID — fetch it to get blueprint/provider/variants
-      console.log(`Fetching shop product: ${printifyId}`);
-      const originalProductResponse = await fetch(
-        `https://api.printify.com/v1/shops/${shopId}/products/${printifyId}.json`,
-        {
-          headers: {
-            'Authorization': `Bearer ${printifyApiToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // It's a real shop product ID — search across ALL shops to find which one owns it
+      console.log(`Fetching shop product: ${printifyId} — searching all shops`);
 
-      if (!originalProductResponse.ok) {
-        const errorText = await originalProductResponse.text();
-        console.error('Failed to fetch original product:', errorText);
-        throw new Error(`Failed to fetch Printify product: ${errorText}`);
+      for (const shop of shops) {
+        console.log(`Trying shop ${shop.id} (${shop.title})...`);
+        const resp = await fetch(
+          `https://api.printify.com/v1/shops/${shop.id}/products/${printifyId}.json`,
+          {
+            headers: {
+              'Authorization': `Bearer ${printifyApiToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (resp.ok) {
+          originalProduct = await resp.json();
+          shopId = shop.id; // Use the correct shop for subsequent API calls
+          console.log(`Found product in shop ${shop.id} (${shop.title})`);
+          break;
+        } else {
+          const errText = await resp.text();
+          console.log(`Product not in shop ${shop.id}: ${errText.substring(0, 100)}`);
+        }
       }
 
-      const originalProduct = await originalProductResponse.json();
+      if (!originalProduct) {
+        throw new Error(`Failed to fetch Printify product ${printifyId}: not found in any of the ${shops.length} configured shop(s)`);
+      }
+
       blueprintId = originalProduct.blueprint_id;
       printProviderId = originalProduct.print_provider_id;
       productVariants = originalProduct.variants || [];
       console.log('Found shop product:', blueprintId, printProviderId, productVariants.length, 'variants');
+      console.log('Original product print areas:', JSON.stringify(originalProduct.print_areas));
     }
 
     // Step 3: Build print areas with optimized placement

@@ -46,7 +46,7 @@ const WhiteElephantLanding = () => {
                         <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto text-center">
                             {[
                                 { icon: Laugh, title: "Unfiltered Humor", desc: "No boring corporate jokes here. Pure edge and sarcasm." },
-                                { icon: Star, title: "Premium Quality", desc: "Heavyweight cotton, plush blankets, and durable ceramics." },
+                                { icon: Star, title: "Premium Quality", desc: "Heavyweight cotton, matte hardcover journals, and durable ceramics." },
                                 { icon: Gift, title: "Budget Friendly", desc: "Under $25 and under $50 options to fit party rules." },
                                 { icon: Package, title: "Direct Shipping", desc: "We print and ship within 3-7 days straight to your door." }
                             ].map((feature, i) => (

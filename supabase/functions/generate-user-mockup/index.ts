@@ -61,6 +61,30 @@ const PRODUCT_CONFIG: Record<string, {
     printMethod: 'digital printing on premium cardstock',
     surfaceEffects: 'subtle paper texture visible, slight shadow from card fold, clean white interior visible'
   },
+  'journal': {
+    placement: 'centered on the FRONT COVER of a closed hardcover journal, approximately 60-70% of the cover width. The front cover is the flat rectangular face of the book.',
+    texture: 'smooth matte laminated hardcover with fine cloth weave texture, rigid and flat',
+    perspective: 'journal photographed from slight angle, front cover facing viewer squarely. The spine is a thin strip on the left; do NOT show the spine as large as the cover.',
+    blending: 'high-quality full-color digital print bonded to matte laminate, crisp clean edges, no bleed',
+    printMethod: 'digital printing on matte laminated hardcover',
+    surfaceEffects: 'subtle matte sheen, slight edge shadows, pages visible on right edge of book'
+  },
+  'hardcover': {
+    placement: 'centered on the FRONT COVER of a closed hardcover journal, approximately 60-70% of the cover width. The front cover is the flat rectangular face of the book.',
+    texture: 'smooth matte laminated hardcover with fine cloth weave texture, rigid and flat',
+    perspective: 'journal photographed from slight angle, front cover facing viewer squarely. The spine is a thin strip on the left; do NOT show the spine as large as the cover.',
+    blending: 'high-quality full-color digital print bonded to matte laminate, crisp clean edges, no bleed',
+    printMethod: 'digital printing on matte laminated hardcover',
+    surfaceEffects: 'subtle matte sheen, slight edge shadows, pages visible on right edge of book'
+  },
+  'notebook': {
+    placement: 'centered on the FRONT COVER of a closed hardcover notebook, approximately 60-70% of the cover width',
+    texture: 'smooth matte laminated hardcover with fine cloth weave texture, rigid and flat',
+    perspective: 'notebook photographed from slight angle, front cover facing viewer squarely. The spine is a thin strip on the left; do NOT show the spine as large as the cover.',
+    blending: 'high-quality full-color digital print bonded to matte laminate, crisp clean edges, no bleed',
+    printMethod: 'digital printing on matte laminated hardcover',
+    surfaceEffects: 'subtle matte sheen, slight edge shadows, pages visible on right edge of book'
+  },
   'default': {
     placement: 'centered on primary visible surface',
     texture: 'appropriate material texture for the product type',
@@ -73,10 +97,13 @@ const PRODUCT_CONFIG: Record<string, {
 
 function getProductConfig(productTitle: string) {
   const titleLower = productTitle.toLowerCase();
-  for (const [key, config] of Object.entries(PRODUCT_CONFIG)) {
-    if (key !== 'default' && titleLower.includes(key)) return config;
-  }
-  if (titleLower.includes('shirt') || titleLower.includes('cotton')) return PRODUCT_CONFIG['tee'];
+  // Check specific product type keywords first (order matters — 'hardcover' before 'card')
+  if (titleLower.includes('journal') || titleLower.includes('hardcover') || titleLower.includes('notebook')) return PRODUCT_CONFIG['journal'];
+  if (titleLower.includes('blanket')) return PRODUCT_CONFIG['blanket'];
+  if (titleLower.includes('hoodie') || titleLower.includes('sweatshirt')) return PRODUCT_CONFIG['hoodie'];
+  if (titleLower.includes('mug')) return PRODUCT_CONFIG['mug'];
+  if (titleLower.includes('tote') || titleLower.includes('bag')) return PRODUCT_CONFIG['tote'];
+  if (titleLower.includes('shirt') || titleLower.includes('cotton') || titleLower.includes('tee')) return PRODUCT_CONFIG['tee'];
   if (titleLower.includes('greeting') || titleLower.includes('card')) return PRODUCT_CONFIG['card'];
   return PRODUCT_CONFIG['default'];
 }

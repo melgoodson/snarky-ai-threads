@@ -59,23 +59,35 @@ serve(async (req) => {
     for (const pOrder of activeOrders || []) {
       try {
         console.log(`Syncing Printify order: ${pOrder.printify_order_id}`);
-        // Fetch specific order details from Printify
-        const orderRes = await fetch(
-          `https://api.printify.com/v1/shops/${shopId}/orders/${pOrder.printify_order_id}.json`,
-          {
-            headers: {
-              'Authorization': `Bearer ${printifyApiToken}`,
-              'Content-Type': 'application/json',
-            },
+        // Fetch specific order details from Printify (check each shop)
+        let orderRes = null;
+        let printifyData = null;
+        for (const shop of shops) {
+          try {
+            const tryRes = await fetch(
+              `https://api.printify.com/v1/shops/${shop.id}/orders/${pOrder.printify_order_id}.json`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${printifyApiToken}`,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            if (tryRes.ok) {
+              orderRes = tryRes;
+              printifyData = await tryRes.json();
+              console.log(`Found order ${pOrder.printify_order_id} in shop ${shop.id} (${shop.title})`);
+              break;
+            }
+          } catch (e) {
+            console.error(`Error checking order ${pOrder.printify_order_id} in shop ${shop.id}:`, e);
           }
-        );
-
-        if (!orderRes.ok) {
-          console.error(`Failed to fetch order ${pOrder.printify_order_id} from Printify. Status: ${orderRes.status}`);
-          continue;
         }
 
-        const printifyData = await orderRes.json();
+        if (!orderRes || !printifyData) {
+          console.error(`Failed to fetch order ${pOrder.printify_order_id} from all shops.`);
+          continue;
+        }
         const currentStatus = printifyData.status;
 
         // Extract tracking if shipped

@@ -491,7 +491,10 @@ const Checkout = () => {
                   // Use a real mockup if available. Otherwise compose the product base image
                   // with the custom artwork so checkout does not show raw artwork alone.
                   const legacyDesignData = items.length === 0 ? designData : null;
-                  const mockupSrc = item.mockupUrl || legacyDesignData?.mockupUrl;
+                  // AI mockup (data: URL) is stripped from localStorage by CartContext to save quota.
+                  // We stash it in sessionStorage in CustomDesign just before navigating here — read it back.
+                  const sessionMockup = sessionStorage.getItem('custom_mockup_preview') || '';
+                  const mockupSrc = sessionMockup || item.mockupUrl || legacyDesignData?.mockupUrl;
                   const productPreviewSrc = item.productImageUrl || legacyDesignData?.productImageUrl;
                   const designPreviewSrc = item.designImageUrl;
                   const hasFallbackPreview = !mockupSrc && productPreviewSrc && designPreviewSrc;
@@ -538,7 +541,16 @@ const Checkout = () => {
                         <div className="flex-1">
                           <p className="font-bold text-sm">{item.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            Size: {item.size} | Qty: {item.quantity}
+                            {(() => {
+                              const title = item.title?.toLowerCase() || '';
+                              const isMug = title.includes('mug');
+                              const isJournal = title.includes('journal') || title.includes('notebook');
+                              const isCard = title.includes('card') || title.includes('greeting');
+                              const sizeLabel = isMug ? 'Size' : isJournal || isCard ? 'Style' : 'Size';
+                              return item.size && item.size !== 'undefined' && item.size !== 'null'
+                                ? `${sizeLabel}: ${item.size} | Qty: ${item.quantity}`
+                                : `Qty: ${item.quantity}`;
+                            })()}
                           </p>
                           <p className="text-sm font-bold mt-1">
                             ${(item.price * item.quantity).toFixed(2)}

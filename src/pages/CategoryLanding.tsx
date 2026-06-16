@@ -49,7 +49,7 @@ const CATEGORY_DATA: Record<string, CategoryInfo> = {
     subtitle: "The most stolen gifts at your holiday party",
     description: "Win the office holiday party with these hilarious white elephant gifts.",
     metaDesc: "Shop the best white elephant gifts under $25 and $50. Funny, snarky, and sarcastic presents that everyone will fight over.",
-    copyText1: "The secret to winning a white elephant exchange is bringing something everyone desperately wants to steal. Our snarky mugs, customized blankets, and sarcastic tees are proven crowd-pleasers.",
+    copyText1: "The secret to winning a white elephant exchange is bringing something everyone desperately wants to steal. Our snarky mugs, customized journals, and sarcastic tees are proven crowd-pleasers.",
     copyText2: "Browse our top-rated white elephant gifts that won't just end up in the trash next week.",
     keywords: "white elephant gifts, white elephant gifts under 25, funny holiday exchange",
     faqs: [
@@ -136,9 +136,9 @@ const CATEGORY_DATA: Record<string, CategoryInfo> = {
   "funny-gifts-under-50": {
     title: "Funny Gifts Under $50",
     subtitle: "Premium snark without breaking the bank",
-    description: "High-quality sarcastic hoodies, blankets, and more under $50.",
-    metaDesc: "Find premium funny gifts under $50. Shop high-quality sarcastic hoodies, personalized photo blankets, and snarky apparel.",
-    copyText1: "Step up your gifting game. Our under $50 collection features premium hoodies, oversized custom blankets, and heavyweight graphic tees.",
+    description: "High-quality sarcastic hoodies, journals, and more under $50.",
+    metaDesc: "Find premium funny gifts under $50. Shop high-quality sarcastic hoodies, personalized hardcover journals, and snarky apparel.",
+    copyText1: "Step up your gifting game. Our under $50 collection features premium hoodies, custom hardcover journals, and heavyweight graphic tees.",
     copyText2: "These make perfect main event gifts for birthdays, anniversaries, or just to show someone you aggressively care about them.",
     keywords: "funny gifts under 50, premium gag gifts, sarcastic hoodies",
     faqs: [
@@ -161,24 +161,24 @@ const CATEGORY_DATA: Record<string, CategoryInfo> = {
     title: "Custom Mother's Day Gifts",
     subtitle: "Because she deserves more than a generic card",
     description: "Personalized Mother's Day gifts for moms with a sense of humor and a lot of patience.",
-    metaDesc: "Shop custom Mother's Day gifts that are actually funny. Ditch the boring flowers for personalized photo blankets, snarky mom shirts, and custom mugs.",
+    metaDesc: "Shop custom Mother's Day gifts that are actually funny. Ditch the boring flowers for personalized hardcover journals, snarky mom shirts, and custom mugs.",
     copyText1: "Being a mom requires surviving on caffeine, chaos, and a sharp sense of humor. Celebrate her survival skills with our premium custom Mother's Day gifts.",
-    copyText2: "From personalized photo blankets featuring her favorite (or least favorite) children, to sarcastic coffee mugs, we have exactly what she wants.",
-    keywords: "custom mothers day gifts, funny gifts for mom, personalized mom blanket",
+    copyText2: "From personalized hardcover journals featuring her favorite (or least favorite) quotes, to sarcastic coffee mugs, we have exactly what she wants.",
+    keywords: "custom mothers day gifts, funny gifts for mom, personalized mom journal",
     faqs: [
-      { question: "What is the best custom gift for Mother's Day?", answer: "Our snarky custom mugs or customized family photo blankets are absolute hits for moms who appreciate humor." }
+      { question: "What is the best custom gift for Mother's Day?", answer: "Our snarky custom mugs or customized hardcover journals are absolute hits for moms who appreciate humor." }
     ]
   },
-  "personalized-blanket-gifts": {
-    title: "Personalized Blanket Gifts",
-    subtitle: "Warm, cozy, and completely custom",
-    description: "Design your own custom photo blankets and personalized fleece throws.",
-    metaDesc: "Create the ultimate personalized blanket gifts. Custom photo blankets printed edge-to-edge on premium sherpa and fleece. Easy to design online.",
-    copyText1: "Nothing says 'I put effort into this' quite like a personalized blanket gift. Whether you're plastering an embarrassing photo of your best friend across 60 inches of fleece, or making a heartfelt pet memorial throw.",
-    copyText2: "Our custom blankets use premium sublimation printing so the colors stay vibrant wash after wash.",
-    keywords: "personalized blanket gifts, custom photo blankets, custom throw blanket",
+  "personalized-notebook-gifts": {
+    title: "Personalized Notebook Gifts",
+    subtitle: "Premium hardcover journals, completely custom",
+    description: "Design your own custom hardcover journals and personalized notebooks.",
+    metaDesc: "Create the ultimate personalized notebook gifts. Custom hardcover journals printed with premium matte finishes. Easy to design online.",
+    copyText1: "Nothing says 'I put effort into this' quite like a personalized journal or notebook gift. Write down your goals, daily rants, or sketches in style.",
+    copyText2: "Our custom notebooks use premium printing so your designs stay vibrant and clean.",
+    keywords: "personalized notebook gifts, custom hardcover journals, custom journals",
     faqs: [
-      { question: "What sizes are available for custom blankets?", answer: "We offer classic throw size (50\"x60\") and full size (60\"x80\"). They feature premium fleece fronts and soft sherpa backing." }
+      { question: "What notebook options are available?", answer: "We offer premium A5-sized hardcover journals with 150 ruled pages, featuring custom-printed front and back covers in a durable matte finish." }
     ]
   }
 };

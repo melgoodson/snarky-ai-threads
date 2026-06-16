@@ -45,7 +45,7 @@ import ShippingInfo from "./pages/ShippingInfo";
 import Returns from "./pages/Returns";
 import ShirtLanding from "./pages/ShirtLanding";
 import HoodieLanding from "./pages/HoodieLanding";
-import BlanketLanding from "./pages/BlanketLanding";
+import JournalLanding from "./pages/JournalLanding";
 import ToteBagLanding from "./pages/ToteBagLanding";
 import MugLanding from "./pages/MugLanding";
 import GreetingCardLanding from "./pages/GreetingCardLanding";
@@ -155,7 +155,7 @@ const App = () => (
             <Route path="/returns" element={<Returns />} />
             <Route path="/shirts" element={<ShirtLanding />} />
             <Route path="/hoodies" element={<HoodieLanding />} />
-            <Route path="/blankets" element={<BlanketLanding />} />
+            <Route path="/journals" element={<JournalLanding />} />
             <Route path="/tote-bags" element={<ToteBagLanding />} />
             <Route path="/mugs" element={<MugLanding />} />
             <Route path="/greeting-cards" element={<GreetingCardLanding />} />
