@@ -179,31 +179,28 @@ serve(async (req) => {
     // Step 1: Upload design image to Printify
     console.log('Uploading design image to Printify...');
 
-    let imageData: string;
+    // Prefer URL-based upload: Printify fetches the image directly from the URL.
+    // This avoids sending a large base64 payload through the edge function,
+    // which was causing error 10300 ("Failed to upload image").
+    // Only fall back to base64 for data: URLs (browser-generated, no public URL).
+    let uploadBody: Record<string, string>;
+    const fileName = `custom-design-${Date.now()}.png`;
 
-    // Check if the design image is a URL or base64
     if (designImageUrl.startsWith('http')) {
-      // Fetch the image and convert to base64
-      console.log('Fetching design image from URL:', designImageUrl.substring(0, 100));
-      const imageResponse = await fetch(designImageUrl);
-      if (!imageResponse.ok) {
-        throw new Error(`Failed to fetch design image (${imageResponse.status} ${imageResponse.statusText}): ${designImageUrl.substring(0, 100)}`);
-      }
-      const imageBuffer = await imageResponse.arrayBuffer();
-      // Use chunk-based base64 encoding for large images (spread operator fails on large arrays)
-      const bytes = new Uint8Array(imageBuffer);
-      let binary = '';
-      const chunkSize = 8192;
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.subarray(i, i + chunkSize);
-        binary += String.fromCharCode(...chunk);
-      }
-      imageData = btoa(binary);
+      console.log('Using URL-based Printify upload:', designImageUrl.substring(0, 100));
+      uploadBody = {
+        file_name: fileName,
+        url: designImageUrl,
+      };
     } else if (designImageUrl.startsWith('data:')) {
-      // Extract base64 from data URL
-      imageData = designImageUrl.split(',')[1];
+      console.log('Using base64 Printify upload (data: URL)');
+      const imageData = designImageUrl.split(',')[1];
+      uploadBody = {
+        file_name: fileName,
+        contents: imageData,
+      };
     } else {
-      throw new Error('Invalid design image URL format');
+      throw new Error('Invalid design image URL format — must be http(s) or data:');
     }
 
     const uploadResponse = await fetch('https://api.printify.com/v1/uploads/images.json', {
@@ -212,10 +209,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${printifyApiToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        file_name: `custom-design-${Date.now()}.png`,
-        contents: imageData,
-      }),
+      body: JSON.stringify(uploadBody),
     });
 
     if (!uploadResponse.ok) {
