@@ -249,13 +249,14 @@ export default function CustomDesign() {
       }
 
       // Restore session state if returning from Auth
+      // Only proceed if: (a) state exists AND (b) user IS already authenticated.
+      // If not authenticated yet, leave state in storage — onAuthStateChange(SIGNED_IN) handles it.
       let state: any = null;
       try {
         const savedState = sessionStorage.getItem('customDesignState');
         console.log('Customizer [checkAuth]: Raw sessionStorage state:', savedState ? 'Found (length: ' + savedState.length + ')' : 'Not Found');
         if (savedState) {
           state = JSON.parse(savedState);
-          sessionStorage.removeItem('customDesignState');
         }
       } catch (e) {
         console.error("Failed to parse sessionStorage state", e);
@@ -266,9 +267,6 @@ export default function CustomDesign() {
           console.log('Customizer [checkAuth]: Checking IndexedDB for customDesignState...');
           state = await getFromIndexedDB('customDesignState');
           console.log('Customizer [checkAuth]: IndexedDB state:', state ? 'Found' : 'Not Found');
-          if (state) {
-            await removeFromIndexedDB('customDesignState');
-          }
         } catch (e) {
           console.error("Failed to get state from IndexedDB", e);
         }
@@ -286,23 +284,27 @@ export default function CustomDesign() {
           if (state.savedDesignId) setSavedDesignId(state.savedDesignId);
           if (state.mockupPreview) setMockupPreview(state.mockupPreview);
 
-          // Auto-save if it was pending
           const pendingAction = sessionStorage.getItem('customDesignPendingAction');
-          if (pendingAction === 'save' && state.designDraft) {
-            sessionStorage.removeItem('customDesignPendingAction');
-            // We can't easily wait for this without making useEffect messy, 
-            // but the state is restored so they are on exactly the step they left.
-            toast.success("State restored! You can now click save or checkout.");
-          } else if (pendingAction === 'checkout') {
-            sessionStorage.removeItem('customDesignPendingAction');
-            toast.success("State restored! Creating your custom product and proceeding to checkout...");
-            proceedToCheckout(
-              state.selectedProduct,
-              state.approvedDesign,
-              state.selectedVariant,
-              state.quantity
-            );
+
+          if (user) {
+            // User is already signed in — consume the state and proceed immediately
+            sessionStorage.removeItem('customDesignState');
+            await removeFromIndexedDB('customDesignState').catch(() => {});
+            if (pendingAction === 'save' && state.designDraft) {
+              sessionStorage.removeItem('customDesignPendingAction');
+              toast.success("State restored! You can now click save or checkout.");
+            } else if (pendingAction === 'checkout') {
+              sessionStorage.removeItem('customDesignPendingAction');
+              toast.success("State restored! Creating your custom product and proceeding to checkout...");
+              proceedToCheckout(
+                state.selectedProduct,
+                state.approvedDesign,
+                state.selectedVariant,
+                state.quantity
+              );
+            }
           }
+          // If user is NOT logged in: leave storage intact — onAuthStateChange(SIGNED_IN) will handle it
         } catch (e) {
           console.error("Failed to parse restored state", e);
         }
@@ -979,8 +981,10 @@ export default function CustomDesign() {
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    // Use getSession() (reads local cache) instead of getUser() (server round-trip)
+    // to avoid timing issues right after email confirmation tokens are processed.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
       toast.error("Please sign in to complete your checkout");
       const stateObj = {
         designDraft,

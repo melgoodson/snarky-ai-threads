@@ -65,30 +65,34 @@ const Checkout = () => {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    checkAuthAndLoadData();
+    // Use onAuthStateChange with INITIAL_SESSION to wait for Supabase to confirm auth
+    // before deciding to redirect. This prevents the flash where getUser() returns null
+    // momentarily right after an email-confirmation link is processed.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION') {
+        if (!session?.user) {
+          navigate('/auth', { state: { returnTo: '/checkout' } });
+        } else {
+          checkAuthAndLoadData(session.user);
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
   }, [items.length, navigate]);
 
-  const checkAuthAndLoadData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    // Require authentication before checkout
-    if (!user) {
-      navigate('/auth', { state: { returnTo: '/checkout' } });
-      return;
-    }
-
-    setUserId(user.id);
+  const checkAuthAndLoadData = async (confirmedUser: any) => {
+    setUserId(confirmedUser.id);
 
     // Load profile data for auto-fill
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('id', confirmedUser.id)
       .single();
 
     if (profile) {
       setFormData(prev => ({
-        email: user.email || prev.email,
+        email: confirmedUser.email || prev.email,
         firstName: profile.first_name || prev.firstName,
         lastName: profile.last_name || prev.lastName,
         address1: profile.address1 || prev.address1,
