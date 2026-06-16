@@ -176,29 +176,47 @@ serve(async (req) => {
     let shopId = shops[0].id;
     console.log('Available shops:', shops.map((s: any) => `${s.id} (${s.title})`).join(', '));
 
-    // Step 1: Upload design image to Printify
+    // Step 1: Upload design image to Printify via URL
+    // Printify's URL-based upload is the only reliable method — base64 uploads fail
+    // with error 10300 for large images (photos, high-res AI designs).
+    // For data: URLs (browser uploads), we first push to Supabase Storage to get a public URL.
     console.log('Uploading design image to Printify...');
 
-    // Prefer URL-based upload: Printify fetches the image directly from the URL.
-    // This avoids sending a large base64 payload through the edge function,
-    // which was causing error 10300 ("Failed to upload image").
-    // Only fall back to base64 for data: URLs (browser-generated, no public URL).
-    let uploadBody: Record<string, string>;
+    let publicImageUrl: string;
     const fileName = `custom-design-${Date.now()}.png`;
 
-    if (designImageUrl.startsWith('http')) {
-      console.log('Using URL-based Printify upload:', designImageUrl.substring(0, 100));
-      uploadBody = {
-        file_name: fileName,
-        url: designImageUrl,
-      };
-    } else if (designImageUrl.startsWith('data:')) {
-      console.log('Using base64 Printify upload (data: URL)');
-      const imageData = designImageUrl.split(',')[1];
-      uploadBody = {
-        file_name: fileName,
-        contents: imageData,
-      };
+    if (designImageUrl.startsWith('data:')) {
+      console.log('data: URL detected — uploading to Supabase Storage for a public URL...');
+      const [header, base64Data] = designImageUrl.split(',');
+      const mimeMatch = header.match(/data:([\w\/+]+);base64/);
+      const mimeType = mimeMatch?.[1] || 'image/png';
+      const ext = mimeType.includes('jpeg') ? 'jpg' : (mimeType.split('/')[1]?.split('+')[0] || 'png');
+      const storagePath = `custom-designs/${Date.now()}-design.${ext}`;
+
+      // Decode base64 to binary
+      const binaryStr = atob(base64Data);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      const { error: storageError } = await supabase.storage
+        .from('design-images')
+        .upload(storagePath, bytes, { contentType: mimeType, upsert: true });
+
+      if (storageError) {
+        throw new Error(`Failed to upload design to Supabase Storage: ${storageError.message}`);
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('design-images')
+        .getPublicUrl(storagePath);
+
+      publicImageUrl = publicUrl;
+      console.log('Uploaded to storage, public URL:', publicImageUrl.substring(0, 100));
+    } else if (designImageUrl.startsWith('http')) {
+      publicImageUrl = designImageUrl;
+      console.log('Using existing public URL for Printify:', publicImageUrl.substring(0, 100));
     } else {
       throw new Error('Invalid design image URL format — must be http(s) or data:');
     }
@@ -209,7 +227,10 @@ serve(async (req) => {
         'Authorization': `Bearer ${printifyApiToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(uploadBody),
+      body: JSON.stringify({
+        file_name: fileName,
+        url: publicImageUrl,
+      }),
     });
 
     if (!uploadResponse.ok) {
