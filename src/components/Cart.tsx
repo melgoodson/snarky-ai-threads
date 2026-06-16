@@ -9,10 +9,20 @@ import {
 } from '@/components/ui/sheet';
 import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Cart = () => {
   const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCart();
   const navigate = useNavigate();
+
+  const handleCheckout = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate('/auth', { state: { returnTo: '/checkout' } });
+    } else {
+      navigate('/checkout');
+    }
+  };
 
   const FREE_SHIPPING_THRESHOLD = 50;
   const isFreeShipping = totalPrice >= FREE_SHIPPING_THRESHOLD;
@@ -177,7 +187,7 @@ export const Cart = () => {
                 <Button
                   className="w-full"
                   size="lg"
-                  onClick={() => navigate('/checkout')}
+                  onClick={handleCheckout}
                 >
                   CHECKOUT
                 </Button>

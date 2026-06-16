@@ -69,33 +69,36 @@ const Checkout = () => {
   }, [items.length, navigate]);
 
   const checkAuthAndLoadData = async () => {
-    // Check if user is authenticated (optional — guests can checkout too)
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (user) {
-      setUserId(user.id);
+    // Require authentication before checkout
+    if (!user) {
+      navigate('/auth', { state: { returnTo: '/checkout' } });
+      return;
+    }
 
-      // Load profile data for auto-fill
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    setUserId(user.id);
 
-      if (profile) {
-        setFormData(prev => ({
-          email: user.email || prev.email,
-          firstName: profile.first_name || prev.firstName,
-          lastName: profile.last_name || prev.lastName,
-          address1: profile.address1 || prev.address1,
-          address2: profile.address2 || prev.address2 || '',
-          city: profile.city || prev.city,
-          state: profile.state || prev.state,
-          zip: profile.zip || prev.zip,
-          country: profile.country || prev.country,
-          phone: profile.phone || prev.phone,
-        }));
-      }
+    // Load profile data for auto-fill
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (profile) {
+      setFormData(prev => ({
+        email: user.email || prev.email,
+        firstName: profile.first_name || prev.firstName,
+        lastName: profile.last_name || prev.lastName,
+        address1: profile.address1 || prev.address1,
+        address2: profile.address2 || prev.address2 || '',
+        city: profile.city || prev.city,
+        state: profile.state || prev.state,
+        zip: profile.zip || prev.zip,
+        country: profile.country || prev.country,
+        phone: profile.phone || prev.phone,
+      }));
     }
 
     // Load custom design if exists
