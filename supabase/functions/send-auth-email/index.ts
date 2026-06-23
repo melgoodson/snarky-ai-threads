@@ -64,8 +64,23 @@ serve(async (req) => {
 
     if (linkError) {
       console.error("[send-auth-email] generateLink error:", linkError);
+      
+      // Extract a readable error message safely
+      let errorMessage = "Failed to generate authorization link";
+      if (linkError.message && typeof linkError.message === "string") {
+        errorMessage = linkError.message;
+      } else if (typeof linkError === "string") {
+        errorMessage = linkError;
+      } else {
+        try {
+          errorMessage = JSON.stringify(linkError);
+        } catch {
+          // ignore
+        }
+      }
+
       return new Response(
-        JSON.stringify({ error: linkError.message }),
+        JSON.stringify({ error: errorMessage }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

@@ -67,7 +67,16 @@ const Auth = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        let errorMessage = error.message;
+        if (error.context) {
+          try {
+            const body = await error.context.json();
+            if (body && body.error) errorMessage = body.error;
+          } catch {
+            // ignore
+          }
+        }
+        toast.error(errorMessage);
       } else if (data?.error) {
         toast.error(data.error);
       } else {
@@ -127,7 +136,16 @@ const Auth = () => {
         });
 
         if (error) {
-          toast.error(error.message);
+          let errorMessage = error.message;
+          if (error.context) {
+            try {
+              const body = await error.context.json();
+              if (body && body.error) errorMessage = body.error;
+            } catch {
+              // ignore
+            }
+          }
+          toast.error(errorMessage);
         } else if (data?.error) {
           toast.error(data.error);
         } else {
