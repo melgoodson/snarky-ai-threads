@@ -243,7 +243,7 @@ export function useAnalytics() {
   // which is why ended_at and scroll_depth were never reliably written.
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
   /** Write page-view leave data (time_on_page + scroll_depth) via sendBeacon */
   const beaconUpdatePageView = useCallback(() => {

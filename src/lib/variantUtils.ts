@@ -129,7 +129,7 @@ export const getUniqueColors = (variants: any[], productTitle?: string): string[
 
 export const getSizesForColor = (variants: any[], color: string): any[] => {
   return variants
-    .filter(v => v.is_enabled && extractColorFromVariant(v.title) === color)
+    .filter(v => v.is_enabled && extractColorFromVariant(v.title).toLowerCase().trim() === color.toLowerCase().trim())
     .sort((a, b) => {
       const sizeA = extractSizeFromVariant(a.title);
       const sizeB = extractSizeFromVariant(b.title);

@@ -1471,13 +1471,8 @@ export default function CustomDesign() {
                             }`}
                           onClick={() => {
                             setSelectedProduct(product);
-                            const opts = getAvailableOptions(product.variants || []);
-                            if (opts.sizes.length === 0 && opts.colors.length === 0 && opts.styles.length === 0) {
-                              const enabledVariants = (product.variants || []).filter((v: any) => v.is_enabled);
-                              setSelectedVariant(enabledVariants[0] || null);
-                            } else {
-                              setSelectedVariant(null);
-                            }
+                            const enabledVariants = (product.variants || []).filter((v: any) => v.is_enabled);
+                            setSelectedVariant(enabledVariants[0] || null);
                           }}
                         >
                           <div className="relative aspect-square bg-secondary">
@@ -1542,7 +1537,7 @@ export default function CustomDesign() {
                             </h4>
                             <div className="flex flex-wrap gap-3">
                               {getUniqueColors(selectedProduct.variants, selectedProduct.title).map((color) => {
-                                const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title) === color;
+                                const isSelected = selectedVariant && extractColorFromVariant(selectedVariant.title).toLowerCase().trim() === color.toLowerCase().trim();
                                 return (
                                   <button
                                     key={color}
