@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ interface EmailCaptureProps {
 }
 
 export function EmailCapture({ variant, source }: EmailCaptureProps) {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const [done, setDone] = useState(false);
@@ -50,8 +52,16 @@ export function EmailCapture({ variant, source }: EmailCaptureProps) {
                 .invoke("send-welcome-email", { body: { email: email.trim().toLowerCase() } })
                 .catch((err) => console.warn("[EmailCapture] welcome email failed:", err));
 
+            // Trigger GTM event
+            (window as any).dataLayer = (window as any).dataLayer || [];
+            (window as any).dataLayer.push({
+                event: "newsletter_signup",
+                source: captureSource
+            });
+
             setDone(true);
             toast.success("You're in! Check your inbox for a welcome from us. 🔥");
+            navigate("/thank-you");
         } catch (err: any) {
             console.error("[EmailCapture] subscribe error:", err);
             toast.error("Something went wrong. Try again in a second.");
