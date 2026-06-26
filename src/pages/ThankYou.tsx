@@ -2,18 +2,28 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
-import { CheckCircle2, MailOpen } from "lucide-react";
+import { CheckCircle2, MailOpen, PartyPopper } from "lucide-react";
 
 const ThankYou = () => {
     const [searchParams] = useSearchParams();
-    const isAccountSignup = searchParams.get("type") === "signup";
+    const type = searchParams.get("type");
 
     return (
         <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1 bg-background text-foreground flex items-center justify-center py-16 md:py-24">
                 <div className="container px-4 max-w-xl mx-auto text-center">
-                    {isAccountSignup ? (
+                    {type === "confirmed" ? (
+                        <>
+                            <PartyPopper className="h-16 w-16 mx-auto mb-6 text-primary" />
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-6 uppercase">
+                                WELCOME TO <span className="text-primary">THE PACK</span>
+                            </h1>
+                            <p className="text-xl text-muted-foreground font-medium mb-8 leading-relaxed">
+                                Your email has been verified successfully! You are now signed in and ready to create custom designs, track orders, and shop.
+                            </p>
+                        </>
+                    ) : type === "signup" ? (
                         <>
                             <MailOpen className="h-16 w-16 mx-auto mb-6 text-primary" />
                             <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-6 uppercase">

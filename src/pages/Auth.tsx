@@ -142,7 +142,7 @@ const Auth = () => {
             email,
             password,
             type: "signup",
-            redirectTo: window.location.origin,
+            redirectTo: window.location.origin + "/thank-you?type=confirmed",
           },
         });
 

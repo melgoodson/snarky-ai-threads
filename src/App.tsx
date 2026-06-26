@@ -115,6 +115,30 @@ const AppContent = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
+        const hash = window.location.hash;
+        const search = window.location.search;
+
+        // If they just confirmed their email and are landing back (via hash or direct search parameter redirect)
+        if (hash.includes("type=signup") || hash.includes("type=invite") || search.includes("type=confirmed")) {
+          localStorage.removeItem('auth_return_to');
+
+          // Clear query params and hashes to clean up the URL
+          const url = new URL(window.location.href);
+          url.hash = "";
+          url.searchParams.delete("type");
+          window.history.replaceState({}, document.title, url.toString());
+
+          // Trigger GTM event for email verification/confirmation
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: "email_confirmed",
+            email: session.user.email
+          });
+
+          navigate("/thank-you?type=confirmed", { replace: true });
+          return;
+        }
+
         const returnTo = localStorage.getItem('auth_return_to');
         if (returnTo) {
           localStorage.removeItem('auth_return_to');
