@@ -80,7 +80,18 @@ const Auth = () => {
       } else if (data?.error) {
         toast.error(data.error);
       } else {
-        setSent(true);
+        if (activeTab === 'signup') {
+          // Trigger GTM event for account signup
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: "account_signup",
+            method: "magic-link",
+            email: email.trim().toLowerCase()
+          });
+          navigate("/thank-you?type=signup");
+        } else {
+          setSent(true);
+        }
       }
     } catch {
       toast.error('Something went wrong. Please try again.');
@@ -150,7 +161,16 @@ const Auth = () => {
           toast.error(data.error);
         } else {
           toast.success('Sign up successful! Check your email to verify your account.');
-          setSent(true);
+          
+          // Trigger GTM event for account signup
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: "account_signup",
+            method: "password",
+            email: email.trim().toLowerCase()
+          });
+          
+          navigate("/thank-you?type=signup");
         }
       }
     } catch {
