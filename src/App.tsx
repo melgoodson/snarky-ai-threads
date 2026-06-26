@@ -59,6 +59,8 @@ import { BestSellersPopup } from "./components/BestSellersPopup";
 
 const queryClient = new QueryClient();
 
+let signupRedirectProcessed = false;
+
 const AppContent = () => {
   useExternalTracking();
   useGA4Tracking();
@@ -66,6 +68,35 @@ const AppContent = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Robust check for signup verification hashes immediately on mount/render
+  useEffect(() => {
+    if (signupRedirectProcessed) return;
+
+    const hash = window.location.hash || (window as any).__supabase_signup_hash || "";
+    const search = window.location.search;
+
+    if (hash.includes("type=signup") || hash.includes("type=invite") || search.includes("type=confirmed")) {
+      signupRedirectProcessed = true;
+      localStorage.removeItem('auth_return_to');
+
+      // Clear query params and hashes to clean up the URL
+      const url = new URL(window.location.href);
+      url.hash = "";
+
+      // Trigger GTM event for email verification/confirmation
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
+        event: "email_confirmed"
+      });
+
+      if (location.pathname !== "/thank-you") {
+        url.searchParams.delete("type");
+        window.history.replaceState({}, document.title, url.toString());
+        navigate("/thank-you?type=confirmed", { replace: true });
+      }
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -115,26 +146,19 @@ const AppContent = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        const hash = window.location.hash;
+        // If we've already handled the signup verification redirect, clear states and return
+        if (signupRedirectProcessed) {
+          localStorage.removeItem('auth_return_to');
+          return;
+        }
+
+        const hash = window.location.hash || (window as any).__supabase_signup_hash || "";
         const search = window.location.search;
 
-        // If they just confirmed their email and are landing back (via hash or direct search parameter redirect)
+        // Fallback check in case the global useEffect hasn't run yet
         if (hash.includes("type=signup") || hash.includes("type=invite") || search.includes("type=confirmed")) {
+          signupRedirectProcessed = true;
           localStorage.removeItem('auth_return_to');
-
-          // Clear query params and hashes to clean up the URL
-          const url = new URL(window.location.href);
-          url.hash = "";
-          url.searchParams.delete("type");
-          window.history.replaceState({}, document.title, url.toString());
-
-          // Trigger GTM event for email verification/confirmation
-          (window as any).dataLayer = (window as any).dataLayer || [];
-          (window as any).dataLayer.push({
-            event: "email_confirmed",
-            email: session.user.email
-          });
-
           navigate("/thank-you?type=confirmed", { replace: true });
           return;
         }
