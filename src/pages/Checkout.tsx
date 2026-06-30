@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTikTokTracking } from '@/hooks/useTikTokTracking';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { getOverlayStyle } from '@/lib/variantUtils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -526,14 +527,19 @@ const Checkout = () => {
                               alt={`${item.title} base product`}
                               className="h-full w-full object-cover"
                             />
-                            <div className="absolute inset-0 flex items-center justify-center p-12">
-                              <img
-                                src={designPreviewSrc}
-                                alt={`${item.title} custom design`}
-                                className="max-h-[70%] max-w-[70%] object-contain opacity-90"
-                                style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
-                              />
-                            </div>
+                            {(() => {
+                              const overlay = getOverlayStyle(item.title, 'large');
+                              return (
+                                <div className={overlay.containerClass}>
+                                  <img
+                                    src={designPreviewSrc}
+                                    alt={`${item.title} custom design`}
+                                    className={`${overlay.imageClass} opacity-90`}
+                                    style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                  />
+                                </div>
+                              );
+                            })()}
                           </div>
                           <p className="text-xs text-muted-foreground text-center py-1">Product Preview</p>
                         </div>

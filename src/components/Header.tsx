@@ -1,9 +1,10 @@
-import { Menu, User, ChevronDown } from "lucide-react";
+import { Menu, User, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Cart } from "@/components/Cart";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
+import { SearchModal } from "@/components/SearchModal";
 import {
   AI_CUSTOM_CLOTHING_PATH,
   trackAiLandingInternalClick,
@@ -33,6 +34,7 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const BrandTitle = brandAsHeading ? "h1" : "div";
 
   useEffect(() => {
@@ -263,6 +265,14 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
           </nav>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
             <Cart />
             <div className="hidden md:block">
               {isLoggedIn ? (
@@ -279,6 +289,7 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
           </div>
         </div>
       </header>
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };

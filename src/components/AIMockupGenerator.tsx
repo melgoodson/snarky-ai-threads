@@ -11,7 +11,7 @@ interface AIMockupGeneratorProps {
   productColor?: string;
 }
 
-import { isApparelProduct } from "@/lib/variantUtils";
+import { isApparelProduct, getOverlayStyle } from "@/lib/variantUtils";
 
 function getProductLabel(title: string): string {
   const lower = title.toLowerCase();
@@ -229,14 +229,19 @@ export const AIMockupGenerator = ({ productImage, productTitle, productColor }: 
                 alt="Product"
                 className="w-full h-auto"
               />
-              <div className="absolute inset-0 flex items-center justify-center p-8">
-                <img
-                  src={userImage}
-                  alt="Your design"
-                  className="max-w-[60%] max-h-[60%] object-contain opacity-85"
-                  style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.25))" }}
-                />
-              </div>
+              {(() => {
+                const overlay = getOverlayStyle(title);
+                return (
+                  <div className={overlay.containerClass}>
+                    <img
+                      src={userImage}
+                      alt="Your design"
+                      className={`${overlay.imageClass} opacity-85`}
+                      style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.25))" }}
+                    />
+                  </div>
+                );
+              })()}
             </div>
             <Button
               variant="outline"

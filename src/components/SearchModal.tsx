@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { resolveDesignImage } from "@/lib/resolveDesignImage";
 
 interface SearchResult {
     id: string;
@@ -133,7 +134,7 @@ export const SearchModal = ({ open, onClose }: SearchModalProps) => {
                                     >
                                         <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                                             <img
-                                                src={result.image_url}
+                                                src={resolveDesignImage(result.image_url)}
                                                 alt={result.title}
                                                 className="w-full h-full object-cover"
                                             />

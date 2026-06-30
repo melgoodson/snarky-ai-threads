@@ -22,7 +22,8 @@ import {
   assignDonorVariants,
   getProductType,
   cleanProductTitle,
-  isRealColor
+  isRealColor,
+  getOverlayStyle
 } from "@/lib/variantUtils";
 
 interface Design {
@@ -273,6 +274,11 @@ const DesignDetail = () => {
     const variantTitle = selectedVariant?.title || "Default";
     const variantId = String(selectedVariant?.id || product.printify_product_id || "0");
 
+    const productImg = product.images?.[0];
+    const productSrc = productImg
+      ? (typeof productImg === 'string' ? productImg : productImg.src || productImg.url)
+      : null;
+
     const cartItem = {
       productId: product.id,
       title: `${design.title} - ${cleanProductTitle(product.title)}`,
@@ -282,6 +288,7 @@ const DesignDetail = () => {
       printifyProductId: product.printify_product_id,
       variantId: variantId,
       designImageUrl: resolveDesignImage(design.image_url),
+      productImageUrl: productSrc || undefined,
       mockupUrl: mockupPreview || undefined, // AI-generated product mockup
     };
 
@@ -289,7 +296,6 @@ const DesignDetail = () => {
 
     try {
       addItem(cartItem);
-      toast.success("Added to cart!");
     } catch (err) {
       console.error('[AddToCart] Error adding item:', err);
       toast.error("Failed to add to cart");
@@ -450,14 +456,19 @@ const DesignDetail = () => {
                         return productSrc ? (
                           <>
                             <img src={productSrc} alt="Product" className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 flex items-center justify-center p-8">
-                              <img
-                                src={resolveDesignImage(design.image_url)}
-                                alt="Design on product"
-                                className="max-w-[60%] max-h-[60%] object-contain opacity-90"
-                                style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.3))" }}
-                              />
-                            </div>
+                            {(() => {
+                              const overlay = getOverlayStyle(product?.title || "");
+                              return (
+                                <div className={overlay.containerClass}>
+                                  <img
+                                    src={resolveDesignImage(design.image_url)}
+                                    alt="Design on product"
+                                    className={`${overlay.imageClass} opacity-90`}
+                                    style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.3))" }}
+                                  />
+                                </div>
+                              );
+                            })()}
                           </>
                         ) : (
                           <img

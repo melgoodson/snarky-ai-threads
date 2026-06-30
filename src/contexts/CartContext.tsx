@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { getOverlayStyle } from '@/lib/variantUtils';
 
 const TTP_COOKIE_KEY = '_ttp';
 const STORED_TTCLID_KEY = 'sah_ttclid';
@@ -149,7 +150,90 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         );
       }
 
-      toast.success('Added to cart');
+      // Trigger custom toast confirmation with clear next steps
+      toast.custom((t) => (
+        <div className="bg-card text-card-foreground border border-border shadow-2xl p-5 rounded-2xl w-full max-w-sm space-y-4 pointer-events-auto flex flex-col animate-in slide-in-from-bottom-2 duration-300">
+          <div className="flex gap-3">
+            <div className="w-12 h-12 rounded-xl bg-muted overflow-hidden flex-shrink-0 border border-border relative">
+              {(() => {
+                if (newItem.mockupUrl) {
+                  return (
+                    <img
+                      src={newItem.mockupUrl}
+                      alt={newItem.title}
+                      className="w-full h-full object-cover"
+                    />
+                  );
+                }
+                if (newItem.productImageUrl && newItem.designImageUrl) {
+                  const overlay = getOverlayStyle(newItem.title, 'small');
+                  return (
+                    <div className="w-full h-full relative aspect-square overflow-hidden bg-muted">
+                      <img
+                        src={newItem.productImageUrl}
+                        alt={newItem.title}
+                        className="h-full w-full object-cover"
+                      />
+                      <div className={overlay.containerClass}>
+                        <img
+                          src={newItem.designImageUrl}
+                          alt={newItem.title}
+                          className={`${overlay.imageClass} opacity-90`}
+                          style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.15))" }}
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <img
+                    src={newItem.image}
+                    alt={newItem.title}
+                    className="w-full h-full object-cover"
+                  />
+                );
+              })()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-black text-sm text-foreground uppercase tracking-wider">Added to Cart!</h4>
+              <p className="text-xs text-muted-foreground truncate">{newItem.title}</p>
+              <p className="text-xs font-bold text-primary mt-0.5">${newItem.price.toFixed(2)}</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t);
+                window.dispatchEvent(new CustomEvent('open-cart'));
+              }}
+              className="px-2 py-2 bg-primary text-primary-foreground text-xs font-black rounded-lg shadow-sm hover:opacity-90 transition-opacity text-center uppercase tracking-wider"
+            >
+              View Cart
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t);
+                window.location.href = '/checkout';
+              }}
+              className="px-2 py-2 bg-foreground text-background text-xs font-black rounded-lg shadow-sm hover:opacity-90 transition-opacity text-center uppercase tracking-wider"
+            >
+              Checkout
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t);
+              }}
+              className="px-2 py-2 bg-secondary text-secondary-foreground text-xs font-black rounded-lg shadow-sm hover:opacity-90 transition-opacity text-center uppercase tracking-wider border border-border"
+            >
+              Shop More
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 6000,
+      });
+
       return [...prev, { ...newItem, id: crypto.randomUUID(), quantity: 1 }];
     });
   };

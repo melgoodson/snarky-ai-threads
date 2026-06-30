@@ -23,7 +23,8 @@ import {
   getProductType,
   cleanProductTitle,
   isRealColor,
-  getAvailableOptions
+  getAvailableOptions,
+  getOverlayStyle
 } from "@/lib/variantUtils";
 import { saveToIndexedDB, getFromIndexedDB, removeFromIndexedDB } from "@/utils/storage";
 
@@ -981,36 +982,6 @@ export default function CustomDesign() {
       return;
     }
 
-    // Use getSession() (reads local cache) instead of getUser() (server round-trip)
-    // to avoid timing issues right after email confirmation tokens are processed.
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      toast.error("Please sign in to complete your checkout");
-      const stateObj = {
-        designDraft,
-        approvedDesign: design,
-        currentStep,
-        selectedProduct: prod,
-        selectedVariant: variant,
-        quantity: qty,
-        savedDesignId,
-        mockupPreview,
-        uploadedDesign
-      };
-      console.log('Customizer [proceedToCheckout]: Saving stateObj before auth redirect:', stateObj);
-      await saveToIndexedDB('customDesignState', stateObj);
-      try {
-        sessionStorage.setItem('customDesignState', JSON.stringify(stateObj));
-        console.log('Customizer [proceedToCheckout]: Successfully saved to sessionStorage');
-      } catch (e) {
-        console.warn("Could not save full customDesignState to sessionStorage (payload too large). Fallback to IndexedDB was successful.", e);
-      }
-      sessionStorage.setItem('customDesignPendingAction', 'checkout');
-      console.log('Customizer [proceedToCheckout]: Navigating to /auth with returnTo: /custom-design');
-      navigate("/auth", { state: { returnTo: '/custom-design' } });
-      return;
-    }
-
     setCreatingPrintifyProduct(true);
     toast.info("Creating your custom product...");
 
@@ -1112,8 +1083,6 @@ export default function CustomDesign() {
           designImageUrl: confirmedDesignUrl,
         });
       }
-
-      navigate("/checkout");
     } catch (error: any) {
       console.error("Error creating custom product:", error);
       toast.error(error.message || "Failed to create custom product");
@@ -1747,14 +1716,19 @@ export default function CustomDesign() {
                                       alt="Product template"
                                       className="w-full h-full object-cover"
                                     />
-                                    <div className="absolute inset-0 flex items-center justify-center p-12">
-                                      <img
-                                        src={approvedDesign.imageUrl}
-                                        alt="Your design"
-                                        className="max-w-[70%] max-h-[70%] object-contain opacity-90"
-                                        style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
-                                      />
-                                    </div>
+                                    {(() => {
+                                      const overlay = getOverlayStyle(selectedProduct.title, 'large');
+                                      return (
+                                        <div className={overlay.containerClass}>
+                                          <img
+                                            src={approvedDesign.imageUrl}
+                                            alt="Your design"
+                                            className={`${overlay.imageClass} opacity-90`}
+                                            style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                          />
+                                        </div>
+                                      );
+                                    })()}
                                   </>
                                 ) : (
                                   <img
@@ -1847,7 +1821,7 @@ export default function CustomDesign() {
                             ) : (
                               <>
                                 <ShoppingCart className="mr-2 h-5 w-5" />
-                                Continue to Checkout
+                                Add to Cart
                               </>
                             )}
                           </Button>
@@ -1936,14 +1910,19 @@ export default function CustomDesign() {
                                         alt={cleanTitle}
                                         className="w-full h-full object-cover"
                                       />
-                                      <div className="absolute inset-0 flex items-center justify-center p-6">
-                                        <img
-                                          src={approvedDesign.imageUrl}
-                                          alt="Your design"
-                                          className="max-w-[70%] max-h-[70%] object-contain opacity-90"
-                                          style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
-                                        />
-                                      </div>
+                                      {(() => {
+                                        const overlay = getOverlayStyle(product.title, 'small');
+                                        return (
+                                          <div className={overlay.containerClass}>
+                                            <img
+                                              src={approvedDesign.imageUrl}
+                                              alt="Your design"
+                                              className={`${overlay.imageClass} opacity-90`}
+                                              style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                            />
+                                          </div>
+                                        );
+                                      })()}
                                     </>
                                   ) : (
                                     <img

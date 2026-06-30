@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,12 +11,21 @@ import {
 import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { getOverlayStyle } from '@/lib/variantUtils';
 
 export const Cart = () => {
   const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCart();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenCart = () => setOpen(true);
+    window.addEventListener('open-cart', handleOpenCart);
+    return () => window.removeEventListener('open-cart', handleOpenCart);
+  }, []);
 
   const handleCheckout = async () => {
+    setOpen(false);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate('/auth', { state: { returnTo: '/checkout' } });
@@ -30,7 +40,7 @@ export const Cart = () => {
   const progressPercentage = Math.min((totalPrice / FREE_SHIPPING_THRESHOLD) * 100, 100);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingCart className="h-5 w-5" />
@@ -81,14 +91,16 @@ export const Cart = () => {
 
               <div className="flex-1 overflow-auto space-y-4">
                 {items.map(item => {
-                  const hasFallbackPreview = !item.mockupUrl && item.productImageUrl && item.designImageUrl;
+                  const isCustomized = item.title.toLowerCase().startsWith('custom');
+                  const hasLargeMockup = isCustomized && item.mockupUrl;
+                  const hasLargeFallback = isCustomized && !item.mockupUrl && item.productImageUrl && item.designImageUrl;
 
                   return (
                     <div
                       key={item.id}
                       className="flex flex-col gap-3 p-4 border border-border rounded-lg bg-card"
                     >
-                      {item.mockupUrl ? (
+                      {hasLargeMockup ? (
                         <div className="rounded-lg overflow-hidden border border-border/50 bg-muted relative">
                           <img
                             src={item.mockupUrl}
@@ -99,21 +111,26 @@ export const Cart = () => {
                             Custom Preview
                           </span>
                         </div>
-                      ) : hasFallbackPreview && (
+                      ) : hasLargeFallback && (
                         <div className="relative aspect-square max-h-48 overflow-hidden rounded-lg border border-border/50 bg-muted">
                           <img
                             src={item.productImageUrl}
                             alt={`${item.title} base product`}
                             className="h-full w-full object-cover"
                           />
-                          <div className="absolute inset-0 flex items-center justify-center p-8">
-                            <img
-                              src={item.designImageUrl}
-                              alt={`${item.title} custom design`}
-                              className="max-h-[70%] max-w-[70%] object-contain opacity-90"
-                              style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
-                            />
-                          </div>
+                          {(() => {
+                            const overlay = getOverlayStyle(item.title);
+                            return (
+                              <div className={overlay.containerClass}>
+                                <img
+                                  src={item.designImageUrl}
+                                  alt={`${item.title} custom design`}
+                                  className={`${overlay.imageClass} opacity-90`}
+                                  style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                />
+                              </div>
+                            );
+                          })()}
                           <span className="absolute top-2 left-2 bg-primary/90 text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
                             Custom Preview
                           </span>
@@ -121,13 +138,44 @@ export const Cart = () => {
                       )}
 
                       <div className="flex gap-4">
-                        {!item.mockupUrl && !hasFallbackPreview && (
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-20 h-20 object-cover rounded flex-shrink-0"
-                          />
-                        )}
+                        {(() => {
+                          if (item.mockupUrl) {
+                            return (
+                              <img
+                                src={item.mockupUrl}
+                                alt={item.title}
+                                className="w-20 h-20 object-cover rounded flex-shrink-0 border border-border/50"
+                              />
+                            );
+                          }
+                          if (item.productImageUrl && item.designImageUrl) {
+                            const overlay = getOverlayStyle(item.title, 'small');
+                            return (
+                              <div className="w-20 h-20 relative aspect-square overflow-hidden rounded border border-border/50 bg-muted flex-shrink-0">
+                                <img
+                                  src={item.productImageUrl}
+                                  alt={item.title}
+                                  className="h-full w-full object-cover"
+                                />
+                                <div className={overlay.containerClass}>
+                                  <img
+                                    src={item.designImageUrl}
+                                    alt={item.title}
+                                    className={`${overlay.imageClass} opacity-90`}
+                                    style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.15))" }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          }
+                          return (
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-20 h-20 object-cover rounded flex-shrink-0 border border-border/50"
+                            />
+                          );
+                        })()}
                         <div className="flex-1 space-y-2">
                           <div className="flex justify-between">
                             <div>

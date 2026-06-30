@@ -269,6 +269,48 @@ export const getBlankMockup = (templateImageUrl: string | undefined, title: stri
   return templateImageUrl || '';
 };
 
+export const getOverlayStyle = (title: string, sizeMode: 'default' | 'large' | 'small' = 'default') => {
+  const t = title.toLowerCase();
+  const isTote = t.includes('tote') || t.includes('bag');
+  
+  if (isTote) {
+    if (sizeMode === 'large') {
+      return {
+        containerClass: "absolute inset-x-0 bottom-[10%] top-[22%] flex items-center justify-center p-4",
+        imageClass: "max-w-[60%] max-h-[60%] object-contain"
+      };
+    }
+    if (sizeMode === 'small') {
+      return {
+        containerClass: "absolute inset-x-0 bottom-[10%] top-[22%] flex items-center justify-center p-2",
+        imageClass: "max-w-[50%] max-h-[50%] object-contain"
+      };
+    }
+    return {
+      containerClass: "absolute inset-x-0 bottom-[10%] top-[22%] flex items-center justify-center p-4",
+      imageClass: "max-w-[55%] max-h-[55%] object-contain"
+    };
+  }
+  
+  // Default centering for shirts, mugs, cards, etc.
+  if (sizeMode === 'large') {
+    return {
+      containerClass: "absolute inset-0 flex items-center justify-center p-12",
+      imageClass: "max-w-[70%] max-h-[70%] object-contain"
+    };
+  }
+  if (sizeMode === 'small') {
+    return {
+      containerClass: "absolute inset-0 flex items-center justify-center p-6",
+      imageClass: "max-w-[70%] max-h-[70%] object-contain"
+    };
+  }
+  return {
+    containerClass: "absolute inset-0 flex items-center justify-center p-8",
+    imageClass: "max-w-[60%] max-h-[60%] object-contain"
+  };
+};
+
 export const getProductType = (title: string): string => {
   const lower = title.toLowerCase();
   if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'hoodie';
