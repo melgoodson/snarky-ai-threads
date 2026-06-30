@@ -758,11 +758,48 @@ const Checkout = () => {
                       )}
                       {/* Item details */}
                       <div className="flex gap-4">
-                        <img
-                          src={imageUrl}
-                          alt={item.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
+                        {(() => {
+                          const hash = item.designImageUrl ? getSimpleHash(item.designImageUrl) : '';
+                          const sessionMockup = hash ? (sessionStorage.getItem(`custom_mockup_${hash}`) || '') : '';
+                          const activeMockup = sessionMockup || item.mockupUrl;
+
+                          if (activeMockup) {
+                            return (
+                              <img
+                                src={activeMockup}
+                                alt={item.title}
+                                className="w-16 h-16 object-cover rounded border border-border/50 flex-shrink-0"
+                              />
+                            );
+                          }
+                          if (item.productImageUrl && item.designImageUrl) {
+                            const overlay = getOverlayStyle(item.title, 'small');
+                            return (
+                              <div className="w-16 h-16 relative aspect-square overflow-hidden rounded border border-border/50 bg-muted flex-shrink-0">
+                                <img
+                                  src={item.productImageUrl}
+                                  alt={item.title}
+                                  className="h-full w-full object-cover"
+                                />
+                                <div className={overlay.containerClass}>
+                                  <img
+                                    src={item.designImageUrl}
+                                    alt={item.title}
+                                    className={`${overlay.imageClass} opacity-90`}
+                                    style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.15))", mixBlendMode: "multiply" }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          }
+                          return (
+                            <img
+                              src={imageUrl || '/placeholder.svg'}
+                              alt={item.title}
+                              className="w-16 h-16 object-cover rounded border border-border/50 flex-shrink-0"
+                            />
+                          );
+                        })()}
                         <div className="flex-1">
                           <p className="font-bold text-sm">{item.title}</p>
                           <p className="text-xs text-muted-foreground">
