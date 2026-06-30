@@ -464,7 +464,7 @@ const DesignDetail = () => {
                                     src={resolveDesignImage(design.image_url)}
                                     alt="Design on product"
                                     className={`${overlay.imageClass} opacity-90`}
-                                    style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.3))" }}
+                                    style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.3))", mixBlendMode: "multiply" }}
                                   />
                                 </div>
                               );

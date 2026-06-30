@@ -179,7 +179,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                           src={newItem.designImageUrl}
                           alt={newItem.title}
                           className={`${overlay.imageClass} opacity-90`}
-                          style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.15))" }}
+                          style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.15))", mixBlendMode: "multiply" }}
                         />
                       </div>
                     </div>

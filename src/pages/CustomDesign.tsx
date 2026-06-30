@@ -545,17 +545,33 @@ export default function CustomDesign() {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const imageUrl = event.target?.result as string;
-      setUploadedDesign(imageUrl);
-      setSavedDesignId(null);
-      setDesignDraft({
-        imageUrl,
-        promptText: "Uploaded design",
-        createdAt: new Date(),
-      });
-      toast.success("Design uploaded! Review, save, and continue.");
-      setCurrentStep('approve');
+      setGeneratingDesign(true);
+      try {
+        const cleanedImage = await removeWhiteBackground(imageUrl);
+        setUploadedDesign(cleanedImage);
+        setSavedDesignId(null);
+        setDesignDraft({
+          imageUrl: cleanedImage,
+          promptText: "Uploaded design",
+          createdAt: new Date(),
+        });
+        toast.success("Design uploaded! White background removed.");
+        setCurrentStep('approve');
+      } catch (err) {
+        console.error("Failed to clean background:", err);
+        setUploadedDesign(imageUrl);
+        setSavedDesignId(null);
+        setDesignDraft({
+          imageUrl,
+          promptText: "Uploaded design",
+          createdAt: new Date(),
+        });
+        setCurrentStep('approve');
+      } finally {
+        setGeneratingDesign(false);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -1733,7 +1749,7 @@ export default function CustomDesign() {
                                             src={approvedDesign.imageUrl}
                                             alt="Your design"
                                             className={`${overlay.imageClass} opacity-90`}
-                                            style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                            style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))", mixBlendMode: "multiply" }}
                                           />
                                         </div>
                                       );
@@ -1927,7 +1943,7 @@ export default function CustomDesign() {
                                               src={approvedDesign.imageUrl}
                                               alt="Your design"
                                               className={`${overlay.imageClass} opacity-90`}
-                                              style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                              style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))", mixBlendMode: "multiply" }}
                                             />
                                           </div>
                                         );

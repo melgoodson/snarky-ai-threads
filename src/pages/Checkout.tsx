@@ -748,7 +748,7 @@ const Checkout = () => {
                                     src={designPreviewSrc}
                                     alt={`${item.title} custom design`}
                                     className={`${overlay.imageClass} opacity-90`}
-                                    style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                    style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))", mixBlendMode: "multiply" }}
                                   />
                                 </div>
                               );

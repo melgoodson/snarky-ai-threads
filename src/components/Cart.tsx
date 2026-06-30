@@ -126,7 +126,7 @@ export const Cart = () => {
                                   src={item.designImageUrl}
                                   alt={`${item.title} custom design`}
                                   className={`${overlay.imageClass} opacity-90`}
-                                  style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }}
+                                  style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))", mixBlendMode: "multiply" }}
                                 />
                               </div>
                             );
@@ -162,7 +162,7 @@ export const Cart = () => {
                                     src={item.designImageUrl}
                                     alt={item.title}
                                     className={`${overlay.imageClass} opacity-90`}
-                                    style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.15))" }}
+                                    style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.15))", mixBlendMode: "multiply" }}
                                   />
                                 </div>
                               </div>
