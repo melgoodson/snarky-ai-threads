@@ -41,6 +41,75 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 
 type CheckoutItem = CartItem;
 
+interface AddressSuggestion {
+  display: string;
+  address1: string;
+  city: string;
+  state: string;
+  zip: string;
+}
+
+const US_STATES = [
+  { val: 'AL', name: 'Alabama' },
+  { val: 'AK', name: 'Alaska' },
+  { val: 'AZ', name: 'Arizona' },
+  { val: 'AR', name: 'Arkansas' },
+  { val: 'CA', name: 'California' },
+  { val: 'CO', name: 'Colorado' },
+  { val: 'CT', name: 'Connecticut' },
+  { val: 'DE', name: 'Delaware' },
+  { val: 'FL', name: 'Florida' },
+  { val: 'GA', name: 'Georgia' },
+  { val: 'HI', name: 'Hawaii' },
+  { val: 'ID', name: 'Idaho' },
+  { val: 'IL', name: 'Illinois' },
+  { val: 'IN', name: 'Indiana' },
+  { val: 'IA', name: 'Iowa' },
+  { val: 'KS', name: 'Kansas' },
+  { val: 'KY', name: 'Kentucky' },
+  { val: 'LA', name: 'Louisiana' },
+  { val: 'ME', name: 'Maine' },
+  { val: 'MD', name: 'Maryland' },
+  { val: 'MA', name: 'Massachusetts' },
+  { val: 'MI', name: 'Michigan' },
+  { val: 'MN', name: 'Minnesota' },
+  { val: 'MS', name: 'Mississippi' },
+  { val: 'MO', name: 'Missouri' },
+  { val: 'MT', name: 'Montana' },
+  { val: 'NE', name: 'Nebraska' },
+  { val: 'NV', name: 'Nevada' },
+  { val: 'NH', name: 'New Hampshire' },
+  { val: 'NJ', name: 'New Jersey' },
+  { val: 'NM', name: 'New Mexico' },
+  { val: 'NY', name: 'New York' },
+  { val: 'NC', name: 'North Carolina' },
+  { val: 'ND', name: 'North Dakota' },
+  { val: 'OH', name: 'Ohio' },
+  { val: 'OK', name: 'Oklahoma' },
+  { val: 'OR', name: 'Oregon' },
+  { val: 'PA', name: 'Pennsylvania' },
+  { val: 'RI', name: 'Rhode Island' },
+  { val: 'SC', name: 'South Carolina' },
+  { val: 'SD', name: 'South Dakota' },
+  { val: 'TN', name: 'Tennessee' },
+  { val: 'TX', name: 'Texas' },
+  { val: 'UT', name: 'Utah' },
+  { val: 'VT', name: 'Vermont' },
+  { val: 'VA', name: 'Virginia' },
+  { val: 'WA', name: 'Washington' },
+  { val: 'WV', name: 'West Virginia' },
+  { val: 'WI', name: 'Wisconsin' },
+  { val: 'WY', name: 'Wyoming' }
+];
+
+const getStateAbbreviation = (stateName: string): string => {
+  const cleanName = stateName.trim().toLowerCase();
+  const found = US_STATES.find(
+    st => st.name.toLowerCase() === cleanName || st.val.toLowerCase() === cleanName
+  );
+  return found ? found.val : '';
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
@@ -64,15 +133,123 @@ const Checkout = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [showPopupAlert, setShowPopupAlert] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.trim().length < 5) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
+      if (res.ok) {
+        const data = await res.json();
+        const items: AddressSuggestion[] = [];
+        
+        for (const feature of data.features || []) {
+          const props = feature.properties;
+          if (!props) continue;
+          
+          const countryCode = props.countrycode || props.country || '';
+          const isUS = countryCode.toLowerCase().includes('us') || countryCode.toLowerCase().includes('united states');
+          if (!isUS) continue;
+
+          const houseNumber = props.housenumber || '';
+          const street = props.street || '';
+          const road = props.road || '';
+          const streetName = street || road || props.name || '';
+          const address1 = houseNumber ? `${houseNumber} ${streetName}` : streetName;
+          
+          if (!address1) continue;
+
+          const city = props.city || props.town || props.village || props.county || '';
+          const stateName = props.state || '';
+          const stateAbbr = getStateAbbreviation(stateName);
+          const zip = props.postcode || '';
+
+          const displayParts = [
+            address1,
+            city,
+            stateAbbr || stateName,
+            zip
+          ].filter(Boolean);
+
+          items.push({
+            display: displayParts.join(', '),
+            address1,
+            city,
+            state: stateAbbr,
+            zip
+          });
+        }
+        setSuggestions(items);
+        setShowSuggestions(true);
+      }
+    } catch (err) {
+      console.error('Error fetching address suggestions:', err);
+    }
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, address1: val }));
+    setErrors(prev => ({ ...prev, address1: undefined }));
+    fetchAddressSuggestions(val);
+  };
+
+  const handleZipInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, zip: val }));
+    setErrors(prev => ({ ...prev, zip: undefined }));
+
+    const cleanZip = val.trim();
+    if (/^\d{5}$/.test(cleanZip)) {
+      handleZipLookup(cleanZip);
+    }
+  };
+
+  const handleZipLookup = async (zipCode: string) => {
+    try {
+      const response = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
+      if (response.ok) {
+        const data = await response.json();
+        const place = data.places?.[0];
+        if (place) {
+          const city = place['place name'];
+          const stateAbbr = place['state abbreviation'];
+          setFormData(prev => ({
+            ...prev,
+            city: city || prev.city,
+            state: stateAbbr || prev.state,
+          }));
+          toast.success(`ZIP recognized: ${city}, ${stateAbbr}`);
+        }
+      }
+    } catch (err) {
+      console.error('ZIP lookup failed:', err);
+    }
+  };
+
+  const loadGuestCheckoutData = () => {
+    const stored = localStorage.getItem("customDesign");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      console.log('Guest checkout: loaded custom design:', parsed);
+      setDesignData(parsed);
+    } else if (items.length === 0) {
+      navigate('/');
+    }
+  };
 
   useEffect(() => {
     // Use onAuthStateChange with INITIAL_SESSION to wait for Supabase to confirm auth
-    // before deciding to redirect. This prevents the flash where getUser() returns null
-    // momentarily right after an email-confirmation link is processed.
+    // before deciding to redirect.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'INITIAL_SESSION') {
         if (!session?.user) {
-          navigate('/auth', { state: { returnTo: '/checkout' } });
+          // Allow guest checkout instead of forcing login redirect
+          loadGuestCheckoutData();
         } else {
           checkAuthAndLoadData(session.user);
         }
@@ -383,15 +560,41 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                <div>
+                <div className="relative">
                   <Label htmlFor="address1">Address Line 1 *</Label>
                   <Input
                     id="address1"
                     name="address1"
                     value={formData.address1}
-                    onChange={handleChange}
+                    onChange={handleAddressChange}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 250)}
                     required
+                    autoComplete="off"
                   />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-card text-card-foreground border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {suggestions.map((sug, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              address1: sug.address1,
+                              city: sug.city || prev.city,
+                              state: sug.state || prev.state,
+                              zip: sug.zip || prev.zip,
+                            }));
+                            setShowSuggestions(false);
+                            setSuggestions([]);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors border-b last:border-b-0 border-border"
+                        >
+                          {sug.display}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   {errors.address1 && (
                     <p className="text-sm text-destructive mt-1">{errors.address1}</p>
                   )}
@@ -423,13 +626,23 @@ const Checkout = () => {
                   </div>
                   <div>
                     <Label htmlFor="state">State *</Label>
-                    <Input
+                    <select
                       id="state"
                       name="state"
                       value={formData.state}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const { name, value } = e.target;
+                        setFormData(prev => ({ ...prev, [name]: value }));
+                        setErrors(prev => ({ ...prev, [name]: undefined }));
+                      }}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       required
-                    />
+                    >
+                      <option value="">Select State</option>
+                      {US_STATES.map(st => (
+                        <option key={st.val} value={st.val}>{st.name}</option>
+                      ))}
+                    </select>
                     {errors.state && (
                       <p className="text-sm text-destructive mt-1">{errors.state}</p>
                     )}
@@ -443,7 +656,7 @@ const Checkout = () => {
                       id="zip"
                       name="zip"
                       value={formData.zip}
-                      onChange={handleChange}
+                      onChange={handleZipInput}
                       required
                     />
                     {errors.zip && (

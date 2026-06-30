@@ -765,6 +765,15 @@ export default function CustomDesign() {
   const generateMockup = async () => {
     if (!approvedDesign || !selectedProduct || !selectedVariant) return;
 
+    const isUploaded = approvedDesign.promptText === "Uploaded design" || !!uploadedDesign;
+    if (isUploaded) {
+      // For uploaded designs, bypass AI mockup generator to preserve original artwork exactly
+      setMockupPreview(null);
+      setMockupError(null);
+      setCurrentStep('review');
+      return;
+    }
+
     // Blanket uses edge-to-edge sublimation — CSS overlay is the correct preview.
     // Skip AI mockup entirely to avoid "AI busy" errors.
     if (selectedProduct.title.toLowerCase().includes('blanket')) {
