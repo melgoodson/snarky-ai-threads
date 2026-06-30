@@ -24,7 +24,8 @@ import {
   cleanProductTitle,
   isRealColor,
   getAvailableOptions,
-  getOverlayStyle
+  getOverlayStyle,
+  getSimpleHash
 } from "@/lib/variantUtils";
 import { saveToIndexedDB, getFromIndexedDB, removeFromIndexedDB } from "@/utils/storage";
 
@@ -1083,9 +1084,10 @@ export default function CustomDesign() {
       // Add items to cart based on quantity
       // NOTE: CartContext strips data: URLs before saving to localStorage (localStorage quota).
       // So we stash the AI mockup in sessionStorage so Checkout can retrieve it directly.
-      if (mockupPreview && mockupPreview.startsWith('data:')) {
+      if (mockupPreview) {
         try {
-          sessionStorage.setItem('custom_mockup_preview', mockupPreview);
+          const hash = getSimpleHash(confirmedDesignUrl);
+          sessionStorage.setItem(`custom_mockup_${hash}`, mockupPreview);
         } catch {
           // sessionStorage quota exceeded — skip, Checkout will fall back to Printify mockup
         }

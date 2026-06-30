@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTikTokTracking } from '@/hooks/useTikTokTracking';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { getOverlayStyle } from '@/lib/variantUtils';
+import { getOverlayStyle, getSimpleHash } from '@/lib/variantUtils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -712,9 +712,8 @@ const Checkout = () => {
                   // Use a real mockup if available. Otherwise compose the product base image
                   // with the custom artwork so checkout does not show raw artwork alone.
                   const legacyDesignData = items.length === 0 ? designData : null;
-                  // AI mockup (data: URL) is stripped from localStorage by CartContext to save quota.
-                  // We stash it in sessionStorage in CustomDesign just before navigating here — read it back.
-                  const sessionMockup = sessionStorage.getItem('custom_mockup_preview') || '';
+                  const hash = item.designImageUrl ? getSimpleHash(item.designImageUrl) : '';
+                  const sessionMockup = hash ? (sessionStorage.getItem(`custom_mockup_${hash}`) || '') : '';
                   const mockupSrc = sessionMockup || item.mockupUrl || legacyDesignData?.mockupUrl;
                   const productPreviewSrc = item.productImageUrl || legacyDesignData?.productImageUrl;
                   const designPreviewSrc = item.designImageUrl;
