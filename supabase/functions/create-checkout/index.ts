@@ -37,7 +37,7 @@ serve(async (req) => {
       }
     }
 
-    const { cartItems, shippingAddress, guestEmail } = await req.json();
+    const { cartItems, shippingAddress, guestEmail, couponCode } = await req.json();
 
     // Use authenticated email or fall back to guest email from form
     const email = userEmail || guestEmail;
@@ -52,7 +52,14 @@ serve(async (req) => {
     console.log("Checkout email:", email, "| User ID:", userId || "GUEST");
 
     // Calculate total
-    const totalAmount = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    let totalAmount = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+
+    const isTestPurchase = couponCode?.trim().toUpperCase() === "TESTPURCHASE";
+    if (isTestPurchase) {
+      console.log("Applying TESTPURCHASE coupon discount. Setting totalAmount to 0.50 USD");
+      totalAmount = 0.50;
+    }
+
 
     // Create order in database FIRST to avoid Stripe metadata size limits
     const { data: orderData, error: orderError } = await supabaseClient
@@ -150,20 +157,40 @@ serve(async (req) => {
 
     // Convert cart items to Stripe line items using dynamic price_data
     // This supports all product types without needing pre-created Stripe price IDs
-    const lineItems = cartItems.map((item: any) => {
-      const unitAmount = Math.round((Number(item.price) || 0) * 100); // Stripe expects cents
-
-      return {
+    let lineItems;
+    if (isTestPurchase) {
+      // Create a single consolidated line item for the test checkout to guarantee total is exactly $0.50
+      // This prevents potential stripe issues with minimum amount checks and fractional cent adjustments
+      const titleDescription = cartItems.length === 1 
+        ? `${cartItems[0].title || "Custom Product"} (TESTPURCHASE)` 
+        : "Test Purchase Discounted Order";
+        
+      lineItems = [{
         price_data: {
           currency: "usd",
           product_data: {
-            name: item.title || "Custom Product",
+            name: titleDescription,
           },
-          unit_amount: unitAmount,
+          unit_amount: 50, // 0.50 USD in cents
         },
-        quantity: item.quantity,
-      };
-    });
+        quantity: 1,
+      }];
+    } else {
+      lineItems = cartItems.map((item: any) => {
+        const unitAmount = Math.round((Number(item.price) || 0) * 100); // Stripe expects cents
+
+        return {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: item.title || "Custom Product",
+            },
+            unit_amount: unitAmount,
+          },
+          quantity: item.quantity,
+        };
+      });
+    }
 
     console.log("Line items:", lineItems);
 

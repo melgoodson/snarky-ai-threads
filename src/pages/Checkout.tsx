@@ -136,6 +136,30 @@ const Checkout = () => {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  const handleApplyCoupon = () => {
+    if (appliedCoupon) return;
+    const cleaned = couponCode.trim().toUpperCase();
+    if (cleaned === 'TESTPURCHASE') {
+      setAppliedCoupon(cleaned);
+      setCouponError(null);
+      toast.success("Test coupon applied! Total reduced to $0.50");
+    } else {
+      setCouponError("Invalid promo code");
+      toast.error("Invalid promo code");
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError(null);
+  };
+
+
   const fetchAddressSuggestions = async (query: string) => {
     if (query.trim().length < 5) {
       setSuggestions([]);
@@ -340,6 +364,10 @@ const Checkout = () => {
     0
   );
 
+  const discountAmount = appliedCoupon ? Math.max(0, effectiveTotal - 0.50) : 0;
+  const finalTotal = appliedCoupon ? 0.50 : effectiveTotal;
+
+
   // Track InitiateCheckout
   useEffect(() => {
     if (checkoutItems.length > 0) {
@@ -386,7 +414,7 @@ const Checkout = () => {
 
     // Track AddPaymentInfo
     trackTikTokEvent('AddPaymentInfo', {
-      value: effectiveTotal,
+      value: finalTotal,
       currency: 'USD',
       contents: checkoutItems.map(item => ({
         price: item.price,
@@ -443,6 +471,7 @@ const Checkout = () => {
             cartItems: checkoutItems,
             shippingAddress: formData,
             guestEmail: formData.email,
+            couponCode: appliedCoupon || undefined,
           }),
         }
       );
@@ -459,7 +488,7 @@ const Checkout = () => {
       if (checkoutData?.url) {
         // Track PlaceAnOrder
         trackTikTokEvent('PlaceAnOrder', {
-          value: effectiveTotal,
+          value: finalTotal,
           currency: 'USD',
           contents: checkoutItems.map(item => ({
             price: item.price,
@@ -822,18 +851,64 @@ const Checkout = () => {
                     </div>
                   );
                 })}
+                
+                {/* Coupon Code Input */}
+                <div className="border-t pt-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Promo Code"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value);
+                        setCouponError(null);
+                      }}
+                      className="uppercase"
+                      disabled={loading || !!appliedCoupon}
+                    />
+                    <Button
+                      type="button"
+                      variant={appliedCoupon ? "outline" : "default"}
+                      onClick={handleApplyCoupon}
+                      disabled={loading || !couponCode.trim()}
+                    >
+                      {appliedCoupon ? 'Applied' : 'Apply'}
+                    </Button>
+                  </div>
+                  {couponError && (
+                    <p className="text-xs text-destructive mt-1">{couponError}</p>
+                  )}
+                  {appliedCoupon && (
+                    <div className="flex justify-between items-center mt-2 bg-green-500/10 text-green-700 dark:text-green-400 px-3 py-1.5 rounded-md text-xs font-semibold border border-green-500/20">
+                      <span>Promo "{appliedCoupon}" applied</span>
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="text-green-800 dark:text-green-300 hover:underline font-bold"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
                     <span>${effectiveTotal.toFixed(2)}</span>
                   </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-sm text-green-600 font-semibold">
+                      <span>Discount ({appliedCoupon})</span>
+                      <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
                     <span className="text-green-600 font-semibold">FREE</span>
                   </div>
                   <div className="flex justify-between text-lg font-black border-t pt-2">
                     <span>TOTAL</span>
-                    <span>${effectiveTotal.toFixed(2)}</span>
+                    <span>${finalTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
