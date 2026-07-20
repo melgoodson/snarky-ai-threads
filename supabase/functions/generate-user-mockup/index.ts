@@ -187,6 +187,7 @@ STRICT RULES:
 4. Background: clean white studio background, no props, no models, no shadows extending to edges.
 5. Output a single product photo only. No before/after, no collage, no multiple angles.
 6. Do NOT invent any text, logos, or new design elements not present in Image 1.
+7. Show the ENTIRE product in the frame. Do NOT crop, cut off, or zoom in closely on the product. The entire garment (sleeves, hood, shoulders, and waist) must be fully visible and centered within the image frame.
 
 OUTPUT: One square-format photorealistic ${color} ${product} on a white background with the artwork printed on it.`;
 

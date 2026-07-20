@@ -102,11 +102,26 @@ const DesignDetail = () => {
 
     // Resolve the design image path
     const designSrc = resolveDesignImage(design.image_url);
-    // Resolve the product reference image (Printify catalog URL — already public)
+    // Resolve the product reference image (Printify catalog URL — already public, matching variant if possible)
     const productImgRaw = (() => {
-      const img = product.images?.[0];
-      if (!img) return '';
-      return typeof img === 'string' ? img : img.src || img.url || '';
+      if (!product.images || product.images.length === 0) return '';
+      let img = product.images[0];
+      if (selectedVariant) {
+        const variantIdNum = Number(selectedVariant.id);
+        const matching = product.images.filter((i: any) => 
+          i && i.variant_ids && i.variant_ids.includes(variantIdNum)
+        );
+        if (matching.length > 0) {
+          const front = matching.find((i: any) => 
+            i.position === 'front' || 
+            (i.src && i.src.toLowerCase().includes('front')) ||
+            (i.camera_label && i.camera_label.toLowerCase().includes('front'))
+          );
+          img = front || matching[0];
+        }
+      }
+      const rawSrc = typeof img === 'string' ? img : img.src || img.url || '';
+      return getBlankMockup(rawSrc, product.title);
     })();
 
     // Convert the design image to base64 in the browser so the edge function can access it
@@ -308,23 +323,37 @@ const DesignDetail = () => {
     return { price: retail, originalPrice: retail + 20 };
   };
 
-  // Find variant that matches all selected attributes
+  // Find variant that matches all selected attributes (with fallbacks for donor mismatches)
   const findMatchingVariant = (productId: string, size: string | null, color: string | null, style: string | null) => {
     const product = products.find((p) => p.id === productId);
     if (!product) return null;
 
     const enabledVariants = product.variants?.filter((v: any) => v.is_enabled) || [];
+    if (enabledVariants.length === 0) return null;
 
     // Collect all selected attributes
     const selected = [size, color, style].filter(Boolean) as string[];
     if (selected.length === 0) return null;
 
-    return enabledVariants.find((v: any) => {
+    // 1. Exact match — all selected attributes present in variant title
+    const exact = enabledVariants.find((v: any) => {
       const parts = v.title.split(' / ').map((p: string) => p.trim());
-      // Filter out quantity parts for matching
       const meaningful = parts.filter((p: string) => !looksLikeQuantity(p));
       return selected.every((sel) => meaningful.includes(sel));
     });
+    if (exact) return exact;
+
+    // 2. Size-only match — donor may not have the exact color/size combo
+    if (size) {
+      const sizeMatch = enabledVariants.find((v: any) => {
+        const parts = v.title.split(' / ').map((p: string) => p.trim());
+        return parts.some((p: string) => p === size);
+      });
+      if (sizeMatch) return sizeMatch;
+    }
+
+    // 3. Any enabled variant — for products with minimal variant config
+    return enabledVariants[0];
   };
 
   // Try to auto-resolve variant when any selection changes
@@ -449,26 +478,60 @@ const DesignDetail = () => {
                     <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
                       {(() => {
                         const product = products.find((p) => p.id === selectedProduct);
-                        const productImg = product?.images?.[0];
-                        const productSrc = productImg
-                          ? (typeof productImg === 'string' ? productImg : productImg.src || productImg.url)
-                          : null;
+                        // Find the image matching the selected variant, or fallback to the first image
+                        const productImg = (() => {
+                          if (!product?.images || product.images.length === 0) return null;
+                          if (!selectedVariant) return product.images[0];
+                          const variantIdNum = Number(selectedVariant.id);
+                          const matching = product.images.filter((img: any) => 
+                            img && img.variant_ids && img.variant_ids.includes(variantIdNum)
+                          );
+                          if (matching.length === 0) return product.images[0];
+                          
+                          // Prefer front view
+                          const front = matching.find((img: any) => 
+                            img.position === 'front' || 
+                            (img.src && img.src.toLowerCase().includes('front')) ||
+                            (img.camera_label && img.camera_label.toLowerCase().includes('front'))
+                          );
+                          return front || matching[0];
+                        })();
+                        const productSrc = (() => {
+                          if (!productImg) return null;
+                          const rawSrc = typeof productImg === 'string' ? productImg : productImg.src || productImg.url || '';
+                          return getBlankMockup(rawSrc, product.title);
+                        })();
                         return productSrc ? (
                           <>
-                            <img src={productSrc} alt="Product" className="w-full h-full object-cover" />
+                            <img src={productSrc} alt="Product" className="w-full h-full object-contain" />
                             {(() => {
-                              const overlay = getOverlayStyle(product?.title || "");
-                              return (
-                                <div className={overlay.containerClass}>
-                                  <img
-                                    src={resolveDesignImage(design.image_url)}
-                                    alt="Design on product"
-                                    className={`${overlay.imageClass} opacity-90`}
-                                    style={{ filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.3))", mixBlendMode: "multiply" }}
-                                  />
-                                </div>
-                              );
-                            })()}
+                               const overlay = getOverlayStyle(product?.title || "");
+                               // Determine blend mode based on selected product color
+                               const colorHex = selectedColor ? (COLOR_HEX_MAP[selectedColor] || "#FFFFFF") : "#FFFFFF";
+                               const r = parseInt(colorHex.slice(1, 3), 16);
+                               const g = parseInt(colorHex.slice(3, 5), 16);
+                               const b = parseInt(colorHex.slice(5, 7), 16);
+                               const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                               const isDarkProduct = luminance < 0.45;
+                               const resolvedSrc = resolveDesignImage(design.image_url);
+                               const isPng = resolvedSrc.toLowerCase().endsWith('.png');
+                               return (
+                                 <div className={overlay.containerClass}>
+                                   <img
+                                     src={resolvedSrc}
+                                     alt="Design on product"
+                                     className={`${overlay.imageClass} rounded-lg`}
+                                     style={{
+                                       filter: isDarkProduct
+                                         ? "drop-shadow(0px 2px 4px rgba(0,0,0,0.4))"
+                                         : "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))",
+                                       mixBlendMode: isPng ? "normal" : (isDarkProduct ? "normal" : "multiply"),
+                                       opacity: isPng ? 0.98 : (isDarkProduct ? 0.95 : 0.92),
+                                     }}
+                                   />
+                                 </div>
+                               );
+                             })()}
                           </>
                         ) : (
                           <img

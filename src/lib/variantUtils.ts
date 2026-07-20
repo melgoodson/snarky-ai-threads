@@ -104,7 +104,7 @@ export const getUniqueColors = (variants: any[], productTitle?: string): string[
 
   const unique = [...new Set(colors)].filter(color => {
     if (isGreetingCard) {
-      return color.trim().length > 0 && !looksLikeSize(color) && !looksLikeQuantity(color);
+      return color.trim().length > 0 && !looksLikeSize(color) && !looksLikeQuantity(color) && !looksLikeStyle(color);
     }
     if (isMug) {
       return color.trim().length > 0 && !looksLikeQuantity(color);
@@ -218,6 +218,7 @@ export const COLOR_HEX_MAP: Record<string, string> = {
   "Orange": "#FF6B35",
   "Purple": "#6B3FA0",
   "Light Pink": "#FFB6C1",
+  "Pink": "#FFC0CB",
   "Daisy": "#F8D568",
   "Ash": "#B2BEB5",
   "Gold": "#FFD700",
@@ -324,15 +325,22 @@ export const getProductType = (title: string): string => {
 };
 
 export const assignDonorVariants = (allProducts: any[]): any[] => {
-  // Find donor products (those with the most enabled variants per type)
+  // Find donor products (balancing variants count and image presence to ensure we get color mockups)
   const donorByType: Record<string, any> = {};
+  const bestScore: Record<string, number> = {};
+
   for (const p of allProducts) {
     const type = getProductType(p.title);
     const enabledCount = (p.variants || []).filter((v: any) => v.is_enabled).length;
+    const imageCount = p.images?.length || 0;
+    
     if (enabledCount > 0) {
-      const currentDonor = donorByType[type];
-      const currentDonorCount = currentDonor ? (currentDonor.variants || []).filter((v: any) => v.is_enabled).length : 0;
-      if (enabledCount > currentDonorCount) {
+      // Score = variants count * 1.5 if it has template images (> 5 images), else * 1.0
+      const score = enabledCount * (imageCount > 5 ? 1.5 : 1.0);
+      const currentBest = bestScore[type] || 0;
+      
+      if (score > currentBest) {
+        bestScore[type] = score;
         donorByType[type] = p;
       }
     }
@@ -350,8 +358,11 @@ export const assignDonorVariants = (allProducts: any[]): any[] => {
       const targetEnabledCount = p.variants.filter((v: any) => v.is_enabled).length;
       
       if (donorEnabledCount > targetEnabledCount) {
-        console.log(`Assigning ${donorEnabledCount} variants from "${donor.title}" to "${p.title}"`);
+        console.log(`Assigning ${donorEnabledCount} variants and images from "${donor.title}" to "${p.title}"`);
         p.variants = [...donor.variants];
+        if (donor.images) {
+          p.images = [...donor.images];
+        }
       }
     }
   }
@@ -379,6 +390,12 @@ export const cleanProductTitle = (title: string): string => {
   if (lower.includes('blanket')) {
     return 'Personalized Blanket';
   }
+  if (lower.includes('hoodie') || lower.includes('sweatshirt')) {
+    return 'Unisex Hoodie';
+  }
+  if (lower.includes('tee') || lower.includes('shirt')) {
+    return 'Unisex Jersey Tee';
+  }
   // Strip anything after a pipe or slash if present
   if (cleaned.includes('|')) {
     cleaned = cleaned.split('|')[0].trim();
@@ -386,7 +403,8 @@ export const cleanProductTitle = (title: string): string => {
   if (cleaned.includes('/')) {
     cleaned = cleaned.split('/')[0].trim();
   }
-  cleaned = cleaned.replace(/^custom\s+/i, '');
+  cleaned = cleaned.replace(/^(test|custom)\s+/i, '');
+  cleaned = cleaned.replace(/^(test|custom)\s+/i, '');
   return cleaned;
 };
 

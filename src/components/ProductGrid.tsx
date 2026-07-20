@@ -85,11 +85,12 @@ const MONTHLY_FEATURED: Record<number, {
   },
   6: { // July
     headline: "SUMMER SNARK",
-    subheadline: "Bold summer vibes. Snarky tees, custom hoodies for chilly nights, and gifts that pop.",
+    subheadline: "Ice Cream Day meets Parents Day. Snarky summer designs for patriots, parents, and people who need more coffee.",
     themes: [
-      { label: "🏖️ Summer Attitude", keywords: "snarky t shirts, attitude summer tee, bold design shirt" },
-      { label: "💀 Dark Humor", keywords: "dark humor shirt, twisted humor apparel" },
-      { label: "🧥 Custom Hoodies", keywords: "personalized hoodie, custom print hoodie" },
+      { label: "🍦 Ice Cream Day", keywords: "us ice cream day shirt, funny ice cream tee, patriotic summer design" },
+      { label: "👨‍👩‍👧 Parents Day", keywords: "parents day shirt, snarky parenting tee, funny mom dad gift" },
+      { label: "🦝 Snarky Parenting", keywords: "worlds okayest parent, parenting humor shirt, caffeine and chaos" },
+      { label: "🇺🇸 Patriotic Humor", keywords: "red white and blue funny shirt, patriotic attitude tee, 4th of july humor" },
       { label: "🎨 All Designs", keywords: "snarky designs, sarcastic quote apparel" },
     ],
   },
