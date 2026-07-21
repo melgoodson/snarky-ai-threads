@@ -585,13 +585,13 @@ const AiCustomClothing = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>AI Custom Clothing & One-of-One Gifts | Snarky Azz Humans</title>
+        <title>AI Custom Clothing &amp; Personalized Gifts | Snarky</title>
         <meta
           name="description"
-          content="Turn trending meme-worthy moments, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
+          content="Turn inside jokes, pet photos, work rants, and wild ideas into one-of-one AI-designed shirts, mugs, journals, totes, and custom gifts."
         />
         <link rel="canonical" href="https://www.snarkyazzhumans.com/ai-custom-clothing" />
-        <meta property="og:title" content="AI Custom Clothing & One-of-One Gifts | Snarky Azz Humans" />
+        <meta property="og:title" content="AI Custom Clothing &amp; Personalized Gifts | Snarky" />
         <meta
           property="og:description"
           content="Turn trending meme-worthy moments, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."

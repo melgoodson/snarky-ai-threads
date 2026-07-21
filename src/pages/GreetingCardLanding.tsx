@@ -22,9 +22,9 @@ const GreetingCardLanding = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Snarky Greeting Cards | Sarcastic Cards for Birthdays & Holidays</title>
+                <title>Funny &amp; Sarcastic Greeting Cards | Snarky</title>
                 <meta name="description" content="Shop premium 5x7 snarky greeting cards. Funny, bold, and sarcastic cards for birthdays, holidays, weddings, and when Hallmark is too wholesome." />
-                <link rel="canonical" href="https://snarkyazzhumans.com/greeting-cards" />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/greeting-cards" />
             </Helmet>
             <Header />
             <main className="flex-1">

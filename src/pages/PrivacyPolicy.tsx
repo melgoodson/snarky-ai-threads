@@ -1,9 +1,15 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 const PrivacyPolicy = () => {
     return (
         <div className="min-h-screen flex flex-col">
+            <Helmet>
+                <title>Privacy Policy | Snarky Apparel</title>
+                <meta name="description" content="Read the Snarky A$$ Apparel Privacy Policy. Learn how we protect your personal data, secure payment transactions, and handle customer information." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/privacy" />
+            </Helmet>
             <Header />
             <main className="flex-1 bg-background">
                 <section className="py-16 md:py-24">

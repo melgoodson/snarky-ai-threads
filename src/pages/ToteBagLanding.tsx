@@ -19,9 +19,9 @@ const ToteBagLanding = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Snarky Tote Bags | Funny Canvas Totes | Snarky A$$ Apparel</title>
-                <meta name="description" content="Carry your attitude everywhere. Shop durable eco-friendly canvas tote bags with bold, snarky, and sarcastic designs." />
-                <link rel="canonical" href="https://snarkyazzhumans.com/tote-bags" />
+                <title>Custom Tote Bags &amp; Canvas Totes | Snarky</title>
+                <meta name="description" content="Shop durable, funny canvas tote bags with sarcastic quotes. Heavy-duty cotton totes perfect for groceries, work, errands, or carrying your attitude." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/tote-bags" />
             </Helmet>
             <Header />
             <main className="flex-1">

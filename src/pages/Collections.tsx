@@ -91,9 +91,9 @@ const Collections = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Shop Snarky Collections | Funny Gifts, Gag Gifts & T-Shirts</title>
-        <meta name="description" content="Browse our collections of funny gifts, gag gifts, white elephant gifts, and sarcastic shirts. Perfect for coworkers, friends, and family who appreciate snark." />
-        <link rel="canonical" href="https://snarkyazzhumans.com/collections" />
+        <title>All Snarky Collections &amp; Funny Gifts | Snarky</title>
+        <meta name="description" content="Browse our complete catalog of funny t-shirts, custom hardcover journals, snarky coffee mugs, hoodies, tote bags, and personalized gag gifts." />
+        <link rel="canonical" href="https://www.snarkyazzhumans.com/collections" />
       </Helmet>
       <Header />
       <main className="flex-1">

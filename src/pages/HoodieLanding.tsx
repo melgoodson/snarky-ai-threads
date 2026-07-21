@@ -19,9 +19,9 @@ const HoodieLanding = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Snarky Hoodies | Sarcastic & Funny Hoodies | Snarky A$$ Apparel</title>
-                <meta name="description" content="Shop premium snarky hoodies. Fleece-lined, cozy, and printed with bold sarcastic designs. Perfect for when you want to be warm and unapproachable." />
-                <link rel="canonical" href="https://snarkyazzhumans.com/hoodies" />
+                <title>Snarky Graphic Hoodies &amp; Sweatshirts | Snarky</title>
+                <meta name="description" content="Premium cozy hoodies printed with sarcastic, snarky, and hilarious designs. Heavy blend fleece built for staying warm while keeping people away." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/hoodies" />
             </Helmet>
             <Header />
             <main className="flex-1">

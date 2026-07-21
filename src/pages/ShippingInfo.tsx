@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -6,6 +7,11 @@ import { Truck, Clock, Globe, Package } from "lucide-react";
 const ShippingInfo = () => {
     return (
         <div className="min-h-screen flex flex-col">
+            <Helmet>
+                <title>Shipping Information &amp; Tracking | Snarky</title>
+                <meta name="description" content="Get details on Snarky A$$ Apparel shipping rates, delivery timelines, fulfillment processes, free shipping over $50, and order tracking." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/shipping" />
+            </Helmet>
             <Header />
             <main className="flex-1 bg-background">
                 <section className="py-16 md:py-24">

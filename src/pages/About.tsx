@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,11 @@ import melFounder from "@/assets/mel-founder.png";
 const About = () => {
     return (
         <div className="min-h-screen flex flex-col">
+            <Helmet>
+                <title>About Us | Snarky Apparel &amp; Veteran-Owned Humor</title>
+                <meta name="description" content="Learn about Snarky A$$ Apparel, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/about" />
+            </Helmet>
             <Header />
             <main className="flex-1 bg-background text-foreground">
                 <section className="py-16 md:py-24 border-b border-border">

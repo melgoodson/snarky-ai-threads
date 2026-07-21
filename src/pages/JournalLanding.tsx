@@ -22,9 +22,9 @@ const JournalLanding = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Custom Hardcover Journals | Personalized Notebooks | Snarky A$$ Apparel</title>
-                <meta name="description" content="Design custom personalized hardcover journals and notebooks. Premium matte finish front and back with 150 ruled pages. The perfect funny or thoughtful gift." />
-                <link rel="canonical" href="https://snarkyazzhumans.com/journals" />
+                <title>Custom Hardcover Journals &amp; Notebooks | Snarky</title>
+                <meta name="description" content="Design custom hardcover journals and notebooks. Premium matte finishes make the perfect personalized gift for writing down all your snarky thoughts." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/journals" />
             </Helmet>
             <Header />
             <main className="flex-1">

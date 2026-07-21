@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -103,6 +104,11 @@ const Designs = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Snarky Graphic Designs &amp; Custom Art | Snarky</title>
+        <meta name="description" content="Explore our library of hilarious graphic snarky designs. Find original artwork ready to print on t-shirts, hoodies, mugs, journals, and totes." />
+        <link rel="canonical" href="https://www.snarkyazzhumans.com/designs" />
+      </Helmet>
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">

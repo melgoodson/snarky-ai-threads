@@ -19,9 +19,9 @@ const MugLanding = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Snarky Coffee Mugs | Funny & Sarcastic Mugs | Snarky A$$ Apparel</title>
-                <meta name="description" content="Start your morning with a hot take. Shop premium 11oz and 15oz ceramic coffee mugs with funny, snarky, and sarcastic designs." />
-                <link rel="canonical" href="https://snarkyazzhumans.com/mugs" />
+                <title>Funny Coffee Mugs &amp; Office Humor | Snarky</title>
+                <meta name="description" content="Start your morning with pure snark. Shop funny, sarcastic ceramic coffee mugs in 11oz and 15oz sizes. Dishwasher &amp; microwave safe office gifts." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/mugs" />
             </Helmet>
             <Header />
             <main className="flex-1">
@@ -31,7 +31,7 @@ const MugLanding = () => {
                     <div className="container px-4 relative z-10">
                         <div className="grid md:grid-cols-2 gap-12 items-center">
                             <div>
-                                <span className="text-sm font-bold text-primary uppercase tracking-widest">Ceramic • 11oz & 15oz</span>
+                                <span className="text-sm font-bold text-primary uppercase tracking-widest">Ceramic • 11oz &amp; 15oz</span>
                                 <h1 className="text-5xl md:text-7xl font-black tracking-tighter mt-4 mb-6">
                                     MOOD <span className="text-primary">MUGS</span>
                                 </h1>

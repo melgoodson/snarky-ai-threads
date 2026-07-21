@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -7,6 +8,11 @@ import { AlertTriangle, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 const Returns = () => {
     return (
         <div className="min-h-screen flex flex-col">
+            <Helmet>
+                <title>Return &amp; Exchange Policy | Snarky Apparel</title>
+                <meta name="description" content="Check our hassle-free return and exchange policy. Learn how Snarky A$$ Apparel handles order replacements, damaged items, and customer satisfaction." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/returns" />
+            </Helmet>
             <Header />
             <main className="flex-1 bg-background">
                 <section className="py-16 md:py-24">

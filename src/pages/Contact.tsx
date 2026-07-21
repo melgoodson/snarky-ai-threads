@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,11 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Contact Us | Snarky Apparel Customer Support</title>
+        <meta name="description" content="Have questions about your order, custom designs, or shipping? Contact the Snarky A$$ Apparel support team for fast assistance within 24-48 hours." />
+        <link rel="canonical" href="https://www.snarkyazzhumans.com/contact" />
+      </Helmet>
       <Header />
       <main className="flex-1 bg-background">
         <section className="py-16 md:py-24">

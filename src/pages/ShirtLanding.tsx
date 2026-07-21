@@ -29,9 +29,9 @@ const ShirtLanding = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Funny T-Shirts & Sarcastic Shirts | Snarky A$$ Apparel</title>
-                <meta name="description" content="Shop premium funny t-shirts and sarcastic shirts. High-quality DTG printed graphic tees built for comfort and laughs." />
-                <link rel="canonical" href="https://snarkyazzhumans.com/shirts" />
+                <title>Funny &amp; Sarcastic T-Shirts | Snarky</title>
+                <meta name="description" content="Shop high-quality sarcastic and funny t-shirts. Heavyweight preshrunk cotton graphic tees with bold attitude for people who refuse boring apparel." />
+                <link rel="canonical" href="https://www.snarkyazzhumans.com/shirts" />
             </Helmet>
             <Header />
             <main className="flex-1">
@@ -103,7 +103,7 @@ const ShirtLanding = () => {
                             BUILT <span className="text-primary">DIFFERENT</span>
                         </h2>
                         <p className="text-muted-foreground text-lg text-center mb-12 font-medium max-w-xl mx-auto">
-                            5.3 oz/yd² preshrunk heavyweight cotton. Seamless double-needle collar. Taped neck & shoulders.
+                            5.3 oz/yd² preshrunk heavyweight cotton. Seamless double-needle collar. Taped neck &amp; shoulders.
                         </p>
                         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                             {[
@@ -201,7 +201,7 @@ const ShirtLanding = () => {
                 </section>
             </main>
             <Footer />
-        </div >
+        </div>
     );
 };
 
