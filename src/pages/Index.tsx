@@ -69,27 +69,27 @@ const Index = () => {
         </div>
         
         {/* Commercial Intent SEO Section */}
-        <section className="container px-4 py-16 bg-muted/30">
-          <div className="max-w-5xl mx-auto space-y-8">
+        <section className="container px-4 py-10 md:py-16 bg-muted/30">
+          <div className="max-w-5xl mx-auto space-y-6 md:space-y-8">
             <div className="text-center">
-              <h2 className="text-3xl font-black mb-4 tracking-tight uppercase">Premium Sarcasm & Unapologetic Gifts</h2>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl font-black mb-3 md:mb-4 tracking-tight uppercase">Premium Sarcasm & Unapologetic Gifts</h2>
+              <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
                 We design high-quality <a href="/shirts" className="text-primary hover:underline font-semibold">sarcastic t-shirts</a> and <a href="/collections" className="text-primary hover:underline font-semibold">premium gag gifts</a> for people who refuse to filter themselves. Whether you're shopping for yourself or trying to find the perfect insult for a friend, we print it on demand and ship it directly to your door.
               </p>
             </div>
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 text-left">
-              <div className="p-6 bg-card rounded-xl border border-border shadow-sm">
-                <h3 className="text-xl font-black mb-3 text-foreground tracking-wide">FUNNY COWORKER MUGS</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">Surviving the 9-to-5 requires caffeine and a thick skin. Our <a href="/mugs" className="text-primary hover:underline">snarky office mugs</a> and apparel make the ultimate <a href="/category/funny-coworker-gifts" className="text-primary hover:underline">funny coworker gifts</a>. Say what you're thinking without getting called into HR.</p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mt-8 md:mt-12 text-left">
+              <div className="p-4 sm:p-6 bg-card rounded-xl border border-border shadow-sm">
+                <h3 className="text-lg sm:text-xl font-black mb-2 sm:mb-3 text-foreground tracking-wide">FUNNY COWORKER MUGS</h3>
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">Surviving the 9-to-5 requires caffeine and a thick skin. Our <a href="/mugs" className="text-primary hover:underline">snarky office mugs</a> and apparel make the ultimate <a href="/category/funny-coworker-gifts" className="text-primary hover:underline">funny coworker gifts</a>. Say what you're thinking without getting called into HR.</p>
               </div>
-              <div className="p-6 bg-card rounded-xl border border-border shadow-sm">
-                <h3 className="text-xl font-black mb-3 text-foreground tracking-wide">WHITE ELEPHANT WINNERS</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">Don't be the person who brings cheap plastic junk to the holiday party. Our <a href="/category/white-elephant-gifts" className="text-primary hover:underline">white elephant gifts</a> under $25 and $50 are items people will actually fight to steal.</p>
+              <div className="p-4 sm:p-6 bg-card rounded-xl border border-border shadow-sm">
+                <h3 className="text-lg sm:text-xl font-black mb-2 sm:mb-3 text-foreground tracking-wide">WHITE ELEPHANT WINNERS</h3>
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">Don't be the person who brings cheap plastic junk to the holiday party. Our <a href="/category/white-elephant-gifts" className="text-primary hover:underline">white elephant gifts</a> under $25 and $50 are items people will actually fight to steal.</p>
               </div>
-              <div className="p-6 bg-card rounded-xl border border-border shadow-sm md:col-span-2 lg:col-span-1">
-                <h3 className="text-xl font-black mb-3 text-foreground tracking-wide">PREMIUM SARCASTIC TEES</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">Cheap gag shirts shrink and crack. We print our <a href="/shirts" className="text-primary hover:underline">sarcastic shirts</a> and <a href="/hoodies" className="text-primary hover:underline">snarky hoodies</a> on premium, heavyweight materials using top-tier DTG printing. Comfort meets attitude.</p>
+              <div className="p-4 sm:p-6 bg-card rounded-xl border border-border shadow-sm md:col-span-2 lg:col-span-1">
+                <h3 className="text-lg sm:text-xl font-black mb-2 sm:mb-3 text-foreground tracking-wide">PREMIUM SARCASTIC TEES</h3>
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">Cheap gag shirts shrink and crack. We print our <a href="/shirts" className="text-primary hover:underline">sarcastic shirts</a> and <a href="/hoodies" className="text-primary hover:underline">snarky hoodies</a> on premium, heavyweight materials using top-tier DTG printing. Comfort meets attitude.</p>
               </div>
             </div>
           </div>

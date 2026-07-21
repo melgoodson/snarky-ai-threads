@@ -89,6 +89,7 @@ export const WebsiteReviews = () => {
                 .reviews-marquee {
                     animation: marquee-scroll 40s linear infinite;
                     width: max-content;
+                    touch-action: pan-y;
                 }
                 @keyframes marquee-scroll {
                     from { transform: translateX(0); }

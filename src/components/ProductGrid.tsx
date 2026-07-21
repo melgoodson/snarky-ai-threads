@@ -311,7 +311,7 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {featuredDesigns.map((design) => (
                 <ProductCard
                   key={design.id}
@@ -328,16 +328,16 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         )}
 
         {/* All Designs */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight mb-3 md:mb-4">
             ALL <span className="text-primary">DESIGNS</span>
           </h2>
-          <p className="text-muted-foreground text-lg md:text-xl font-medium">
+          <p className="text-muted-foreground text-base md:text-xl font-medium">
             Browse the full collection. Because normal is boring.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {allDesigns.map((design) => (
             <ProductCard
               key={design.id}

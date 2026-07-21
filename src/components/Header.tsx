@@ -209,18 +209,11 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         {/* Top Banner */}
         <div className="border-b border-border bg-background">
-          <div className="container px-4 py-3">
+          <div className="container px-3 sm:px-4 py-2 sm:py-3">
             <Link to="/" className="block text-center hover:opacity-80 transition-opacity">
-              <BrandTitle className="text-sm leading-tight sm:text-xl md:text-2xl font-black tracking-normal">
-                <span className="text-primary">SNARKY A$$ HUMANS</span>
-                <br className="sm:hidden" />
-                <span className="hidden sm:inline"> </span>
-                <span className="text-foreground">PRESENTS</span>
-                <span className="hidden sm:inline text-foreground"> SNARKY A$$</span>
-                <br className="sm:hidden" />
-                <span className="hidden sm:inline"> </span>
-                <span className="text-primary sm:hidden">SNARKY A$$ APPAREL</span>
-                <span className="hidden text-primary sm:inline">APPAREL</span>
+              <BrandTitle className="text-base sm:text-xl md:text-2xl font-black tracking-tight uppercase">
+                <span className="text-primary">SNARKY A$$</span>{" "}
+                <span className="text-foreground">APPAREL</span>
               </BrandTitle>
             </Link>
           </div>
