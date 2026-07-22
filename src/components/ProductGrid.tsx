@@ -156,7 +156,39 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const monthData = getCurrentMonthData();
+
+  // Dynamic month data — starts with hardcoded defaults, overridden by DB schedule
+  const [monthData, setMonthData] = useState(getCurrentMonthData());
+  const [scheduledDesignIds, setScheduledDesignIds] = useState<string[] | null>(null);
+
+  // Fetch admin-scheduled featured config for the current month
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const month = new Date().getMonth();
+        const { data, error } = await (supabase as any)
+          .from("featured_schedules")
+          .select("*")
+          .eq("month", month)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (!error && data) {
+          setMonthData({
+            headline: data.headline || getCurrentMonthData().headline,
+            subheadline: data.subheadline || getCurrentMonthData().subheadline,
+            themes: (data.themes as { label: string; keywords: string }[]) || getCurrentMonthData().themes,
+          });
+          if (data.design_ids && data.design_ids.length > 0) {
+            setScheduledDesignIds(data.design_ids);
+          }
+        }
+      } catch {
+        // Table might not exist yet — silently fall back to defaults
+      }
+    };
+    fetchSchedule();
+  }, []);
 
   useEffect(() => {
     fetchDesigns();
@@ -178,27 +210,22 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
       if (categorySlug) {
         const slug = categorySlug.toLowerCase();
         if (slug.includes("coworker") || slug.includes("office")) {
-          // Sarcastic coworker designs
           fetchedDesigns = fetchedDesigns.filter(d => 
             ["RBF Champion", "Snarky Humans", "Dark", "White Idol Morning"].some(t => d.title.includes(t))
           );
         } else if (slug.includes("men") || slug.includes("dad")) {
-          // Custom gifts for men
           fetchedDesigns = fetchedDesigns.filter(d => 
             ["Fathers", "Sasquatches", "Abduct Me"].some(t => d.title.includes(t))
           );
         } else if (slug.includes("mom") || slug.includes("mother")) {
-          // Snarky mom designs
           fetchedDesigns = fetchedDesigns.filter(d => 
             ["RBF Champion", "Snarky Humans", "White Idol Morning", "Good Morning"].some(t => d.title.includes(t))
           );
         } else if (slug.includes("teacher")) {
-          // Sarcastic teacher designs
           fetchedDesigns = fetchedDesigns.filter(d => 
             ["RBF Champion", "Snarky Humans", "White Idol Morning", "Dark"].some(t => d.title.includes(t))
           );
         } else if (slug.includes("christmas") || slug.includes("white-elephant") || slug.includes("gag")) {
-          // Gag & holiday swap favorites
           fetchedDesigns = fetchedDesigns.filter(d => 
             ["Free Hugs", "Abduct Me", "Sasquatches", "Dark", "RBF Champion", "Snarky Humans"].some(t => d.title.includes(t))
           );
@@ -213,8 +240,10 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
     }
   };
 
-  // Pick first 6 designs as featured (in production, use a featured flag or admin curation)
-  const featuredDesigns = designs.slice(0, 6);
+  // Use admin-scheduled design IDs if available, otherwise first 6
+  const featuredDesigns = scheduledDesignIds
+    ? designs.filter((d) => scheduledDesignIds.includes(d.id))
+    : designs.slice(0, 6);
   const allDesigns = designs;
 
   if (loading) {

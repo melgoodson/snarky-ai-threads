@@ -538,6 +538,42 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_schedules: {
+        Row: {
+          id: string
+          month: number
+          headline: string
+          subheadline: string
+          themes: Json | null
+          design_ids: string[] | null
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          month: number
+          headline: string
+          subheadline: string
+          themes?: Json | null
+          design_ids?: string[] | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          month?: number
+          headline?: string
+          subheadline?: string
+          themes?: Json | null
+          design_ids?: string[] | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

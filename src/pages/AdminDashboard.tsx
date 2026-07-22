@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminFeaturedSchedule } from "@/components/admin/AdminFeaturedSchedule";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -34,6 +35,7 @@ import {
   ShoppingCart,
   BarChart3,
   Calendar,
+  CalendarDays,
   FileText,
   HelpCircle,
   RefreshCw
@@ -566,6 +568,12 @@ export default function AdminDashboard() {
                   <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin/faq")}>
                     <HelpCircle className="mr-2 h-4 w-4" /> FAQ
                   </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                    const tabEl = document.querySelector('[data-state][value="featured"]') as HTMLElement;
+                    tabEl?.click();
+                  }}>
+                    <CalendarDays className="mr-2 h-4 w-4" /> Featured Schedule
+                  </DropdownMenuItem>
                   
                   <DropdownMenuSeparator />
                   
@@ -594,6 +602,10 @@ export default function AdminDashboard() {
               <TabsTrigger value="orders">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Orders
+              </TabsTrigger>
+              <TabsTrigger value="featured">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Featured
               </TabsTrigger>
             </TabsList>
 
@@ -1229,6 +1241,11 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Featured Schedule Tab */}
+            <TabsContent value="featured" className="space-y-6">
+              <AdminFeaturedSchedule />
             </TabsContent>
           </Tabs>
         </div>
