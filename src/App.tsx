@@ -56,6 +56,8 @@ import CoworkerGiftsLanding from "./pages/CoworkerGiftsLanding";
 import AiCustomClothing from "./pages/AiCustomClothing";
 import ThankYou from "./pages/ThankYou";
 import { BestSellersPopup } from "./components/BestSellersPopup";
+import { UtmRedirect } from "./components/UtmRedirect";
+
 
 const queryClient = new QueryClient();
 
@@ -231,6 +233,11 @@ const App = () => (
             <Route path="/ai-custom-clothing" element={<AiCustomClothing />} />
             <Route path="/category/:categorySlug" element={<CategoryLanding />} />
             <Route path="/thank-you" element={<ThankYou />} />
+            {/* Campaign Tracking Redirect Routes */}
+            <Route path="/reddit-gifts" element={<UtmRedirect utmSource="reddit" utmContent="reddit_gifts" />} />
+            <Route path="/reddit" element={<UtmRedirect utmSource="reddit" />} />
+            <Route path="/substack-gifts" element={<UtmRedirect utmSource="substack" utmContent="substack_gifts" />} />
+            <Route path="/substack" element={<UtmRedirect utmSource="substack" />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,26 @@
 {
+    "redirects": [
+        {
+            "source": "/reddit-gifts",
+            "destination": "/?utm_source=reddit&utm_medium=comment&utm_campaign=mel_outreach&utm_content=reddit_gifts",
+            "permanent": false
+        },
+        {
+            "source": "/reddit",
+            "destination": "/?utm_source=reddit&utm_medium=comment&utm_campaign=mel_outreach",
+            "permanent": false
+        },
+        {
+            "source": "/substack-gifts",
+            "destination": "/?utm_source=substack&utm_medium=comment&utm_campaign=mel_outreach&utm_content=substack_gifts",
+            "permanent": false
+        },
+        {
+            "source": "/substack",
+            "destination": "/?utm_source=substack&utm_medium=comment&utm_campaign=mel_outreach",
+            "permanent": false
+        }
+    ],
     "rewrites": [
         {
             "source": "/sitemap.xml",
