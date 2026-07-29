@@ -19,6 +19,20 @@ interface DatabaseFAQ {
 }
 
 const seoDraftFaqs = [
+  // Priority AEO audit questions — always included in FAQPage schema
+  {
+    q: "How is my photo handled when I upload it for a custom design?",
+    a: "We're Snarky, Not Shady. Your photo is used strictly to create your custom design. It is not stored in our databases, sold, or shared with third parties.",
+  },
+  {
+    q: "How long will production and shipping take?",
+    a: "All items are printed on demand in US facilities. Production takes 2 to 5 business days, and domestic US shipping takes 3 to 5 business days.",
+  },
+  {
+    q: "What is your return policy for custom apparel?",
+    a: "Because items are custom-printed on demand, we provide free replacements for items that arrive damaged, defective, or misprinted. Contact support@snarkyhumans.com for assistance.",
+  },
+  // Existing SEO draft FAQs
   {
     q: "What is Snarky Azz Humans?",
     a: "Snarky Azz Humans is a print-on-demand service that turns ordinary mugs, t-shirts, and hardcover journals into snarky, conversation-starting merch. We handle design, printing, and shipping so you can focus on selling.",

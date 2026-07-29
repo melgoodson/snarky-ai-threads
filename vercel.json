@@ -27,8 +27,34 @@
             "destination": "https://birjqwhhleqtirwkzcwl.supabase.co/functions/v1/generate-sitemap"
         },
         {
+            "source": "/llm.txt",
+            "destination": "/llm.txt"
+        },
+        {
+            "source": "/llms.txt",
+            "destination": "/llms.txt"
+        },
+        {
+            "source": "/robots.txt",
+            "destination": "/robots.txt"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/llm.txt",
+            "headers": [
+                { "key": "Content-Type", "value": "text/plain; charset=utf-8" }
+            ]
+        },
+        {
+            "source": "/llms.txt",
+            "headers": [
+                { "key": "Content-Type", "value": "text/plain; charset=utf-8" }
+            ]
         }
     ]
 }
