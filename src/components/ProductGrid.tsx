@@ -84,34 +84,33 @@ const MONTHLY_FEATURED: Record<number, {
     ],
   },
   6: { // July
-    headline: "SUMMER SNARK",
-    subheadline: "Ice Cream Day meets Parents Day. Snarky summer designs for patriots, parents, and people who need more coffee.",
+    headline: "Q3 HOLIDAYS & ATTITUDE",
+    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every Q3 event.",
     themes: [
-      { label: "🍦 Ice Cream Day", keywords: "us ice cream day shirt, funny ice cream tee, patriotic summer design" },
-      { label: "👨‍👩‍👧 Parents Day", keywords: "parents day shirt, snarky parenting tee, funny mom dad gift" },
-      { label: "🦝 Snarky Parenting", keywords: "worlds okayest parent, parenting humor shirt, caffeine and chaos" },
-      { label: "🇺🇸 Patriotic Humor", keywords: "red white and blue funny shirt, patriotic attitude tee, 4th of july humor" },
-      { label: "🎨 All Designs", keywords: "snarky designs, sarcastic quote apparel" },
+      { label: "🛠️ Labor Day Snark", keywords: "labor day shirt, funny labor day tee, work humor, adulting is hard" },
+      { label: "👵 Grandparents Day", keywords: "happy grandparents day shirt, funny grandparents gift, professional spoilers, awesome in aging" },
+      { label: "🇺🇸 9/11 Patriot Day", keywords: "patriot day shirt, 9-11 remembrance tee, september 11 tribute, we will never forget" },
+      { label: "💃 Hispanic Heritage Month", keywords: "hispanic heritage month shirt, nuestra cultura, nuestra historia, orgullo, viva la vida" },
     ],
   },
   7: { // August
-    headline: "BACK TO SNARK",
-    subheadline: "School's back, attitude never left. Snarky picks for students, teachers, and rebels.",
+    headline: "Q3 HOLIDAYS & ATTITUDE",
+    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every Q3 event.",
     themes: [
-      { label: "📚 Back to School", keywords: "funny school shirt, snarky student tee" },
-      { label: "🏥 Nurse & Teacher Snark", keywords: "snarky nurses, funny teacher shirt" },
-      { label: "👕 Custom T-Shirts", keywords: "custom t shirt printing for sarcastic designs, personalized t shirts" },
-      { label: "💼 Office Snark", keywords: "snarky office signs, snarky pens" },
+      { label: "🛠️ Labor Day Snark", keywords: "labor day shirt, funny labor day tee, work humor, adulting is hard" },
+      { label: "👵 Grandparents Day", keywords: "happy grandparents day shirt, funny grandparents gift, professional spoilers, awesome in aging" },
+      { label: "🇺🇸 9/11 Patriot Day", keywords: "patriot day shirt, 9-11 remembrance tee, september 11 tribute, we will never forget" },
+      { label: "💃 Hispanic Heritage Month", keywords: "hispanic heritage month shirt, nuestra cultura, nuestra historia, orgullo, viva la vida" },
     ],
   },
   8: { // September
-    headline: "FALL INTO ATTITUDE",
-    subheadline: "Cozy season, snarky style. Blankets, hoodies, and mugs with personality.",
+    headline: "Q3 HOLIDAYS & ATTITUDE",
+    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every Q3 event.",
     themes: [
-      { label: "🍂 Fall Vibes", keywords: "fall attitude shirt, cozy snarky hoodie" },
-      { label: "🛏️ Photo Blankets", keywords: "personalized blanket, custom photo blanket" },
-      { label: "🧥 Hoodies", keywords: "snarky hoodie, custom print hoodie, personalized hoodie" },
-      { label: "☕ Mugs", keywords: "snarky coffee mug, personalized coffee mug" },
+      { label: "🛠️ Labor Day Snark", keywords: "labor day shirt, funny labor day tee, work humor, adulting is hard" },
+      { label: "👵 Grandparents Day", keywords: "happy grandparents day shirt, funny grandparents gift, professional spoilers, awesome in aging" },
+      { label: "🇺🇸 9/11 Patriot Day", keywords: "patriot day shirt, 9-11 remembrance tee, september 11 tribute, we will never forget" },
+      { label: "💃 Hispanic Heritage Month", keywords: "hispanic heritage month shirt, nuestra cultura, nuestra historia, orgullo, viva la vida" },
     ],
   },
   9: { // October
@@ -147,9 +146,108 @@ const MONTHLY_FEATURED: Record<number, {
   },
 };
 
+const FALLBACK_DESIGNS: Design[] = [
+  {
+    id: "q3-labor-day-1",
+    title: "Labor Day: Back to Work Tomorrow",
+    description: "Cool woman in denim with sunglasses and coffee cup — Labor Day: Relax today because let's be real... You'll be back to work tomorrow.",
+    image_url: "/images/designs/labor-day.png",
+  },
+  {
+    id: "q3-grandparents-1",
+    title: "Grandparents Day: Awesome in Aging",
+    description: "Cool grandpa and grandma in pink and dark sunglasses — Happy Grandparents Day: We put the awesome in aging.",
+    image_url: "/images/designs/happy-grandparents-day-2.png",
+  },
+  {
+    id: "q3-911-1",
+    title: "9/11 Patriot Day — United We Stand",
+    description: "Patriot Day 9-11-01 tribute featuring American flag, Twin Towers skyline silhouette, flying eagle, and United We Stand message.",
+    image_url: "/images/designs/9-11.png",
+  },
+  {
+    id: "q3-hispanic-1",
+    title: "Hispanic Heritage Month — Historia, Cultura, Orgullo",
+    description: "National Hispanic Heritage Month Begins — Gold leaf branch decoration with text: Nuestra Historia. Nuestra Cultura. Nuestro Orgullo.",
+    image_url: "/images/designs/national-hispanic-heritage-month-begins-2.png",
+  },
+  {
+    id: "q3-labor-day-2",
+    title: "Labor Day: Pretend to Love Workers",
+    description: "Rosie the Riveter style woman in red bandana — Labor Day: The only day we pretend to love workers. Now back to exploiting you.",
+    image_url: "/images/designs/labor-day-3.png",
+  },
+  {
+    id: "q3-grandparents-2",
+    title: "Grandparents Day: Professional Spoilers",
+    description: "Crown icon badge font graphic — Happy Grandparents Day: Not retired. Professional spoilers.",
+    image_url: "/images/designs/happy-grandparents-day-3.png",
+  },
+  {
+    id: "q3-grandparents-3",
+    title: "Grandparents Day: Older, Wiser, Zero Filter",
+    description: "Glamorous grandma in leopard print jacket giving peace sign — Happy Grandparents Day: Older. Wiser. Still zero filter.",
+    image_url: "/images/designs/happy-grandparents-day-4.png",
+  },
+  {
+    id: "q3-labor-day-3",
+    title: "Labor Day: Fueled by Caffeine & Deadlines",
+    description: "Hand clutching coffee cup with crown emblem — Shoutout to everyone who works like it's not every single day. We see you.",
+    image_url: "/images/designs/labor-day-4.png",
+  },
+  {
+    id: "q3-hispanic-2",
+    title: "Hispanic Heritage Month — Festive Floral",
+    description: "National Hispanic Heritage Month Begins — Colorful festive block font with floral decor and banner.",
+    image_url: "/images/designs/national-hispanic-heritage-month-begins.png",
+  },
+  {
+    id: "q3-hispanic-3",
+    title: "Hispanic Heritage Month — Culture & Pride",
+    description: "Happy National Hispanic Heritage Month Begins — Let's celebrate our culture, roots & pride font with heart accent.",
+    image_url: "/images/designs/national-hispanic-heritage-month-begins-3.png",
+  },
+  {
+    id: "q3-911-2",
+    title: "9/11 We Will Never Forget",
+    description: "Bold Patriot Day 9-11-01 typography badge with Twin Towers sunset and American flag graphics.",
+    image_url: "/images/designs/9-11-2.png",
+  },
+  {
+    id: "q3-labor-day-4",
+    title: "Labor Day: Deserves More Than a Holiday",
+    description: "Flexing Rosie the Riveter in red headband — Labor Day: A reminder that hard work deserves more than a holiday.",
+    image_url: "/images/designs/labor-day-6.png",
+  },
+  {
+    id: "q3-labor-day-5",
+    title: "Labor Day: Well-Deserved Nap",
+    description: "Guy relaxing on chair in sunglasses — Labor Day: No parades. No speeches. Just a well-deserved NAP! Earned it.",
+    image_url: "/images/designs/labor-day-7.png",
+  },
+  {
+    id: "q3-labor-day-6",
+    title: "Labor Day: Adulting Is Hard",
+    description: "Wrench badge typography design — Labor Day: Because adulting is hard. Thanks for not quitting.",
+    image_url: "/images/designs/labor-day-8.png",
+  },
+  {
+    id: "q3-grandparents-4",
+    title: "Happy Grandparents Day — Bench Warmth",
+    description: "Heartwarming illustration of grandmother and grandfather sitting on a wooden bench with their grandchildren.",
+    image_url: "/images/designs/happy-grandparents-day.png",
+  },
+  {
+    id: "q3-hispanic-4",
+    title: "Hispanic Heritage Month — Celebrate, Honor, Inspire",
+    description: "National Hispanic Heritage Month Begins — Sun icon script with text: Celebrate. Honor. Inspire.",
+    image_url: "/images/designs/national-hispanic-heritage-month-begins-4.png",
+  },
+];
+
 const getCurrentMonthData = () => {
   const month = new Date().getMonth();
-  return MONTHLY_FEATURED[month] || MONTHLY_FEATURED[1]; // fallback to Feb
+  return MONTHLY_FEATURED[month] || MONTHLY_FEATURED[8]; // fallback to Q3 September
 };
 
 export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
@@ -173,18 +271,20 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
           .eq("is_active", true)
           .maybeSingle();
 
-        if (!error && data) {
+        if (!error && data && data.headline && data.headline.includes("Q3")) {
           setMonthData({
-            headline: data.headline || getCurrentMonthData().headline,
+            headline: data.headline,
             subheadline: data.subheadline || getCurrentMonthData().subheadline,
             themes: (data.themes as { label: string; keywords: string }[]) || getCurrentMonthData().themes,
           });
           if (data.design_ids && data.design_ids.length > 0) {
             setScheduledDesignIds(data.design_ids);
           }
+        } else {
+          setMonthData(getCurrentMonthData());
         }
       } catch {
-        // Table might not exist yet — silently fall back to defaults
+        setMonthData(getCurrentMonthData());
       }
     };
     fetchSchedule();
@@ -205,6 +305,9 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
       if (error) throw error;
       
       let fetchedDesigns = data || [];
+      const existingUrls = new Set(fetchedDesigns.map((d: any) => d.image_url));
+      const missingQ3 = FALLBACK_DESIGNS.filter(d => !existingUrls.has(d.image_url));
+      fetchedDesigns = [...missingQ3, ...fetchedDesigns];
 
       // Filter designs based on target gift persona or category keywords
       if (categorySlug) {
@@ -240,11 +343,75 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
     }
   };
 
-  // Use admin-scheduled design IDs if available, otherwise first 6
-  const featuredDesigns = scheduledDesignIds
+  // Prioritize Q3 featured designs for the featured section
+  const q3FeaturedDesigns = designs.filter((d) =>
+    d.id.startsWith("q3-") ||
+    /labor[- ]day|grandparents|9[-/]11|hispanic/i.test(d.title) ||
+    /labor-day|grandparents|9-11|hispanic/i.test(d.image_url)
+  );
+
+  const featuredDesigns = q3FeaturedDesigns.length > 0
+    ? q3FeaturedDesigns
+    : (scheduledDesignIds && scheduledDesignIds.length > 0)
     ? designs.filter((d) => scheduledDesignIds.includes(d.id))
-    : designs.slice(0, 6);
+    : designs.slice(0, 8);
   const allDesigns = designs;
+
+  const [activeEventTab, setActiveEventTab] = useState<string>("all");
+
+  const getEventGroups = (allFeatured: Design[]) => {
+    const laborDayDesigns = allFeatured.filter(d =>
+      /labor/i.test(d.id) || /labor/i.test(d.title) || /labor/i.test(d.image_url)
+    );
+    const grandparentsDesigns = allFeatured.filter(d =>
+      /grandparent/i.test(d.id) || /grandparent/i.test(d.title) || /grandparent/i.test(d.image_url)
+    );
+    const patriotDesigns = allFeatured.filter(d =>
+      /9-11|patriot|never-forget/i.test(d.id) || /9-11|patriot|never forget/i.test(d.title) || /9-11/i.test(d.image_url)
+    );
+    const hispanicDesigns = allFeatured.filter(d =>
+      /hispanic|heritage|cultura|orgullo/i.test(d.id) || /hispanic|heritage|cultura|orgullo/i.test(d.title) || /hispanic/i.test(d.image_url)
+    );
+
+    return [
+      {
+        id: "labor-day",
+        name: "Labor Day Snark",
+        badge: "WORK & ANTI-OVERWORK",
+        icon: "🛠️",
+        badgeBg: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+        description: "Work hard, rest harder. Sarcastic apparel for anyone who works like it's not every single day.",
+        designs: laborDayDesigns,
+      },
+      {
+        id: "grandparents-day",
+        name: "Grandparents Day",
+        badge: "NOT RETIRED • PROFESSIONAL SPOILERS",
+        icon: "👵",
+        badgeBg: "bg-pink-500/10 text-pink-400 border-pink-500/30",
+        description: "Awesome in aging. Cheeky, heartwarming gifts for the grandparents with zero filter.",
+        designs: grandparentsDesigns,
+      },
+      {
+        id: "patriot-day",
+        name: "9/11 Patriot Remembrance",
+        badge: "NEVER FORGET • UNITED WE STAND",
+        icon: "🇺🇸",
+        badgeBg: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+        description: "Honoring the heroes, remembering the lives lost, and standing united.",
+        designs: patriotDesigns,
+      },
+      {
+        id: "hispanic-heritage",
+        name: "Hispanic Heritage Month",
+        badge: "HISTORIA • CULTURA • ORGULLO",
+        icon: "💃",
+        badgeBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+        description: "Celebrate our culture, roots, and pride with vibrant festive designs.",
+        designs: hispanicDesigns,
+      },
+    ].filter(group => group.designs.length > 0);
+  };
 
   if (loading) {
     return (
@@ -271,90 +438,99 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
   return (
     <section id="products" className="py-16 md:py-24">
       <div className="container px-4">
-        {/* HIDDEN: investigating print quality
-        <div className="mb-20">
-          <div className="text-center mb-8">
-            <span className="text-sm font-bold text-primary uppercase tracking-widest">NEW • HIGH DEMAND</span>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4 mt-2">
-              PERSONALIZATION <span className="text-primary">BLANKETS</span>
-            </h2>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium">
-              The #1 personalized gift — upload your photos and create a custom blanket. Perfect for birthdays, holidays, and every "just because" moment.
-            </p>
-          </div>
-          <div
-            className="max-w-md mx-auto cursor-pointer group"
-            onClick={() => navigate("/product/personalization-blanket")}
-          >
-            <div className="relative overflow-hidden rounded-xl border border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.3)]">
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={personalizationBlanket}
-                  alt="Personalization Blanket – Custom Photo Blanket with your pictures"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-6 text-center">
-                <span className="text-xs font-bold text-primary uppercase tracking-widest">Personalized Gifts</span>
-                <h3 className="font-black text-2xl text-foreground mt-2 group-hover:text-primary transition-colors">
-                  Custom Photo Blanket
-                </h3>
-                <p className="text-muted-foreground text-sm mt-1 font-medium">Upload your photos • Made to order</p>
-                <p className="text-3xl font-black text-foreground mt-2">$49.99</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        */}
+        {/* Featured This Month — Separated by Q3 Holiday & Event */}
+        {featuredDesigns.length > 0 && (() => {
+          const eventGroups = getEventGroups(featuredDesigns);
+          const visibleGroups = activeEventTab === "all"
+            ? eventGroups
+            : eventGroups.filter(g => g.id === activeEventTab);
 
-        {/* Featured This Month — SEO-optimized monthly rotation */}
-        {featuredDesigns.length > 0 && (
-          <div className="mb-20">
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-4">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span className="text-sm font-bold text-primary uppercase tracking-widest">Featured This Month</span>
+          return (
+            <div className="mb-20">
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-4">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-primary uppercase tracking-widest">Featured This Month</span>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
+                  {monthData.headline.split(' ').map((word, i) => (
+                    <span key={i} className={i === monthData.headline.split(' ').length - 1 ? "text-primary" : ""}>
+                      {word}{' '}
+                    </span>
+                  ))}
+                </h2>
+                <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium">
+                  {monthData.subheadline}
+                </p>
               </div>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
-                {monthData.headline.split(' ').map((word, i) => (
-                  <span key={i} className={i === monthData.headline.split(' ').length - 1 ? "text-primary" : ""}>
-                    {word}{' '}
-                  </span>
-                ))}
-              </h2>
-              <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium">
-                {monthData.subheadline}
-              </p>
-            </div>
 
-            {/* Monthly theme tags — rich keyword signals */}
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
-              {monthData.themes.map((theme) => (
-                <span
-                  key={theme.label}
-                  className="text-xs font-semibold bg-secondary px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors cursor-default"
-                  title={theme.keywords}
+              {/* Interactive Event Filter Tabs */}
+              <div className="flex flex-wrap justify-center gap-2 mb-12">
+                <button
+                  onClick={() => setActiveEventTab("all")}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                    activeEventTab === "all"
+                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
+                      : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
+                  }`}
                 >
-                  {theme.label}
-                </span>
-              ))}
-            </div>
+                  ✨ All Q3 Events ({featuredDesigns.length})
+                </button>
+                {eventGroups.map((group) => (
+                  <button
+                    key={group.id}
+                    onClick={() => setActiveEventTab(group.id)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                      activeEventTab === group.id
+                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
+                        : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    <span>{group.icon}</span>
+                    <span>{group.name} ({group.designs.length})</span>
+                  </button>
+                ))}
+              </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-              {featuredDesigns.map((design) => (
-                <ProductCard
-                  key={design.id}
-                  id={design.id}
-                  title={design.title}
-                  price={0}
-                  image={resolveDesignImage(design.image_url)}
-                  category=""
-                  badge="FEATURED"
-                />
-              ))}
+              {/* Categorized Event Sub-Sections */}
+              <div className="space-y-16">
+                {visibleGroups.map((group) => (
+                  <div key={group.id} className="rounded-2xl border border-border/80 p-6 md:p-8 bg-card/60 backdrop-blur-sm shadow-xl transition-all">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-border/50">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="text-2xl">{group.icon}</span>
+                          <h3 className="text-2xl md:text-3xl font-black tracking-tight">{group.name}</h3>
+                          <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border ${group.badgeBg}`}>
+                            {group.badge}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground font-medium">{group.description}</p>
+                      </div>
+                      <span className="text-xs font-bold text-muted-foreground bg-secondary px-3 py-1.5 rounded-full w-fit">
+                        {group.designs.length} {group.designs.length === 1 ? "Design" : "Designs"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                      {group.designs.map((design) => (
+                        <ProductCard
+                          key={design.id}
+                          id={design.id}
+                          title={design.title}
+                          price={0}
+                          image={resolveDesignImage(design.image_url)}
+                          category={group.name}
+                          badge="FEATURED"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* All Designs */}
         <div className="text-center mb-8 md:mb-12">
