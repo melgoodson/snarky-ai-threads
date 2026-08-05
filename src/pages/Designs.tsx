@@ -11,6 +11,22 @@ import { User, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 
+// Designs temporarily hidden from the shop grid (title substrings, case-insensitive)
+const HIDDEN_DESIGN_PATTERNS: string[] = [
+  "World Takes All the Credit",
+  "Fueled by Caffeine & Deadlines",
+  "Deserves More Than a Holiday",
+  "Adulting Is Hard",
+  "Just Here for the Ice Cream",
+  "Red, White & Scoops",
+  "CEOs of Chaos",
+  "World's Okayest Parent",
+  "Powered by Love",
+  "Snacks Are Currency",
+  "Raising Humans Is Exhausting",
+  "Snarky Humans",
+];
+
 interface Design {
   id: string;
   title: string;
@@ -196,7 +212,11 @@ const Designs = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {designs.map((design) => (
+              {designs
+                .filter((design) => !HIDDEN_DESIGN_PATTERNS.some(
+                  (p) => design.title.toLowerCase().includes(p.toLowerCase())
+                ))
+                .map((design) => (
                 <Card
                   key={design.id}
                   className="cursor-pointer hover:shadow-lg transition-shadow"
