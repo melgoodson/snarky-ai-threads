@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Featured Design Scheduler - Admin Walkthrough</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0f172a;
+      color: #f8fafc;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .header-bar {
+      background-color: #020617;
+      color: #ffffff;
+      text-align: center;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      border-bottom: 2px solid #ea580c;
+    }
+    .footer-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #020617;
+      color: #94a3b8;
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      border-top: 1px solid #334155;
+    }
+    .container {
+      padding: 32px 48px 60px 48px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 28px;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .meta-info {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      background-color: #059669;
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+    .callout {
+      background-color: #1e293b;
+      border-left: 4px solid #ea580c;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .tip-box {
+      background-color: #1e293b;
+      border-left: 4px solid #3b82f6;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .note-box {
+      background-color: #1e293b;
+      border-left: 4px solid #a855f7;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    h2 {
+      font-size: 20px;
+      color: #f97316;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 6px;
+      margin-top: 32px;
+      margin-bottom: 16px;
+    }
+    ol, ul {
+      padding-left: 20px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .img-container {
+      text-align: center;
+      margin: 20px 0 28px 0;
+      background-color: #020617;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .img-container img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .img-caption {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 8px;
+      font-style: italic;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #334155;
+      padding: 10px 14px;
+      text-align: left;
+    }
+    th {
+      background-color: #1e293b;
+      color: #f97316;
+    }
+    tr:nth-child(even) {
+      background-color: #1e293b;
+    }
+    .page-break {
+      page-break-after: always;
+      break-after: page;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    SNARKY A$$ HUMANS — ADMIN FEATURED DESIGN SCHEDULER WALKTHROUGH
+  </div>
+
+  <div class="container">
+    <h1>Featured Design Scheduler — Admin Walkthrough</h1>
+    <div class="meta-info">
+      <strong>Date:</strong> July 23, 2026 &nbsp;|&nbsp; 
+      <strong>Status:</strong> <span class="badge">VERIFIED &amp; RESOLVED</span>
+    </div>
+
+    <div class="callout">
+      <strong>What's new:</strong> You can now schedule monthly featured design collections directly from the Admin Dashboard — no code changes needed. Upload images, auto-name them, pick which designs to spotlight, and preview exactly how the homepage will look.
+    </div>
+
+    <h2>How to Access</h2>
+    <ol>
+      <li>Log in at <code>/admin</code></li>
+      <li>Click the <strong>Featured</strong> tab in the dashboard</li>
+    </ol>
+
+    <div class="img-container">
+      <img src="file:///C:/Users/Iris/.gemini/antigravity-ide/brain/e735e0ae-bb1a-4018-8500-51d9b611b733/admin_featured_top_1784760805586.png" alt="Featured Tab Dashboard Header">
+      <div class="img-caption">Featured tab with month selector, headline fields, and upload zone</div>
+    </div>
+
+    <p>You'll see four main areas:</p>
+    <ul>
+      <li><strong>Month Selector</strong> (top-right) — pick any month to configure</li>
+      <li><strong>Monthly Headline</strong> card — set the title and description</li>
+      <li><strong>Upload New Designs</strong> — drag &amp; drop images, they auto-name from filenames</li>
+      <li><strong>Select Featured Designs</strong> — pick which designs to spotlight</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2>Step 1: Pick Your Designs</h2>
+    <p>Scroll down to the <strong>Select Featured Designs</strong> grid. Click any design thumbnail to select it — selected ones get an orange border and checkmark. The counter badge updates automatically.</p>
+
+    <div class="img-container">
+      <img src="file:///C:/Users/Iris/.gemini/antigravity-ide/brain/e735e0ae-bb1a-4018-8500-51d9b611b733/admin_design_picker_1784760813778.png" alt="Select Featured Designs Grid">
+      <div class="img-caption">Design picker grid with selectable thumbnails</div>
+    </div>
+
+    <div class="tip-box">
+      💡 <strong>TIP:</strong> To upload <strong>new</strong> designs, use the Upload zone above the picker. Filenames auto-convert to titles — for example, <code>snarky_coffee_cat.png</code> becomes <strong>Snarky Coffee Cat</strong>.
+    </div>
+
+    <h2>Step 2: Set Headline &amp; Subheadline</h2>
+    <p>Fill in the <strong>Headline</strong> (shows as the big title on the homepage) and <strong>Subheadline</strong> (the description below it). Keep the <strong>Active</strong> checkbox checked so it goes live when the month arrives.</p>
+
+    <div class="img-container">
+      <img src="file:///C:/Users/Iris/.gemini/antigravity-ide/brain/e735e0ae-bb1a-4018-8500-51d9b611b733/admin_filled_form_1784760861789.png" alt="Filled Form with Headline and Subheadline">
+      <div class="img-caption">Filled form with headline, subheadline, and selected designs</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>Step 3: Preview</h2>
+    <p>Click the <strong>Preview</strong> button (top-right, next to Save) to see exactly how the featured section will look on the homepage.</p>
+
+    <div class="img-container">
+      <img src="file:///C:/Users/Iris/.gemini/antigravity-ide/brain/e735e0ae-bb1a-4018-8500-51d9b611b733/admin_preview_1784760888376.png" alt="Homepage Live Preview">
+      <div class="img-caption">Live preview of the homepage featured section</div>
+    </div>
+
+    <p>The preview shows:</p>
+    <ul>
+      <li>Your headline and subheadline</li>
+      <li>Theme badges (if you added any)</li>
+      <li>The selected designs in a grid with "FEATURED" badges</li>
+    </ul>
+
+    <h2>Step 4: Save</h2>
+    <p>Click <strong>Save</strong> — you'll see a success confirmation. The schedule is now stored and will automatically display on the homepage when that month arrives.</p>
+
+    <div class="img-container">
+      <img src="file:///C:/Users/Iris/.gemini/antigravity-ide/brain/e735e0ae-bb1a-4018-8500-51d9b611b733/admin_saved_1784760900134.png" alt="Save Confirmation Toast">
+      <div class="img-caption">Save confirmation notification</div>
+    </div>
+
+    <h2>Quick Reference</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>How</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Switch month</td>
+          <td>Use the month dropdown (top-right)</td>
+        </tr>
+        <tr>
+          <td>Upload new designs</td>
+          <td>Drag images into the Upload zone</td>
+        </tr>
+        <tr>
+          <td>Select/deselect a design</td>
+          <td>Click its thumbnail</td>
+        </tr>
+        <tr>
+          <td>Add SEO theme badges</td>
+          <td>Use the Theme Badges section (label + keywords)</td>
+        </tr>
+        <tr>
+          <td>Preview homepage look</td>
+          <td>Click the Preview button</td>
+        </tr>
+        <tr>
+          <td>Save changes</td>
+          <td>Click Save</td>
+        </tr>
+        <tr>
+          <td>Deactivate a month</td>
+          <td>Uncheck the "Active" checkbox</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note-box">
+      📌 <strong>NOTE:</strong> If no schedule is saved for a month, the homepage automatically falls back to the default built-in themes — nothing breaks.
+    </div>
+
+  </div>
+
+</body>
+</html>

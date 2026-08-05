@@ -8,6 +8,37 @@ import { ArrowRight, TrendingUp, Star } from "lucide-react";
 import personalizationBlanket from "@/assets/personalization-blanket.png";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 
+// Designs within each event group that should get the "FEATURED" badge.
+// Title substrings are matched case-insensitively.
+const FEATURED_BADGE_PATTERNS: Record<string, string[]> = {
+  "labor-day": [
+    "Back to Work Tomorrow",
+    "Pretend to Love Workers",
+    "One Day They Thank",
+    "Well-Deserved Nap",
+  ],
+  // Other event groups: all designs are featured by default
+};
+
+// Designs temporarily hidden from the "All Designs" grid.
+// Title substrings matched case-insensitively.
+const HIDDEN_DESIGN_PATTERNS: string[] = [
+  // Non-featured Labor Day
+  "World Takes All the Credit",
+  "Fueled by Caffeine & Deadlines",
+  "Deserves More Than a Holiday",
+  "Adulting Is Hard",
+  // Seasonal / temporarily hidden
+  "Just Here for the Ice Cream",
+  "Red, White & Scoops",
+  "CEOs of Chaos",
+  "World's Okayest Parent",
+  "Powered by Love",
+  "Snacks Are Currency",
+  "Raising Humans Is Exhausting",
+  "Snarky Humans",
+];
+
 interface Design {
   id: string;
   title: string;
@@ -513,17 +544,25 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                      {group.designs.map((design) => (
-                        <ProductCard
-                          key={design.id}
-                          id={design.id}
-                          title={design.title}
-                          price={0}
-                          image={resolveDesignImage(design.image_url)}
-                          category={group.name}
-                          badge="FEATURED"
-                        />
-                      ))}
+                      {group.designs
+                        .filter((design) => {
+                          const patterns = FEATURED_BADGE_PATTERNS[group.id];
+                          // If no patterns defined, show all; otherwise only show matching designs
+                          return !patterns || patterns.some(
+                            (p) => design.title.toLowerCase().includes(p.toLowerCase())
+                          );
+                        })
+                        .map((design) => (
+                          <ProductCard
+                            key={design.id}
+                            id={design.id}
+                            title={design.title}
+                            price={0}
+                            image={resolveDesignImage(design.image_url)}
+                            category={group.name}
+                            badge="FEATURED"
+                          />
+                        ))}
                     </div>
                   </div>
                 ))}
@@ -543,16 +582,20 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {allDesigns.map((design) => (
-            <ProductCard
-              key={design.id}
-              id={design.id}
-              title={design.title}
-              price={0}
-              image={resolveDesignImage(design.image_url)}
-              category=""
-            />
-          ))}
+          {allDesigns
+            .filter((design) => !HIDDEN_DESIGN_PATTERNS.some(
+              (p) => design.title.toLowerCase().includes(p.toLowerCase())
+            ))
+            .map((design) => (
+              <ProductCard
+                key={design.id}
+                id={design.id}
+                title={design.title}
+                price={0}
+                image={resolveDesignImage(design.image_url)}
+                category=""
+              />
+            ))}
         </div>
       </div>
     </section>
