@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import tshirtVideo from "@/assets/ads_tshirt_snarky humans_ugc.mp4";
-import tumblerVideo from "@/assets/ads_tumbler_snarky humans_ugc landscape.mp4";
+import tshirtVideo from "@/assets/ads_tshirt_snarkyazz_ugc.mp4";
+import tumblerVideo from "@/assets/ads_tumbler_snarkyazz_ugc landscape.mp4";
 import {
     Carousel,
     CarouselContent,
