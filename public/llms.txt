@@ -1,6 +1,6 @@
-# Snarky A$$ Apparel
+# Snarky Humans
 
-Welcome to the machine-readable layout of Snarky A$$ Apparel. We are an e-commerce storefront specializing in funny, sarcastic, and snarky apparel, gag gifts, and personalized items.
+Welcome to the machine-readable layout of Snarky Humans. We are an e-commerce storefront specializing in funny, sarcastic, and snarky apparel, gag gifts, and personalized items.
 
 > We empower sarcastic souls to wear their inner monologue.
 

@@ -11,7 +11,7 @@ const About = () => {
         <div className="min-h-screen flex flex-col">
             <Helmet>
                 <title>About Us | Snarky Apparel &amp; Veteran-Owned Humor</title>
-                <meta name="description" content="Learn about Snarky A$$ Apparel, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts." />
+                <meta name="description" content="Learn about Snarky Humans, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts." />
                 <link rel="canonical" href="https://www.snarkyhumans.com/about" />
             </Helmet>
             <Header />
@@ -65,7 +65,7 @@ const About = () => {
                             <div className="flex flex-col justify-center gap-6">
                                 <h3 className="text-3xl font-black">Not Your Average Gift Shop</h3>
                                 <p className="text-lg text-muted-foreground leading-relaxed">
-                                    Most gag gifts end up in the trash because they feel cheap. We built Snarky A$$ Apparel to solve that problem. 
+                                    Most gag gifts end up in the trash because they feel cheap. We built Snarky Humans to solve that problem. 
                                 </p>
                                 <p className="text-lg text-muted-foreground leading-relaxed">
                                     Whether you're buying a sarcastic hoodie for yourself, a funny mug for a coworker, or a custom photo blanket for a white elephant exchange, you are getting a high-quality product that commands respect (and laughs).

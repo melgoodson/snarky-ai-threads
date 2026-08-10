@@ -636,7 +636,7 @@ const ProductDetail = () => {
       "availability": "https://schema.org/InStock",
       "seller": {
         "@type": "Organization",
-        "name": "Snarky A$$ Apparel"
+        "name": "Snarky Humans"
       }
     }
   };
@@ -644,7 +644,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>{product.title} | Snarky A$$ Apparel</title>
+        <title>{product.title} | Snarky Humans</title>
         <meta name="description" content={`${product.subtitle}. ${product.description ? product.description.substring(0, 150) : ''}`} />
         <link rel="canonical" href={`https://snarkyhumans.com/product/${id}`} />
         <meta property="og:title" content={product.title} />

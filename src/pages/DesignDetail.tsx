@@ -443,10 +443,10 @@ const DesignDetail = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>{design.title} | Snarky A$$ Apparel</title>
-        <meta name="description" content={design.description || `Shop the ${design.title} design at Snarky A$$ Apparel. Customize it on t-shirts, hoodies, mugs, and more.`} />
+        <title>{design.title} | Snarky Humans</title>
+        <meta name="description" content={design.description || `Shop the ${design.title} design at Snarky Humans. Customize it on t-shirts, hoodies, mugs, and more.`} />
         <link rel="canonical" href={`https://snarkyhumans.com/designs/${id}`} />
-        <meta property="og:title" content={`${design.title} | Snarky A$$ Apparel`} />
+        <meta property="og:title" content={`${design.title} | Snarky Humans`} />
         <meta property="og:image" content={resolveDesignImage(design.image_url)} />
         <meta property="og:type" content="product" />
       </Helmet>

@@ -85,8 +85,8 @@ const SEO_ROUTES = [
     title: 'Snarky Apparel | Funny Shirts & Personalized Gifts',
     desc: 'Shop funny t-shirts, personalized gifts, custom hardcover journals, mugs & greeting cards. Unapologetic designs for people who speak their mind.',
     canonical: 'https://www.snarkyhumans.com/',
-    body: `<h1>Snarky A$$ Apparel — Unapologetic Shirts & Personalized Gifts</h1>
-    <p>Welcome to Snarky A$$ Apparel, the premier destination for sarcastic graphic tees, funny coffee mugs, custom hardcover journals, canvas tote bags, and personalized gifts built for people who refuse to wear boring clothes. We specialize in turning dark humor, workplace sarcasm, pop culture moments, and unapologetic attitude into high-quality physical products that command respect, spark conversations, and bring genuine laughter to every occasion.</p>
+    body: `<h1>Snarky Humans — Unapologetic Shirts & Personalized Gifts</h1>
+    <p>Welcome to Snarky Humans, the premier destination for sarcastic graphic tees, funny coffee mugs, custom hardcover journals, canvas tote bags, and personalized gifts built for people who refuse to wear boring clothes. We specialize in turning dark humor, workplace sarcasm, pop culture moments, and unapologetic attitude into high-quality physical products that command respect, spark conversations, and bring genuine laughter to every occasion.</p>
     <h2>Our Core Product Collections</h2>
     <p>Whether you are shopping for a hilarious graphic t-shirt for yourself or looking for the perfect customized gift for a friend, coworker, family member, or partner, we have carefully designed collections for every personality:</p>
     <ul>
@@ -99,20 +99,20 @@ const SEO_ROUTES = [
       <li><a href="/ai-custom-clothing">AI Custom Gifts & Studio</a>: Design one-of-one shirts, mugs, and journals using your own AI prompts, inside jokes, group chat memes, or pet photos.</li>
     </ul>
     <h2>Built Different: Veteran-Owned & Quality Focused</h2>
-    <p>Snarky A$$ Apparel was founded by Mel, a military veteran who turned combat trauma, a blast injury, and service-related brain injury recovery into comedic survival skills. We reject cheap, scratchy blanks that fall apart after two washes. Every item is printed on demand in US facilities using state-of-the-art Direct-to-Garment (DTG) printing technology. Orders ship within 3 to 7 business days directly to your door, with free shipping on all orders over $50 across the United States.</p>
+    <p>Snarky Humans was founded by Mel, a military veteran who turned combat trauma, a blast injury, and service-related brain injury recovery into comedic survival skills. We reject cheap, scratchy blanks that fall apart after two washes. Every item is printed on demand in US facilities using state-of-the-art Direct-to-Garment (DTG) printing technology. Orders ship within 3 to 7 business days directly to your door, with free shipping on all orders over $50 across the United States.</p>
     <h2>Gifting Guides & Occasions</h2>
     <p>Explore our specialized gift guides including <a href="/category/white-elephant-gifts">White Elephant Swaps</a>, <a href="/category/funny-coworker-gifts">Funny Coworker Gifts</a>, <a href="/category/gag-gifts">Gag Gifts</a>, <a href="/category/funny-gifts-under-25">Gifts Under $25</a>, and <a href="/category/custom-gifts-for-men">Custom Gifts for Men</a>.</p>`
   },
   {
     path: '/about',
     title: 'About Us | Snarky Apparel & Veteran-Owned Humor',
-    desc: 'Learn about Snarky A$$ Apparel, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts.',
+    desc: 'Learn about Snarky Humans, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts.',
     canonical: 'https://www.snarkyhumans.com/about',
-    body: `<h1>About Snarky A$$ Apparel — Our Story, Values & Mission</h1>
-    <p>Snarky A$$ Apparel is a veteran-owned online brand dedicated to crafting premium sarcastic apparel, funny gag gifts, custom hardcover journals, ceramic mugs, and unapologetic accessories for people who are tired of filtering themselves. We believe humor is a vital survival skill, snark is an authentic language, and high quality should never be sacrificed for a punchline.</p>
+    body: `<h1>About Snarky Humans — Our Story, Values & Mission</h1>
+    <p>Snarky Humans is a veteran-owned online brand dedicated to crafting premium sarcastic apparel, funny gag gifts, custom hardcover journals, ceramic mugs, and unapologetic accessories for people who are tired of filtering themselves. We believe humor is a vital survival skill, snark is an authentic language, and high quality should never be sacrificed for a punchline.</p>
     <h2>The Origin Story: Turning Combat Pain Into Punchlines</h2>
     <p>Mel didn't plan to start a fashion brand. He planned to make it home safely from military deployment. While serving overseas, an explosive blast changed the course of his life. Facing a service-related brain injury, intense sensory overload, and a mind rewired by impact and adrenaline, Mel did what stubborn survivors do: he turned pain into punchlines. Writing sharp, unfiltered humor became his therapeutic outlet, turning dark moments into jokes that made quiet rooms erupt in laughter. Out of that resilience, therapeutic middle finger energy, and community spirit, Snarky Humans was born.</p>
-    <h2>Why Shop With Snarky A$$ Apparel?</h2>
+    <h2>Why Shop With Snarky Humans?</h2>
     <p>Most gag gifts end up in the trash within a week because they are printed on cheap, scratchy polyester fabric or flimsy low-grade blanks. We built our store to revolutionize the humor apparel market with uncompromising material standards:</p>
     <ul>
       <li><strong>5.3 oz Heavyweight Cotton:</strong> We use 100% preshrunk cotton tees that feel soft against the skin, hold their structure, and look great wash after wash.</li>
@@ -147,10 +147,10 @@ const SEO_ROUTES = [
   {
     path: '/blog',
     title: 'Snarky Blog | Funny Gift Guides & Humor | Snarky',
-    desc: 'Read the official Snarky A$$ Apparel blog for funny gift guides, office prank ideas, white elephant strategies, and sarcastic life advice.',
+    desc: 'Read the official Snarky Humans blog for funny gift guides, office prank ideas, white elephant strategies, and sarcastic life advice.',
     canonical: 'https://www.snarkyhumans.com/blog',
     body: `<h1>The Snarky A$$ Blog — Gift Guides, Workplace Humor & Sarcastic Living</h1>
-    <p>Welcome to the official blog for Snarky A$$ Apparel. Here you will find brutally honest gift guides, office survival strategies, white elephant party tactics, style advice for graphic tees, and hilarious commentary on navigating modern life with a healthy dose of sarcastic humor.</p>
+    <p>Welcome to the official blog for Snarky Humans. Here you will find brutally honest gift guides, office survival strategies, white elephant party tactics, style advice for graphic tees, and hilarious commentary on navigating modern life with a healthy dose of sarcastic humor.</p>
     <h2>Featured Blog Articles & Guides</h2>
     <ul>
       <li><a href="/blog/funny-snarky-shirts-make-friends">How Funny & Snarky T-Shirts Help You Make Like-Minded Friends</a>: Discover why wearing graphic tees serves as the ultimate social filter and instant icebreaker in public settings.</li>
@@ -171,11 +171,11 @@ const SEO_ROUTES = [
     body: `<h1>How Funny & Snarky T-Shirts Help You Make Like-Minded Friends</h1>
     <p>In a world full of small talk, polite head nods, and generic fashion, wearing a funny graphic t-shirt is like putting up a beacon for your tribe. Whether you are standing in line at a coffee shop, browsing a local bookstore, or waiting at an airport terminal, a shirt featuring a sarcastic joke or witty observation immediately breaks the ice.</p>
     <h2>Graphic Tees as Social Filters</h2>
-    <p>Clothing is far more than just fabric—it is instant non-verbal communication. When you wear a snarky shirt from Snarky A$$ Apparel, you send a clear message to the world: you don't take yourself too seriously, and you appreciate real, unfiltered humor. This acts as a natural social filter. People who share your dry sense of humor will smile, chuckle out loud, or strike up a conversation. Meanwhile, overly rigid individuals will self-select out. It is the single easiest social networking tool ever created.</p>
+    <p>Clothing is far more than just fabric—it is instant non-verbal communication. When you wear a snarky shirt from Snarky Humans, you send a clear message to the world: you don't take yourself too seriously, and you appreciate real, unfiltered humor. This acts as a natural social filter. People who share your dry sense of humor will smile, chuckle out loud, or strike up a conversation. Meanwhile, overly rigid individuals will self-select out. It is the single easiest social networking tool ever created.</p>
     <h2>Real Customer Stories: Icebreakers in Action</h2>
     <p>Our customers frequently tell us stories about complete strangers approaching them at gym sessions, backyard barbecues, and office gatherings just to laugh at their shirt graphics. Prints featuring phrases like "RBF Champion", "Snarky Human", or "Free Hugs - Just Kidding" turn awkward silences into instant shared laughs and long-lasting friendships.</p>
     <h2>Quality You Can Feel Proud Wearing</h2>
-    <p>An icebreaker shirt only works if it looks and feels great on your body. That is why all Snarky A$$ Apparel tees are printed on 100% preshrunk 5.3 oz heavyweight cotton with Direct-to-Garment technology, providing durable, vibrant artwork that will not crack or peel after washing.</p>
+    <p>An icebreaker shirt only works if it looks and feels great on your body. That is why all Snarky Humans tees are printed on 100% preshrunk 5.3 oz heavyweight cotton with Direct-to-Garment technology, providing durable, vibrant artwork that will not crack or peel after washing.</p>
     <p>Ready to upgrade your wardrobe with genuine icebreakers? Explore our <a href="/shirts">Funny T-Shirt Collection</a> or create your own custom tee in our <a href="/custom-design">AI Design Studio</a>.</p>`
   },
   {
@@ -209,9 +209,9 @@ const SEO_ROUTES = [
   {
     path: '/contact',
     title: 'Contact Us | Snarky Apparel Customer Support',
-    desc: 'Have questions about your order, custom designs, or shipping? Contact the Snarky A$$ Apparel support team for fast assistance within 24-48 hours.',
+    desc: 'Have questions about your order, custom designs, or shipping? Contact the Snarky Humans support team for fast assistance within 24-48 hours.',
     canonical: 'https://www.snarkyhumans.com/contact',
-    body: `<h1>Contact Snarky A$$ Apparel Customer Support</h1>
+    body: `<h1>Contact Snarky Humans Customer Support</h1>
     <p>Got questions about an existing order, custom design ideas, shipping timelines, size exchanges, or returns? We are here to help! Our dedicated customer support team is committed to providing fast, friendly, and helpful assistance for every customer.</p>
     <h2>How to Get in Touch</h2>
     <ul>
@@ -235,7 +235,7 @@ const SEO_ROUTES = [
     desc: 'Create custom t-shirts, hoodies, mugs, and journals with our AI design generator. Turn your jokes, prompts, and photos into custom apparel.',
     canonical: 'https://www.snarkyhumans.com/custom-design',
     body: `<h1>AI Custom Design Studio — Create One-of-One Apparel & Gifts</h1>
-    <p>Unleash your creative genius with the Snarky A$$ Apparel AI Custom Design Studio. Turn your inside jokes, custom text prompts, viral meme concepts, or pet photos into one-of-a-kind t-shirts, hoodies, coffee mugs, hardcover journals, canvas tote bags, and greeting cards.</p>
+    <p>Unleash your creative genius with the Snarky Humans AI Custom Design Studio. Turn your inside jokes, custom text prompts, viral meme concepts, or pet photos into one-of-a-kind t-shirts, hoodies, coffee mugs, hardcover journals, canvas tote bags, and greeting cards.</p>
     <h2>How to Use the AI Design Studio</h2>
     <ol>
       <li><strong>Enter Your Text Prompt:</strong> Type a detailed description of the graphic, artwork, or witty phrase you want to generate.</li>
@@ -314,7 +314,7 @@ const SEO_ROUTES = [
     desc: 'Get answers to shipping times, sizing charts, returns, and AI custom apparel creation. Everything you need to know before buying from Snarky.',
     canonical: 'https://www.snarkyhumans.com/faq',
     body: `<h1>Frequently Asked Questions (FAQ) & Customer Guide</h1>
-    <p>Got questions about ordering from Snarky A$$ Apparel? We have compiled a thorough guide answering all your questions about sizing, production speeds, domestic and international shipping, garment care, returns, and custom AI order procedures.</p>
+    <p>Got questions about ordering from Snarky Humans? We have compiled a thorough guide answering all your questions about sizing, production speeds, domestic and international shipping, garment care, returns, and custom AI order procedures.</p>
     <h2>1. Production & Delivery Speeds</h2>
     <p>All items are printed on demand in US facilities to reduce waste and guarantee fresh print quality. Production takes 2 to 5 business days, and domestic US shipping takes 3 to 5 business days. You will receive a tracking number via email as soon as your package ships.</p>
     <h2>2. Complete Sizing Guide</h2>
@@ -392,11 +392,11 @@ const SEO_ROUTES = [
   {
     path: '/privacy',
     title: 'Privacy Policy | Snarky Apparel',
-    desc: 'Read the Snarky A$$ Apparel Privacy Policy. Learn how we protect your personal data, secure payment transactions, and handle customer information.',
+    desc: 'Read the Snarky Humans Privacy Policy. Learn how we protect your personal data, secure payment transactions, and handle customer information.',
     canonical: 'https://www.snarkyhumans.com/privacy',
-    body: `<h1>Snarky A$$ Apparel Privacy Policy</h1>
+    body: `<h1>Snarky Humans Privacy Policy</h1>
     <p>Last updated: February 2026</p>
-    <p>At Snarky A$$ Apparel, we respect your privacy and are deeply committed to protecting your personal data. This Privacy Policy outlines how we collect, use, store, and safeguard your information when you visit our store or make a purchase.</p>
+    <p>At Snarky Humans, we respect your privacy and are deeply committed to protecting your personal data. This Privacy Policy outlines how we collect, use, store, and safeguard your information when you visit our store or make a purchase.</p>
     <h2>1. Information We Collect</h2>
     <ul>
       <li><strong>Account & Contact Info:</strong> Email address, name, phone number, and delivery shipping address when placing orders.</li>
@@ -412,10 +412,10 @@ const SEO_ROUTES = [
   {
     path: '/returns',
     title: 'Return & Exchange Policy | Snarky Apparel',
-    desc: 'Check our hassle-free return and exchange policy. Learn how Snarky A$$ Apparel handles order replacements, damaged items, and customer satisfaction.',
+    desc: 'Check our hassle-free return and exchange policy. Learn how Snarky Humans handles order replacements, damaged items, and customer satisfaction.',
     canonical: 'https://www.snarkyhumans.com/returns',
     body: `<h1>Returns, Refunds & Exchange Policy</h1>
-    <p>At Snarky A$$ Apparel, customer satisfaction is our top priority. Because all of our products are custom-printed on demand specifically for each customer, we handle returns and replacements with transparent, hassle-free guidelines.</p>
+    <p>At Snarky Humans, customer satisfaction is our top priority. Because all of our products are custom-printed on demand specifically for each customer, we handle returns and replacements with transparent, hassle-free guidelines.</p>
     <h2>When We Provide Free Replacements or Full Refunds</h2>
     <ul>
       <li>The item arrived damaged, defective, torn, or stained.</li>
@@ -434,10 +434,10 @@ const SEO_ROUTES = [
   {
     path: '/shipping',
     title: 'Shipping Information & Tracking | Snarky',
-    desc: 'Get details on Snarky A$$ Apparel shipping rates, delivery timelines, fulfillment processes, free shipping over $50, and order tracking.',
+    desc: 'Get details on Snarky Humans shipping rates, delivery timelines, fulfillment processes, free shipping over $50, and order tracking.',
     canonical: 'https://www.snarkyhumans.com/shipping',
     body: `<h1>Shipping Rates, Delivery Speeds & Order Tracking</h1>
-    <p>Everything you need to know about how Snarky A$$ Apparel prints, packs, and delivers your snarky gear directly to your door.</p>
+    <p>Everything you need to know about how Snarky Humans prints, packs, and delivers your snarky gear directly to your door.</p>
     <h2>Production & Delivery Timelines</h2>
     <ul>
       <li><strong>United States:</strong> 2–5 business days production + 3–5 business days standard shipping (5–8 business days total).</li>
@@ -470,17 +470,17 @@ const SEO_ROUTES = [
   {
     path: '/terms',
     title: 'Terms of Service | Snarky Apparel',
-    desc: 'Review the Terms of Service for Snarky A$$ Apparel. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers.',
+    desc: 'Review the Terms of Service for Snarky Humans. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers.',
     canonical: 'https://www.snarkyhumans.com/terms',
     body: `<h1>Terms of Service & Website Usage Agreement</h1>
     <p>Last updated: February 2026</p>
-    <p>Welcome to Snarky A$$ Apparel. By accessing or using our website, purchasing products, or using our AI Custom Studio, you agree to be bound by these Terms of Service.</p>
+    <p>Welcome to Snarky Humans. By accessing or using our website, purchasing products, or using our AI Custom Studio, you agree to be bound by these Terms of Service.</p>
     <h2>1. Made-to-Order Purchasing</h2>
     <p>All products sold on our store are made to order through our fulfillment partner Printify. Prices are listed in US Dollars (USD) and may change without prior notice.</p>
     <h2>2. Intellectual Property & AI Usage</h2>
     <p>Users retain ownership of their original text prompts, but AI-generated artwork is licensed exclusively for ordering products from our site. Users may not upload copyrighted logos, trademarks, or inappropriate content.</p>
     <h2>3. Limitation of Liability</h2>
-    <p>Snarky A$$ Apparel is not liable for indirect or consequential damages. Our total liability is strictly limited to the purchase price of the items ordered.</p>
+    <p>Snarky Humans is not liable for indirect or consequential damages. Our total liability is strictly limited to the purchase price of the items ordered.</p>
     <p>For legal inquiries, visit our <a href="/contact">Contact Page</a> or email <a href="mailto:support@snarkyhumans.com">support@snarkyhumans.com</a>.</p>`
   },
   {
@@ -536,7 +536,7 @@ const SEO_ROUTES = [
     desc: 'Shop premium gag gifts that are actually funny, not cheap plastic. Sarcastic mugs, funny tees, and custom items for birthdays and holiday parties.',
     canonical: 'https://www.snarkyhumans.com/category/gag-gifts',
     body: `<h1>Hilarious Gag Gifts That Get Real Laughs</h1>
-    <p>Most gag gifts are thrown away after one chuckle. Snarky A$$ Apparel makes premium gag gifts that people actually use and love for years.</p>
+    <p>Most gag gifts are thrown away after one chuckle. Snarky Humans makes premium gag gifts that people actually use and love for years.</p>
     <p>Browse our hilarious <a href="/shirts">Funny T-Shirts</a>, <a href="/greeting-cards">Sarcastic Greeting Cards</a>, and <a href="/ai-custom-clothing">Custom AI Gifts</a>.</p>`
   },
   {

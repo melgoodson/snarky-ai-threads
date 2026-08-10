@@ -8,7 +8,7 @@ const TermsOfService = () => {
         <div className="min-h-screen flex flex-col">
             <Helmet>
                 <title>Terms of Service | Snarky Apparel</title>
-                <meta name="description" content="Review the Terms of Service for Snarky A$$ Apparel. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers." />
+                <meta name="description" content="Review the Terms of Service for Snarky Humans. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers." />
                 <link rel="canonical" href="https://www.snarkyhumans.com/terms" />
             </Helmet>
             <Header />
@@ -26,7 +26,7 @@ const TermsOfService = () => {
                             <section>
                                 <h2 className="text-2xl font-bold mb-4">1. Agreement to Terms</h2>
                                 <p className="text-muted-foreground leading-relaxed">
-                                    By accessing or using Snarky A$$ Apparel ("we," "our," or "us"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our website or services.
+                                    By accessing or using Snarky Humans ("we," "our," or "us"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our website or services.
                                 </p>
                             </section>
 
@@ -60,7 +60,7 @@ const TermsOfService = () => {
                             <section>
                                 <h2 className="text-2xl font-bold mb-4">5. Intellectual Property</h2>
                                 <p className="text-muted-foreground leading-relaxed">
-                                    All content on this website, including designs, text, graphics, and logos, is the property of Snarky A$$ Apparel or its licensors and is protected by copyright and trademark laws. You may not copy, reproduce, or distribute any content without written permission.
+                                    All content on this website, including designs, text, graphics, and logos, is the property of Snarky Humans or its licensors and is protected by copyright and trademark laws. You may not copy, reproduce, or distribute any content without written permission.
                                 </p>
                             </section>
 

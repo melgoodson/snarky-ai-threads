@@ -10,7 +10,7 @@ const Returns = () => {
         <div className="min-h-screen flex flex-col">
             <Helmet>
                 <title>Return &amp; Exchange Policy | Snarky Apparel</title>
-                <meta name="description" content="Check our hassle-free return and exchange policy. Learn how Snarky A$$ Apparel handles order replacements, damaged items, and customer satisfaction." />
+                <meta name="description" content="Check our hassle-free return and exchange policy. Learn how Snarky Humans handles order replacements, damaged items, and customer satisfaction." />
                 <link rel="canonical" href="https://www.snarkyhumans.com/returns" />
             </Helmet>
             <Header />

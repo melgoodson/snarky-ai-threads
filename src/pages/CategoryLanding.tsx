@@ -23,7 +23,7 @@ const CATEGORY_DATA: Record<string, CategoryInfo> = {
     title: "Funny Gifts",
     subtitle: "Hilarious gifts for any occasion",
     description: "Shop our collection of funny gifts guaranteed to get a laugh. From snarky mugs to sarcastic t-shirts.",
-    metaDesc: "Shop the best funny gifts and sarcastic apparel at Snarky A$$ Apparel. Unique, hilarious gifts for birthdays, holidays, and just because.",
+    metaDesc: "Shop the best funny gifts and sarcastic apparel at Snarky Humans. Unique, hilarious gifts for birthdays, holidays, and just because.",
     copyText1: "Finding the perfect gift shouldn't be boring. Our funny gifts are designed to bypass the small talk and deliver pure, unfiltered humor. Whether you're shopping for a friend with a sharp tongue or treating yourself, we've got you covered.",
     copyText2: "Every product is made to order with high-quality printing. Choose from our catalog or design your own funny gift using our AI mockup generator.",
     keywords: "funny gifts, hilarious gifts, best funny gifts online",
@@ -212,7 +212,7 @@ const CategoryLanding = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>{category.title} | Snarky A$$ Apparel</title>
+        <title>{category.title} | Snarky Humans</title>
         <meta name="description" content={category.metaDesc} />
         <meta name="keywords" content={category.keywords} />
         <link rel="canonical" href={`https://snarkyhumans.com/category/${categorySlug}`} />
