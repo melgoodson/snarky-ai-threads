@@ -304,8 +304,8 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
 
         if (!error && data && data.headline) {
           setMonthData({
-            headline: data.headline,
-            subheadline: data.subheadline || getCurrentMonthData().subheadline,
+            headline: data.headline.replace(/Q3\s*/g, ''),
+            subheadline: (data.subheadline || getCurrentMonthData().subheadline).replace(/\s*Q3\s*/g, ' '),
             themes: (data.themes as { label: string; keywords: string }[]) || getCurrentMonthData().themes,
           });
           if (data.design_ids && data.design_ids.length > 0) {
