@@ -115,8 +115,8 @@ const MONTHLY_FEATURED: Record<number, {
     ],
   },
   6: { // July
-    headline: "Q3 HOLIDAYS & ATTITUDE",
-    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every Q3 event.",
+    headline: "HOLIDAYS & ATTITUDE",
+    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every event.",
     themes: [
       { label: "🛠️ Labor Day Snark", keywords: "labor day shirt, funny labor day tee, work humor, adulting is hard" },
       { label: "👵 Grandparents Day", keywords: "happy grandparents day shirt, funny grandparents gift, professional spoilers, awesome in aging" },
@@ -125,8 +125,8 @@ const MONTHLY_FEATURED: Record<number, {
     ],
   },
   7: { // August
-    headline: "Q3 HOLIDAYS & ATTITUDE",
-    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every Q3 event.",
+    headline: "HOLIDAYS & ATTITUDE",
+    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every event.",
     themes: [
       { label: "🛠️ Labor Day Snark", keywords: "labor day shirt, funny labor day tee, work humor, adulting is hard" },
       { label: "👵 Grandparents Day", keywords: "happy grandparents day shirt, funny grandparents gift, professional spoilers, awesome in aging" },
@@ -135,8 +135,8 @@ const MONTHLY_FEATURED: Record<number, {
     ],
   },
   8: { // September
-    headline: "Q3 HOLIDAYS & ATTITUDE",
-    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every Q3 event.",
+    headline: "HOLIDAYS & ATTITUDE",
+    subheadline: "Labor Day, Grandparents Day, 9/11 Patriot Remembrance, & Hispanic Heritage Month — snarky apparel for every event.",
     themes: [
       { label: "🛠️ Labor Day Snark", keywords: "labor day shirt, funny labor day tee, work humor, adulting is hard" },
       { label: "👵 Grandparents Day", keywords: "happy grandparents day shirt, funny grandparents gift, professional spoilers, awesome in aging" },
@@ -302,7 +302,7 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
           .eq("is_active", true)
           .maybeSingle();
 
-        if (!error && data && data.headline && data.headline.includes("Q3")) {
+        if (!error && data && data.headline) {
           setMonthData({
             headline: data.headline,
             subheadline: data.subheadline || getCurrentMonthData().subheadline,
@@ -469,7 +469,7 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
   return (
     <section id="products" className="py-16 md:py-24">
       <div className="container px-4">
-        {/* Featured This Month — Separated by Q3 Holiday & Event */}
+        {/* Featured This Month — Separated by Holiday & Event */}
         {featuredDesigns.length > 0 && (() => {
           const eventGroups = getEventGroups(featuredDesigns);
           const visibleGroups = activeEventTab === "all"
@@ -505,7 +505,7 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
                       : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
                   }`}
                 >
-                  ✨ All Q3 Events ({featuredDesigns.length})
+                  ✨ All Events ({featuredDesigns.length})
                 </button>
                 {eventGroups.map((group) => (
                   <button
