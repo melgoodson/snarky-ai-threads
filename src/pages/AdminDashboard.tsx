@@ -536,7 +536,7 @@ export default function AdminDashboard() {
             <div>
               <h1 className="text-4xl font-black tracking-tighter">Admin Dashboard</h1>
               <p className="text-muted-foreground mt-2">
-                Analytics and order management for Snarky A$$ Threads
+                Analytics and order management for Snarky Humans
               </p>
             </div>
             

@@ -75,7 +75,7 @@ const Blog = () => {
   const blogSchema = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    "name": "Snarky A$$ Threads Blog",
+    "name": "Snarky Humans Blog",
     "description": "Tips, stories, and insights from the world of snarky apparel",
     "url": `${window.location.origin}/blog`,
     "blogPost": posts.map(post => ({
@@ -107,14 +107,14 @@ const Blog = () => {
         <link rel="canonical" href="https://www.snarkyhumans.com/blog" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Blog - Snarky A$$ Threads | Humor Apparel Insights" />
+        <meta property="og:title" content="Blog - Snarky Humans | Humor Apparel Insights" />
         <meta property="og:description" content="Tips, stories, and insights from the world of snarky apparel. Learn about designs, care, and irreverent humor culture." />
         <meta property="og:type" content="blog" />
         <meta property="og:url" content={`${window.location.origin}/blog`} />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Blog - Snarky A$$ Threads" />
+        <meta name="twitter:title" content="Blog - Snarky Humans" />
         <meta name="twitter:description" content="Tips and insights from the world of snarky, irreverent apparel." />
         
         {/* Structured Data */}

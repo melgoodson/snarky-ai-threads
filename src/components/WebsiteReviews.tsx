@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Star } from "lucide-react";
 
-// Review images from /snarkyazz - website reviews/WEBSITE REVIEWS/
+// Review images from /snarky humans - website reviews/WEBSITE REVIEWS/
 const REVIEW_IMAGES = [
-    "/snarkyazz - website reviews/WEBSITE REVIEWS/1.jpg",
-    "/snarkyazz - website reviews/WEBSITE REVIEWS/2.jpg",
-    "/snarkyazz - website reviews/WEBSITE REVIEWS/3.jpg",
-    "/snarkyazz - website reviews/WEBSITE REVIEWS/4.jpg",
-    "/snarkyazz - website reviews/WEBSITE REVIEWS/5.jpg",
-    "/snarkyazz - website reviews/WEBSITE REVIEWS/6.jpg",
-    "/snarkyazz - website reviews/WEBSITE REVIEWS/7.jpg",
+    "/snarky humans - website reviews/WEBSITE REVIEWS/1.jpg",
+    "/snarky humans - website reviews/WEBSITE REVIEWS/2.jpg",
+    "/snarky humans - website reviews/WEBSITE REVIEWS/3.jpg",
+    "/snarky humans - website reviews/WEBSITE REVIEWS/4.jpg",
+    "/snarky humans - website reviews/WEBSITE REVIEWS/5.jpg",
+    "/snarky humans - website reviews/WEBSITE REVIEWS/6.jpg",
+    "/snarky humans - website reviews/WEBSITE REVIEWS/7.jpg",
 ];
 
 export const WebsiteReviews = () => {

@@ -41,7 +41,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
           <div className="space-y-4 col-span-1 sm:col-span-2 md:col-span-1">
             <h3 className="text-xl font-black tracking-tighter">
-              SNARKY A$$ <span className="text-primary">APPAREL</span>
+              SNARKY <span className="text-primary">HUMANS</span>
             </h3>
             <p className="text-sm text-muted-foreground">
               Attitude-packed apparel for people who speak their mind.

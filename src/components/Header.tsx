@@ -212,8 +212,8 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
           <div className="container px-3 sm:px-4 py-2 sm:py-3">
             <Link to="/" className="block text-center hover:opacity-80 transition-opacity">
               <BrandTitle className="text-base sm:text-xl md:text-2xl font-black tracking-tight uppercase">
-                <span className="text-primary">SNARKY A$$</span>{" "}
-                <span className="text-foreground">APPAREL</span>
+                <span className="text-primary">SNARKY</span>{" "}
+                <span className="text-foreground">HUMANS</span>
               </BrandTitle>
             </Link>
           </div>

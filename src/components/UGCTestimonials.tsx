@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import tshirtVideo from "@/assets/ads_tshirt_snarkyazz_ugc.mp4";
-import tumblerVideo from "@/assets/ads_tumbler_snarkyazz_ugc landscape.mp4";
+import tshirtVideo from "@/assets/ads_tshirt_snarky humans_ugc.mp4";
+import tumblerVideo from "@/assets/ads_tumbler_snarky humans_ugc landscape.mp4";
 import {
     Carousel,
     CarouselContent,
@@ -19,13 +19,13 @@ const TESTIMONIALS = [
         key: "old-tee"
     },
     {
-        video: "/snarkyazz%20-%20website%20reviews/WEBSITE%20REVIEWS/snarkyazzshirt1.mp4",
+        video: "/snarky humans%20-%20website%20reviews/WEBSITE%20REVIEWS/snarky humansshirt1.mp4",
         product: "Snarky Shirt 1",
         aspect: "aspect-[9/16]",
         key: "new-shirt-1"
     },
     {
-        video: "/snarkyazz%20-%20website%20reviews/WEBSITE%20REVIEWS/snarkyazzmugs1.mp4",
+        video: "/snarky humans%20-%20website%20reviews/WEBSITE%20REVIEWS/snarky humansmugs1.mp4",
         product: "Snarky Mug",
         aspect: "aspect-[9/16]",
         key: "mug-1"
@@ -37,19 +37,19 @@ const TESTIMONIALS = [
         key: "old-tumbler"
     },
     {
-        video: "/snarkyazz%20-%20website%20reviews/WEBSITE%20REVIEWS/snarkyazzshirt2.mp4",
+        video: "/snarky humans%20-%20website%20reviews/WEBSITE%20REVIEWS/snarky humansshirt2.mp4",
         product: "Snarky Shirt 2",
         aspect: "aspect-[9/16]",
         key: "new-shirt-2"
     },
     {
-        video: "/snarkyazz%20-%20website%20reviews/WEBSITE%20REVIEWS/snarkyazztote1.mp4",
+        video: "/snarky humans%20-%20website%20reviews/WEBSITE%20REVIEWS/snarky humanstote1.mp4",
         product: "Snarky Tote",
         aspect: "aspect-[9/16]",
         key: "tote-1"
     },
     {
-        video: "/snarkyazz%20-%20website%20reviews/WEBSITE%20REVIEWS/snarkyazzmugs2.mp4",
+        video: "/snarky humans%20-%20website%20reviews/WEBSITE%20REVIEWS/snarky humansmugs2.mp4",
         product: "More Mugs",
         aspect: "aspect-[9/16]",
         key: "mug-2"

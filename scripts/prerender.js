@@ -149,7 +149,7 @@ const SEO_ROUTES = [
     title: 'Snarky Blog | Funny Gift Guides & Humor | Snarky',
     desc: 'Read the official Snarky Humans blog for funny gift guides, office prank ideas, white elephant strategies, and sarcastic life advice.',
     canonical: 'https://www.snarkyhumans.com/blog',
-    body: `<h1>The Snarky A$$ Blog — Gift Guides, Workplace Humor & Sarcastic Living</h1>
+    body: `<h1>The Snarky Humans Blog — Gift Guides, Workplace Humor & Sarcastic Living</h1>
     <p>Welcome to the official blog for Snarky Humans. Here you will find brutally honest gift guides, office survival strategies, white elephant party tactics, style advice for graphic tees, and hilarious commentary on navigating modern life with a healthy dose of sarcastic humor.</p>
     <h2>Featured Blog Articles & Guides</h2>
     <ul>
@@ -158,7 +158,7 @@ const SEO_ROUTES = [
       <li><a href="/category/funny-coworker-gifts">Corporate Survival 101: Office Mugs & Passive-Aggressive Totes</a>: How to maintain your sanity during early morning Zoom calls and endless meetings.</li>
       <li><a href="/category/personalized-notebook-gifts">Why Custom Hardcover Journals Make the Best Personalized Gifts</a>: Combining daily mindfulness with dark humor and sarcastic reflection.</li>
     </ul>
-    <h2>Why Read the Snarky A$$ Blog?</h2>
+    <h2>Why Read the Snarky Humans Blog?</h2>
     <p>We write articles for real people who appreciate humor that hasn't been scrubbed clean by corporate PR teams. From analyzing how sarcastic shirts build instant friendships to breaking down budget gift ideas under $25, our guides deliver actionable tips with plenty of attitude.</p>
     <h2>Browse Products Mentioned in Our Articles</h2>
     <p>Check out our main product lines including <a href="/shirts">Funny T-Shirts</a>, <a href="/hoodies">Graphic Hoodies</a>, <a href="/mugs">Ceramic Coffee Mugs</a>, <a href="/journals">Custom Hardcover Journals</a>, <a href="/tote-bags">Canvas Totes</a>, and <a href="/greeting-cards">Sarcastic Greeting Cards</a>.</p>`
