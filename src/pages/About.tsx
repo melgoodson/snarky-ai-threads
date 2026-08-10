@@ -10,7 +10,7 @@ const About = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>About Us | Snarky Apparel &amp; Veteran-Owned Humor</title>
+                <title>About Us | Snarky Humans &amp; Veteran-Owned Humor</title>
                 <meta name="description" content="Learn about Snarky Humans, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts." />
                 <link rel="canonical" href="https://www.snarkyhumans.com/about" />
             </Helmet>

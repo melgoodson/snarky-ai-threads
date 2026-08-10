@@ -7,7 +7,7 @@ const TermsOfService = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Terms of Service | Snarky Apparel</title>
+                <title>Terms of Service | Snarky Humans</title>
                 <meta name="description" content="Review the Terms of Service for Snarky Humans. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers." />
                 <link rel="canonical" href="https://www.snarkyhumans.com/terms" />
             </Helmet>

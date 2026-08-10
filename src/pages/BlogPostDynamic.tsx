@@ -282,7 +282,7 @@ export default function BlogPostDynamic() {
             {/* Shop CTA */}
             <div className="mt-8 text-center">
               <Button asChild>
-                <Link to="/#products">Shop Snarky Apparel</Link>
+                <Link to="/#products">Shop Snarky Humans</Link>
               </Button>
             </div>
 

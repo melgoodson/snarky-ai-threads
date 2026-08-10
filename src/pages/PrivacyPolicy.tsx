@@ -6,7 +6,7 @@ const PrivacyPolicy = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Privacy Policy | Snarky Apparel</title>
+                <title>Privacy Policy | Snarky Humans</title>
                 <meta name="description" content="Read the Snarky Humans Privacy Policy. Learn how we protect your personal data, secure payment transactions, and handle customer information." />
                 <link rel="canonical" href="https://www.snarkyhumans.com/privacy" />
             </Helmet>

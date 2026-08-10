@@ -82,7 +82,7 @@ const aiCustomClothingPageSchema = {
 const SEO_ROUTES = [
   {
     path: '/',
-    title: 'Snarky Apparel | Funny Shirts & Personalized Gifts',
+    title: 'Snarky Humans | Funny Shirts & Personalized Gifts',
     desc: 'Shop funny t-shirts, personalized gifts, custom hardcover journals, mugs & greeting cards. Unapologetic designs for people who speak their mind.',
     canonical: 'https://www.snarkyhumans.com/',
     body: `<h1>Snarky Humans — Unapologetic Shirts & Personalized Gifts</h1>
@@ -105,7 +105,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/about',
-    title: 'About Us | Snarky Apparel & Veteran-Owned Humor',
+    title: 'About Us | Snarky Humans & Veteran-Owned Humor',
     desc: 'Learn about Snarky Humans, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts.',
     canonical: 'https://www.snarkyhumans.com/about',
     body: `<h1>About Snarky Humans — Our Story, Values & Mission</h1>
@@ -208,7 +208,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/contact',
-    title: 'Contact Us | Snarky Apparel Customer Support',
+    title: 'Contact Us | Snarky Humans Customer Support',
     desc: 'Have questions about your order, custom designs, or shipping? Contact the Snarky Humans support team for fast assistance within 24-48 hours.',
     canonical: 'https://www.snarkyhumans.com/contact',
     body: `<h1>Contact Snarky Humans Customer Support</h1>
@@ -231,7 +231,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/custom-design',
-    title: 'AI Custom Design Studio | Snarky Apparel',
+    title: 'AI Custom Design Studio | Snarky Humans',
     desc: 'Create custom t-shirts, hoodies, mugs, and journals with our AI design generator. Turn your jokes, prompts, and photos into custom apparel.',
     canonical: 'https://www.snarkyhumans.com/custom-design',
     body: `<h1>AI Custom Design Studio — Create One-of-One Apparel & Gifts</h1>
@@ -257,7 +257,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/custom-design?product=hoodie',
-    title: 'Custom Hoodies Generator | Snarky Apparel',
+    title: 'Custom Hoodies Generator | Snarky Humans',
     desc: 'Design custom snarky graphic hoodies with AI. Premium heavy blend fleece hoodies customized with your inside jokes, prompts, and art.',
     canonical: 'https://www.snarkyhumans.com/custom-design',
     body: `<h1>Custom Fleece Hoodie AI Generator & Studio</h1>
@@ -275,7 +275,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/custom-design?product=tee',
-    title: 'Custom T-Shirt Generator | Snarky Apparel',
+    title: 'Custom T-Shirt Generator | Snarky Humans',
     desc: 'Create personalized sarcastic t-shirts with our AI designer. Printed on 100% heavyweight preshrunk cotton with durable DTG printing.',
     canonical: 'https://www.snarkyhumans.com/custom-design',
     body: `<h1>Custom T-Shirt AI Generator & Personalization Studio</h1>
@@ -310,7 +310,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/faq',
-    title: 'FAQ & Shipping Info | Snarky Apparel',
+    title: 'FAQ & Shipping Info | Snarky Humans',
     desc: 'Get answers to shipping times, sizing charts, returns, and AI custom apparel creation. Everything you need to know before buying from Snarky.',
     canonical: 'https://www.snarkyhumans.com/faq',
     body: `<h1>Frequently Asked Questions (FAQ) & Customer Guide</h1>
@@ -391,7 +391,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/privacy',
-    title: 'Privacy Policy | Snarky Apparel',
+    title: 'Privacy Policy | Snarky Humans',
     desc: 'Read the Snarky Humans Privacy Policy. Learn how we protect your personal data, secure payment transactions, and handle customer information.',
     canonical: 'https://www.snarkyhumans.com/privacy',
     body: `<h1>Snarky Humans Privacy Policy</h1>
@@ -411,7 +411,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/returns',
-    title: 'Return & Exchange Policy | Snarky Apparel',
+    title: 'Return & Exchange Policy | Snarky Humans',
     desc: 'Check our hassle-free return and exchange policy. Learn how Snarky Humans handles order replacements, damaged items, and customer satisfaction.',
     canonical: 'https://www.snarkyhumans.com/returns',
     body: `<h1>Returns, Refunds & Exchange Policy</h1>
@@ -469,7 +469,7 @@ const SEO_ROUTES = [
   },
   {
     path: '/terms',
-    title: 'Terms of Service | Snarky Apparel',
+    title: 'Terms of Service | Snarky Humans',
     desc: 'Review the Terms of Service for Snarky Humans. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers.',
     canonical: 'https://www.snarkyhumans.com/terms',
     body: `<h1>Terms of Service & Website Usage Agreement</h1>

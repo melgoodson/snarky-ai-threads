@@ -18,8 +18,8 @@ const Index = () => {
     "url": "https://snarkyhumans.com",
     "logo": "https://snarkyhumans.com/images/snarky-logo.png",
     "sameAs": [
-      "https://twitter.com/SnarkyApparel",
-      "https://instagram.com/snarkyapparel"
+      "https://twitter.com/SnarkyHumans",
+      "https://instagram.com/snarkyhumans"
     ]
   };
 
@@ -38,7 +38,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Snarky Apparel | Funny Shirts &amp; Personalized Gifts</title>
+        <title>Snarky Humans | Funny Shirts &amp; Personalized Gifts</title>
         <meta name="description" content="Shop funny t-shirts, personalized gifts, custom hardcover journals, mugs &amp; greeting cards. Unapologetic designs for people who speak their mind." />
         <link rel="canonical" href="https://www.snarkyhumans.com/" />
         <meta property="og:title" content="Snarky Humans | Sarcastic Tees, Gag Gifts & Custom Journals" />

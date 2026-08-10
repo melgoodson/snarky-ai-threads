@@ -33,7 +33,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Contact Us | Snarky Apparel Customer Support</title>
+        <title>Contact Us | Snarky Humans Customer Support</title>
         <meta name="description" content="Have questions about your order, custom designs, or shipping? Contact the Snarky Humans support team for fast assistance within 24-48 hours." />
         <link rel="canonical" href="https://www.snarkyhumans.com/contact" />
       </Helmet>
