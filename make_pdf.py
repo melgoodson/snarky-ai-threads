@@ -38,7 +38,7 @@ class NumberedCanvas(canvas.Canvas):
         
         self.setFont("Helvetica-Bold", 10)
         self.setFillColor(colors.white)
-        self.drawCentredString(4.25 * inch, 10.62 * inch, "SNARKY A$$ HUMANS — ADMIN FEATURED DESIGN SCHEDULER REPORT")
+        self.drawCentredString(4.25 * inch, 10.62 * inch, "SNARKY HUMANS — ADMIN FEATURED DESIGN SCHEDULER REPORT")
 
         # Footer
         self.setFillColor(colors.HexColor("#020617"))
@@ -48,7 +48,7 @@ class NumberedCanvas(canvas.Canvas):
         
         self.setFont("Helvetica", 9)
         self.setFillColor(colors.HexColor("#94a3b8"))
-        self.drawString(0.5 * inch, 0.18 * inch, "Confidential — Snarky A$$ Humans Internal Documentation")
+        self.drawString(0.5 * inch, 0.18 * inch, "Confidential — Snarky Humans Internal Documentation")
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(8.0 * inch, 0.18 * inch, page_str)
         

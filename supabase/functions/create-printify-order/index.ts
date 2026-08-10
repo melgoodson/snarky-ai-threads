@@ -227,7 +227,7 @@ serve(async (req) => {
       console.log(`Creating product with ${enabledVariants.length} variants (filtered from ${catalogVariants.length})`);
       const productData = {
         title: productTitle,
-        description: `Snarky A$$ Humans - ${productTitle}`,
+        description: `Snarky Humans - ${productTitle}`,
         blueprint_id: blueprintId,
         print_provider_id: printProviderId,
         variants: enabledVariants.map((v: any) => ({

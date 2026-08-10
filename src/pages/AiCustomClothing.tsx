@@ -82,7 +82,7 @@ const productPathways: Array<{
     description: "Turn the joke, trend, or roast into a wearable main character moment.",
     to: `${CUSTOMIZER_PATH}&product=tee`,
     image: "/images/carousel/snarky-humans-1.png",
-    alt: "Snarky Azz Humans custom t-shirt with a bold printed design",
+    alt: "Snarky Humans custom t-shirt with a bold printed design",
     icon: Shirt,
   },
   {
@@ -346,7 +346,7 @@ function HeroSection({
                     className="absolute inset-x-0 bottom-0 px-3 py-2"
                     style={{ background: "linear-gradient(to top,rgba(0,0,0,0.9) 60%,transparent)" }}
                   >
-                    <p className="text-[0.6rem] font-bold text-white">@snarkyazzhumans</p>
+                    <p className="text-[0.6rem] font-bold text-white">@snarky humans</p>
                     <div className="mt-1 flex gap-2 text-[0.55rem] font-semibold text-white/70">
                       <span>❤️ 2.4M</span><span>💬 18K</span><span>↗ 94K</span>
                     </div>
@@ -624,7 +624,7 @@ const AiCustomClothing = () => {
                     Then the idea becomes bigger than a text. It could be a shirt, mug, blanket, tote, card, or gift that turns the moment into proof.
                   </p>
                   <p>
-                    Snarky Azz Humans helps turn that spark into a custom product built around the person, the moment, and the joke.
+                    Snarky Humans helps turn that spark into a custom product built around the person, the moment, and the joke.
                   </p>
                 </div>
               </div>
@@ -639,7 +639,7 @@ const AiCustomClothing = () => {
                     muted
                     playsInline
                     preload="metadata"
-                    aria-label="Snarky Azz Humans product idea video"
+                    aria-label="Snarky Humans product idea video"
                     onPlay={handleVideoPlay}
                   />
                 </div>

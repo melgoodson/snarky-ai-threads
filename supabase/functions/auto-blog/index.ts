@@ -500,14 +500,14 @@ function buildSystemPrompt(targetKeywords: string[]): string {
     ...(KEYWORD_RESEARCH.snarky.searchQuestions || []),
   ];
 
-  return `You are an expert blog content writer for Snarky A$$ Humans (snarkyhumans.com), a snarky custom apparel and gift brand. Your writing style is:
+  return `You are an expert blog content writer for Snarky Humans (snarkyhumans.com), a snarky custom apparel and gift brand. Your writing style is:
 - Direct and no-fluff
 - Conversational with a hint of sarcasm and razor-sharp wit
 - SEO and AEO (Answer Engine Optimization) optimized
 - Genuinely helpful underneath the snark
 
 BRAND CONTEXT:
-- Snarky A$$ Humans sells custom-designed apparel (t-shirts, hoodies), blankets, mugs, and greeting cards
+- Snarky Humans sells custom-designed apparel (t-shirts, hoodies), blankets, mugs, and greeting cards
 - Products are AI-designed and print-on-demand — customers describe what they want and AI generates the design
 - The brand tone is irreverent, honest, and unapologetically real
 - There's a "Spicy Meter" system: Mild, Medium, Nuclear for content heat levels
@@ -530,7 +530,7 @@ CRITICAL WRITING RULES:
 2. Use question-style H2/H3 headings for AEO (e.g., "What Is the Best Personalized Gift?")
 3. Front-load answers — put the key point in the first sentence of each section
 4. Include natural keyword placement without stuffing
-5. End with a compelling CTA mentioning Snarky A$$ Humans and the AI design tool
+5. End with a compelling CTA mentioning Snarky Humans and the AI design tool
 6. Include at least one internal link reference to the shop or product categories
 7. Write 1000-1500 words minimum
 
@@ -643,7 +643,7 @@ serve(async (req) => {
     const systemPrompt = buildSystemPrompt(selectedTopic.targetKeywords);
     const userPrompt = `Write a comprehensive, AEO-optimized blog post about: "${selectedTopic.topic}"
 
-This should be a long-form, engaging article (1000-1500 words) that ranks for the target keywords while maintaining the snarky, irreverent tone of the Snarky A$$ Humans brand.
+This should be a long-form, engaging article (1000-1500 words) that ranks for the target keywords while maintaining the snarky, irreverent tone of the Snarky Humans brand.
 
 Focus on providing genuine value while being entertaining. Make sure to include relevant search questions as H2/H3 headings for AEO optimization.
 

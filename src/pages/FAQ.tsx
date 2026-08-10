@@ -34,8 +34,8 @@ const seoDraftFaqs = [
   },
   // Existing SEO draft FAQs
   {
-    q: "What is Snarky Azz Humans?",
-    a: "Snarky Azz Humans is a print-on-demand service that turns ordinary mugs, t-shirts, and hardcover journals into snarky, conversation-starting merch. We handle design, printing, and shipping so you can focus on selling.",
+    q: "What is Snarky Humans?",
+    a: "Snarky Humans is a print-on-demand service that turns ordinary mugs, t-shirts, and hardcover journals into snarky, conversation-starting merch. We handle design, printing, and shipping so you can focus on selling.",
   },
   {
     q: "How do I upload a photo for custom printing?",

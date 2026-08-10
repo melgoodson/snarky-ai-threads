@@ -177,7 +177,7 @@ export default function BlogPostDynamic() {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>{post.title} | Snarky A$$ Humans Blog</title>
+        <title>{post.title} | Snarky Humans Blog</title>
         <meta name="description" content={post.meta_description || post.excerpt || ""} />
         {post.seo_keywords && post.seo_keywords.length > 0 && (
           <meta name="keywords" content={post.seo_keywords.join(", ")} />

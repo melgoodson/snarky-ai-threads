@@ -65,7 +65,7 @@ serve(async (req) => {
       });
     }
 
-    const systemPrompt = `You are an expert blog content writer for Snarky A$$ Humans, a snarky apparel brand. Your writing style is:
+    const systemPrompt = `You are an expert blog content writer for Snarky Humans, a snarky apparel brand. Your writing style is:
 - Direct and no-fluff
 - Conversational with a hint of sarcasm
 - SEO and AEO (Answer Engine Optimization) optimized

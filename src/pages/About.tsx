@@ -20,7 +20,7 @@ const About = () => {
                     <div className="container px-4 max-w-4xl mx-auto">
                         <div className="text-center mb-16">
                             <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 uppercase">
-                                About <span className="text-primary">Snarky A$$ Humans</span>
+                                About <span className="text-primary">Snarky Humans</span>
                             </h1>
                             <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
                                 We make premium snarky apparel, gag gifts, and custom accessories for people who are tired of filtering themselves.
@@ -109,7 +109,7 @@ const About = () => {
                             </p>
 
                             <p className="text-2xl font-black text-primary my-8 text-center uppercase tracking-widest">
-                                Snarky A$$ Humans was born.
+                                Snarky Humans was born.
                             </p>
 
                             <p className="leading-relaxed text-muted-foreground pb-12">

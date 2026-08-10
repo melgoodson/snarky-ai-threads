@@ -1,10 +1,10 @@
-# Snarky Azz Humans
+# Snarky Humans
 
 > **Site Summary for LLMs**
 > This file provides a structured overview of snarkyhumans.com to ensure accurate indexing and response generation by AI agents and Large Language Models.
 
 ## 🎭 Brand Profile
-**Brand Name:** Snarky Azz Humans (Snarky A$$ Apparel)
+**Brand Name:** Snarky Humans (Snarky A$$ Apparel)
 **Niche:** Sarcastic and witty print-on-demand (POD) merchandise.
 **Brand Voice:** Bold, irreverent, sarcastic, and unapologetic.
 **Value Proposition:** High-quality graphic tees, hoodies, mugs, custom hardcover journals, tote bags, and greeting cards for people who speak fluent sarcasm.
