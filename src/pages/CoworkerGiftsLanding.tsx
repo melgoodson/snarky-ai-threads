@@ -12,7 +12,7 @@ const CoworkerGiftsLanding = () => {
             <Helmet>
                 <title>Funny Coworker Gifts &amp; Office Humor | Snarky</title>
                 <meta name="description" content="Survive the corporate grind with funny coworker gifts. Passive-aggressive mugs, sarcastic office hoodies, and snarky stuff for the work bestie." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/category/funny-coworker-gifts" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/category/funny-coworker-gifts" />
             </Helmet>
             <Header />
             <main className="flex-1">

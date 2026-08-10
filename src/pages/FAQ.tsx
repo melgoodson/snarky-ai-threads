@@ -286,7 +286,7 @@ const FAQ = () => {
       <Helmet>
         <title>FAQ &amp; Shipping Info | Snarky Apparel</title>
         <meta name="description" content="Get answers to shipping times, sizing charts, returns, and AI custom apparel creation. Everything you need to know before buying from Snarky." />
-        <link rel="canonical" href="https://www.snarkyazzhumans.com/faq" />
+        <link rel="canonical" href="https://www.snarkyhumans.com/faq" />
         <script type="application/ld+json">
           {JSON.stringify(jsonLd)}
         </script>

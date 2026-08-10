@@ -104,7 +104,7 @@ const Blog = () => {
         <title>Snarky Blog | Funny Gift Guides &amp; Humor</title>
         <meta name="description" content="Read the official Snarky A$$ Apparel blog for funny gift guides, office prank ideas, white elephant strategies, and sarcastic life advice." />
         <meta name="keywords" content="snarky apparel blog, graphic tee tips, humor tshirt guide, spicy meter explained, bachelor party gifts, tshirt care, irreverent fashion, edgy humor apparel" />
-        <link rel="canonical" href="https://www.snarkyazzhumans.com/blog" />
+        <link rel="canonical" href="https://www.snarkyhumans.com/blog" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Blog - Snarky A$$ Threads | Humor Apparel Insights" />

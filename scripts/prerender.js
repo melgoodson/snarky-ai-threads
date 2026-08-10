@@ -75,7 +75,7 @@ const aiCustomClothingPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "AI Custom Clothing & One-of-One Gifts",
-  url: "https://www.snarkyazzhumans.com/ai-custom-clothing",
+  url: "https://www.snarkyhumans.com/ai-custom-clothing",
   description: "Turn trends, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, journals, totes, greeting cards, and personalized gifts."
 };
 
@@ -84,7 +84,7 @@ const SEO_ROUTES = [
     path: '/',
     title: 'Snarky Apparel | Funny Shirts & Personalized Gifts',
     desc: 'Shop funny t-shirts, personalized gifts, custom hardcover journals, mugs & greeting cards. Unapologetic designs for people who speak their mind.',
-    canonical: 'https://www.snarkyazzhumans.com/',
+    canonical: 'https://www.snarkyhumans.com/',
     body: `<h1>Snarky A$$ Apparel — Unapologetic Shirts & Personalized Gifts</h1>
     <p>Welcome to Snarky A$$ Apparel, the premier destination for sarcastic graphic tees, funny coffee mugs, custom hardcover journals, canvas tote bags, and personalized gifts built for people who refuse to wear boring clothes. We specialize in turning dark humor, workplace sarcasm, pop culture moments, and unapologetic attitude into high-quality physical products that command respect, spark conversations, and bring genuine laughter to every occasion.</p>
     <h2>Our Core Product Collections</h2>
@@ -107,7 +107,7 @@ const SEO_ROUTES = [
     path: '/about',
     title: 'About Us | Snarky Apparel & Veteran-Owned Humor',
     desc: 'Learn about Snarky A$$ Apparel, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts.',
-    canonical: 'https://www.snarkyazzhumans.com/about',
+    canonical: 'https://www.snarkyhumans.com/about',
     body: `<h1>About Snarky A$$ Apparel — Our Story, Values & Mission</h1>
     <p>Snarky A$$ Apparel is a veteran-owned online brand dedicated to crafting premium sarcastic apparel, funny gag gifts, custom hardcover journals, ceramic mugs, and unapologetic accessories for people who are tired of filtering themselves. We believe humor is a vital survival skill, snark is an authentic language, and high quality should never be sacrificed for a punchline.</p>
     <h2>The Origin Story: Turning Combat Pain Into Punchlines</h2>
@@ -127,7 +127,7 @@ const SEO_ROUTES = [
     path: '/ai-custom-clothing',
     title: 'AI Custom Clothing & Personalized Gifts | Snarky',
     desc: 'Turn inside jokes, pet photos, work rants, and wild ideas into one-of-one AI-designed shirts, mugs, journals, totes, and custom gifts.',
-    canonical: 'https://www.snarkyazzhumans.com/ai-custom-clothing',
+    canonical: 'https://www.snarkyhumans.com/ai-custom-clothing',
     schemas: [aiCustomClothingPageSchema, aiCustomClothingFaqSchema],
     body: `<h1>AI Custom Clothing & One-of-One Personalized Gifts</h1>
     <p>Turn trending meme moments, inside jokes, pet photos, work rants, birthday roasts, or wild concepts into AI-designed clothing and custom gifts made for exactly one person. Our revolutionary AI custom apparel generator transforms simple text prompts and images into high-resolution wearable art printed on heavyweight t-shirts, cozy fleece hoodies, ceramic mugs, hardcover journals, canvas tote bags, and greeting cards.</p>
@@ -148,7 +148,7 @@ const SEO_ROUTES = [
     path: '/blog',
     title: 'Snarky Blog | Funny Gift Guides & Humor | Snarky',
     desc: 'Read the official Snarky A$$ Apparel blog for funny gift guides, office prank ideas, white elephant strategies, and sarcastic life advice.',
-    canonical: 'https://www.snarkyazzhumans.com/blog',
+    canonical: 'https://www.snarkyhumans.com/blog',
     body: `<h1>The Snarky A$$ Blog — Gift Guides, Workplace Humor & Sarcastic Living</h1>
     <p>Welcome to the official blog for Snarky A$$ Apparel. Here you will find brutally honest gift guides, office survival strategies, white elephant party tactics, style advice for graphic tees, and hilarious commentary on navigating modern life with a healthy dose of sarcastic humor.</p>
     <h2>Featured Blog Articles & Guides</h2>
@@ -167,7 +167,7 @@ const SEO_ROUTES = [
     path: '/blog/funny-snarky-shirts-make-friends',
     title: 'How Funny Shirts Make Friends | Snarky Blog',
     desc: 'Discover why wearing funny, sarcastic t-shirts is the ultimate icebreaker to make like-minded friends and express your sense of humor.',
-    canonical: 'https://www.snarkyazzhumans.com/blog/funny-snarky-shirts-make-friends',
+    canonical: 'https://www.snarkyhumans.com/blog/funny-snarky-shirts-make-friends',
     body: `<h1>How Funny & Snarky T-Shirts Help You Make Like-Minded Friends</h1>
     <p>In a world full of small talk, polite head nods, and generic fashion, wearing a funny graphic t-shirt is like putting up a beacon for your tribe. Whether you are standing in line at a coffee shop, browsing a local bookstore, or waiting at an airport terminal, a shirt featuring a sarcastic joke or witty observation immediately breaks the ice.</p>
     <h2>Graphic Tees as Social Filters</h2>
@@ -182,7 +182,7 @@ const SEO_ROUTES = [
     path: '/collections',
     title: 'All Snarky Collections & Funny Gifts | Snarky',
     desc: 'Browse our complete catalog of funny t-shirts, custom hardcover journals, snarky coffee mugs, hoodies, tote bags, and personalized gag gifts.',
-    canonical: 'https://www.snarkyazzhumans.com/collections',
+    canonical: 'https://www.snarkyhumans.com/collections',
     body: `<h1>All Snarky Collections & Complete Product Catalog</h1>
     <p>Explore our entire catalog of sarcastic graphic apparel, funny coffee mugs, custom hardcover journals, canvas tote bags, greeting cards, and AI-designed personalized gifts. Every item is printed on demand with premium materials in the USA and backed by our quality guarantee.</p>
     <h2>Shop By Product Category</h2>
@@ -210,7 +210,7 @@ const SEO_ROUTES = [
     path: '/contact',
     title: 'Contact Us | Snarky Apparel Customer Support',
     desc: 'Have questions about your order, custom designs, or shipping? Contact the Snarky A$$ Apparel support team for fast assistance within 24-48 hours.',
-    canonical: 'https://www.snarkyazzhumans.com/contact',
+    canonical: 'https://www.snarkyhumans.com/contact',
     body: `<h1>Contact Snarky A$$ Apparel Customer Support</h1>
     <p>Got questions about an existing order, custom design ideas, shipping timelines, size exchanges, or returns? We are here to help! Our dedicated customer support team is committed to providing fast, friendly, and helpful assistance for every customer.</p>
     <h2>How to Get in Touch</h2>
@@ -233,7 +233,7 @@ const SEO_ROUTES = [
     path: '/custom-design',
     title: 'AI Custom Design Studio | Snarky Apparel',
     desc: 'Create custom t-shirts, hoodies, mugs, and journals with our AI design generator. Turn your jokes, prompts, and photos into custom apparel.',
-    canonical: 'https://www.snarkyazzhumans.com/custom-design',
+    canonical: 'https://www.snarkyhumans.com/custom-design',
     body: `<h1>AI Custom Design Studio — Create One-of-One Apparel & Gifts</h1>
     <p>Unleash your creative genius with the Snarky A$$ Apparel AI Custom Design Studio. Turn your inside jokes, custom text prompts, viral meme concepts, or pet photos into one-of-a-kind t-shirts, hoodies, coffee mugs, hardcover journals, canvas tote bags, and greeting cards.</p>
     <h2>How to Use the AI Design Studio</h2>
@@ -259,7 +259,7 @@ const SEO_ROUTES = [
     path: '/custom-design?product=hoodie',
     title: 'Custom Hoodies Generator | Snarky Apparel',
     desc: 'Design custom snarky graphic hoodies with AI. Premium heavy blend fleece hoodies customized with your inside jokes, prompts, and art.',
-    canonical: 'https://www.snarkyazzhumans.com/custom-design',
+    canonical: 'https://www.snarkyhumans.com/custom-design',
     body: `<h1>Custom Fleece Hoodie AI Generator & Studio</h1>
     <p>Design your own custom snarky graphic hoodie using our AI design generator. Printed on premium heavy blend 8.0 oz fleece hoodies (50% cotton, 50% polyester) featuring double-lined hoods, matching drawcords, pouch pockets, and pill-resistant air-jet yarn for an ultra-soft feel and long-lasting durability.</p>
     <h2>Custom Hoodie Features & Material Specs</h2>
@@ -277,7 +277,7 @@ const SEO_ROUTES = [
     path: '/custom-design?product=tee',
     title: 'Custom T-Shirt Generator | Snarky Apparel',
     desc: 'Create personalized sarcastic t-shirts with our AI designer. Printed on 100% heavyweight preshrunk cotton with durable DTG printing.',
-    canonical: 'https://www.snarkyazzhumans.com/custom-design',
+    canonical: 'https://www.snarkyhumans.com/custom-design',
     body: `<h1>Custom T-Shirt AI Generator & Personalization Studio</h1>
     <p>Turn your funniest ideas, inside jokes, group chat memes, and creative prompts into custom graphic t-shirts. Printed on premium 5.3 oz/yd² 100% preshrunk cotton tees using direct-to-garment (DTG) technology for crisp, high-definition graphics that will not crack or fade over time.</p>
     <h2>T-Shirt Specifications & Quality Standards</h2>
@@ -295,7 +295,7 @@ const SEO_ROUTES = [
     path: '/designs',
     title: 'Snarky Graphic Designs & Custom Art | Snarky',
     desc: 'Explore our library of hilarious graphic snarky designs. Find original artwork ready to print on t-shirts, hoodies, mugs, journals, and totes.',
-    canonical: 'https://www.snarkyazzhumans.com/designs',
+    canonical: 'https://www.snarkyhumans.com/designs',
     body: `<h1>Snarky Graphic Design Library & Artwork Gallery</h1>
     <p>Browse our expansive library of snarky, sarcastic, and hilarious original graphic designs. Choose any design from our collection and print it on your choice of heavyweight t-shirts, fleece hoodies, ceramic coffee mugs, hardcover journals, or canvas tote bags.</p>
     <h2>Design Categories & Themes</h2>
@@ -312,7 +312,7 @@ const SEO_ROUTES = [
     path: '/faq',
     title: 'FAQ & Shipping Info | Snarky Apparel',
     desc: 'Get answers to shipping times, sizing charts, returns, and AI custom apparel creation. Everything you need to know before buying from Snarky.',
-    canonical: 'https://www.snarkyazzhumans.com/faq',
+    canonical: 'https://www.snarkyhumans.com/faq',
     body: `<h1>Frequently Asked Questions (FAQ) & Customer Guide</h1>
     <p>Got questions about ordering from Snarky A$$ Apparel? We have compiled a thorough guide answering all your questions about sizing, production speeds, domestic and international shipping, garment care, returns, and custom AI order procedures.</p>
     <h2>1. Production & Delivery Speeds</h2>
@@ -328,7 +328,7 @@ const SEO_ROUTES = [
     path: '/greeting-cards',
     title: 'Funny & Sarcastic Greeting Cards | Snarky',
     desc: 'Shop funny, sarcastic greeting cards for birthdays, holidays, and awkward moments. High-quality cardstock cards for people with a sense of humor.',
-    canonical: 'https://www.snarkyazzhumans.com/greeting-cards',
+    canonical: 'https://www.snarkyhumans.com/greeting-cards',
     body: `<h1>Funny & Sarcastic Greeting Cards for Every Occasion</h1>
     <p>For when Hallmark is just too wholesome. Our 5x7 snarky greeting cards feature bold, hilarious, and sarcastic messages that are guaranteed to get a genuine laugh rather than a polite smile from your friends, family, and coworkers.</p>
     <h2>Card Quality & Specifications</h2>
@@ -345,7 +345,7 @@ const SEO_ROUTES = [
     path: '/hoodies',
     title: 'Snarky Graphic Hoodies & Sweatshirts | Snarky',
     desc: 'Premium cozy hoodies printed with sarcastic, snarky, and hilarious designs. Heavy blend fleece built for staying warm while keeping people away.',
-    canonical: 'https://www.snarkyazzhumans.com/hoodies',
+    canonical: 'https://www.snarkyhumans.com/hoodies',
     body: `<h1>Snarky Graphic Hoodies & Cozy Sarcastic Sweatshirts</h1>
     <p>Stay warm while keeping people at a distance. Our snarky graphic hoodies are printed on premium 8.0 oz 50/50 cotton/polyester heavy blend fleece for ultimate warmth, soft comfort, and unapproachable attitude.</p>
     <h2>Hoodie Construction & Material Specs</h2>
@@ -361,7 +361,7 @@ const SEO_ROUTES = [
     path: '/journals',
     title: 'Custom Hardcover Journals & Notebooks | Snarky',
     desc: 'Design custom hardcover journals and notebooks. Premium matte finishes make the perfect personalized gift for writing down all your snarky thoughts.',
-    canonical: 'https://www.snarkyazzhumans.com/journals',
+    canonical: 'https://www.snarkyhumans.com/journals',
     body: `<h1>Custom Hardcover Journals & Personalized Notebooks</h1>
     <p>Write down your daily rants, meeting notes, project plans, or secret thoughts in a custom hardcover journal. Featuring a sleek matte wrap-around cover and 128 ruled pages, these notebooks make unforgettable gifts for coworkers, students, writers, introverts, and overthinkers.</p>
     <h2>Journal Specifications</h2>
@@ -377,7 +377,7 @@ const SEO_ROUTES = [
     path: '/mugs',
     title: 'Funny Coffee Mugs & Office Humor | Snarky',
     desc: 'Start your morning with pure snark. Shop funny, sarcastic ceramic coffee mugs in 11oz and 15oz sizes. Dishwasher & microwave safe office gifts.',
-    canonical: 'https://www.snarkyazzhumans.com/mugs',
+    canonical: 'https://www.snarkyhumans.com/mugs',
     body: `<h1>Funny & Sarcastic Coffee Mugs for Home & Office</h1>
     <p>Start your morning with pure snark. Our funny ceramic coffee mugs are designed for people who need coffee and sarcasm to survive corporate meetings, early mornings, and daily adulting tasks.</p>
     <h2>Mug Specifications & Care</h2>
@@ -393,7 +393,7 @@ const SEO_ROUTES = [
     path: '/privacy',
     title: 'Privacy Policy | Snarky Apparel',
     desc: 'Read the Snarky A$$ Apparel Privacy Policy. Learn how we protect your personal data, secure payment transactions, and handle customer information.',
-    canonical: 'https://www.snarkyazzhumans.com/privacy',
+    canonical: 'https://www.snarkyhumans.com/privacy',
     body: `<h1>Snarky A$$ Apparel Privacy Policy</h1>
     <p>Last updated: February 2026</p>
     <p>At Snarky A$$ Apparel, we respect your privacy and are deeply committed to protecting your personal data. This Privacy Policy outlines how we collect, use, store, and safeguard your information when you visit our store or make a purchase.</p>
@@ -413,7 +413,7 @@ const SEO_ROUTES = [
     path: '/returns',
     title: 'Return & Exchange Policy | Snarky Apparel',
     desc: 'Check our hassle-free return and exchange policy. Learn how Snarky A$$ Apparel handles order replacements, damaged items, and customer satisfaction.',
-    canonical: 'https://www.snarkyazzhumans.com/returns',
+    canonical: 'https://www.snarkyhumans.com/returns',
     body: `<h1>Returns, Refunds & Exchange Policy</h1>
     <p>At Snarky A$$ Apparel, customer satisfaction is our top priority. Because all of our products are custom-printed on demand specifically for each customer, we handle returns and replacements with transparent, hassle-free guidelines.</p>
     <h2>When We Provide Free Replacements or Full Refunds</h2>
@@ -435,7 +435,7 @@ const SEO_ROUTES = [
     path: '/shipping',
     title: 'Shipping Information & Tracking | Snarky',
     desc: 'Get details on Snarky A$$ Apparel shipping rates, delivery timelines, fulfillment processes, free shipping over $50, and order tracking.',
-    canonical: 'https://www.snarkyazzhumans.com/shipping',
+    canonical: 'https://www.snarkyhumans.com/shipping',
     body: `<h1>Shipping Rates, Delivery Speeds & Order Tracking</h1>
     <p>Everything you need to know about how Snarky A$$ Apparel prints, packs, and delivers your snarky gear directly to your door.</p>
     <h2>Production & Delivery Timelines</h2>
@@ -454,7 +454,7 @@ const SEO_ROUTES = [
     path: '/shirts',
     title: 'Funny & Sarcastic T-Shirts | Snarky',
     desc: 'Shop high-quality sarcastic and funny t-shirts. Heavyweight preshrunk cotton graphic tees with bold attitude for people who refuse boring apparel.',
-    canonical: 'https://www.snarkyazzhumans.com/shirts',
+    canonical: 'https://www.snarkyhumans.com/shirts',
     body: `<h1>Funny & Sarcastic Graphic T-Shirts</h1>
     <p>Shop high-quality sarcastic and funny t-shirts printed on premium heavyweight 100% preshrunk cotton. Designed for people who wear their humor and attitude with pride every single day.</p>
     <h2>T-Shirt Construction & Specs</h2>
@@ -471,7 +471,7 @@ const SEO_ROUTES = [
     path: '/terms',
     title: 'Terms of Service | Snarky Apparel',
     desc: 'Review the Terms of Service for Snarky A$$ Apparel. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers.',
-    canonical: 'https://www.snarkyazzhumans.com/terms',
+    canonical: 'https://www.snarkyhumans.com/terms',
     body: `<h1>Terms of Service & Website Usage Agreement</h1>
     <p>Last updated: February 2026</p>
     <p>Welcome to Snarky A$$ Apparel. By accessing or using our website, purchasing products, or using our AI Custom Studio, you agree to be bound by these Terms of Service.</p>
@@ -487,7 +487,7 @@ const SEO_ROUTES = [
     path: '/tote-bags',
     title: 'Custom Tote Bags & Canvas Totes | Snarky',
     desc: 'Shop durable, funny canvas tote bags with sarcastic quotes. Heavy-duty cotton totes perfect for groceries, work, errands, or carrying your attitude.',
-    canonical: 'https://www.snarkyazzhumans.com/tote-bags',
+    canonical: 'https://www.snarkyhumans.com/tote-bags',
     body: `<h1>Custom Canvas Tote Bags & Sarcastic Totes</h1>
     <p>Carry your attitude everywhere you go. Our heavy-duty 100% cotton canvas tote bags feature bold snarky quotes, spacious dimensions, and reinforced handles built for daily errands, grocery shopping, books, and laptops.</p>
     <h2>Tote Bag Specifications</h2>
@@ -503,7 +503,7 @@ const SEO_ROUTES = [
     path: '/category/white-elephant-gifts',
     title: 'Best White Elephant Gifts Under $25 & $50 | Snarky',
     desc: 'Win the office holiday party or family exchange with hilarious white elephant gifts. Sarcastic mugs, funny tees, and snarky stuff people will actually fight to steal.',
-    canonical: 'https://www.snarkyazzhumans.com/category/white-elephant-gifts',
+    canonical: 'https://www.snarkyhumans.com/category/white-elephant-gifts',
     body: `<h1>Gifts They'll Actually Fight to Steal: White Elephant Edition</h1>
     <p>The secret to winning a white elephant exchange is bringing something everyone desperately wants. Forget cheap plastic junk that ends up in the trash—bring premium snark!</p>
     <h2>Why Our Gifts Win White Elephant Parties</h2>
@@ -519,7 +519,7 @@ const SEO_ROUTES = [
     path: '/category/funny-coworker-gifts',
     title: 'Funny Coworker Gifts & Office Humor | Snarky',
     desc: 'Survive the corporate grind with funny coworker gifts. Passive-aggressive mugs, sarcastic office hoodies, and snarky stuff for the work bestie.',
-    canonical: 'https://www.snarkyazzhumans.com/category/funny-coworker-gifts',
+    canonical: 'https://www.snarkyhumans.com/category/funny-coworker-gifts',
     body: `<h1>Funny Coworker Gifts & Office Survival Humor</h1>
     <p>Help your favorite coworker survive the corporate grind with our office-approved sarcastic gifts. From passive-aggressive coffee mugs to funny desk notebooks, we have the ultimate presents for work besties.</p>
     <h2>Office Survival Tactics</h2>
@@ -534,7 +534,7 @@ const SEO_ROUTES = [
     path: '/category/gag-gifts',
     title: 'Hilarious Gag Gifts & Funny Presents | Snarky',
     desc: 'Shop premium gag gifts that are actually funny, not cheap plastic. Sarcastic mugs, funny tees, and custom items for birthdays and holiday parties.',
-    canonical: 'https://www.snarkyazzhumans.com/category/gag-gifts',
+    canonical: 'https://www.snarkyhumans.com/category/gag-gifts',
     body: `<h1>Hilarious Gag Gifts That Get Real Laughs</h1>
     <p>Most gag gifts are thrown away after one chuckle. Snarky A$$ Apparel makes premium gag gifts that people actually use and love for years.</p>
     <p>Browse our hilarious <a href="/shirts">Funny T-Shirts</a>, <a href="/greeting-cards">Sarcastic Greeting Cards</a>, and <a href="/ai-custom-clothing">Custom AI Gifts</a>.</p>`
@@ -543,7 +543,7 @@ const SEO_ROUTES = [
     path: '/category/funny-gifts-under-25',
     title: 'Funny Gifts Under $25 | Cheap Gag Swaps | Snarky',
     desc: 'Premium snark on a budget. Shop funny, high-quality sarcastic gifts under $25, including funny mugs, greeting cards, and canvas tote bags.',
-    canonical: 'https://www.snarkyazzhumans.com/category/funny-gifts-under-25',
+    canonical: 'https://www.snarkyhumans.com/category/funny-gifts-under-25',
     body: `<h1>Funny Gifts Under $25 That Don't Look Cheap</h1>
     <p>You don't need to spend a fortune to be the funniest person in the room. Our collection under $25 includes high-quality ceramic coffee mugs, greeting cards, and canvas tote bags.</p>
     <p>Check out our <a href="/mugs">Coffee Mugs</a> and <a href="/greeting-cards">Greeting Cards</a>.</p>`
@@ -552,7 +552,7 @@ const SEO_ROUTES = [
     path: '/category/funny-gifts',
     title: 'Best Funny Gifts & Sarcastic Presents | Snarky',
     desc: 'Shop the finest collection of genuinely funny gifts. Whether you need a sassy birthday present or a sarcastic holiday gift, we have you covered.',
-    canonical: 'https://www.snarkyazzhumans.com/category/funny-gifts',
+    canonical: 'https://www.snarkyhumans.com/category/funny-gifts',
     body: `<h1>Genuinely Funny Gifts for Hard-to-Please People</h1>
     <p>Finding the perfect gift shouldn't be boring. Our funny gifts bypass small talk and deliver pure, unfiltered humor printed on high-grade apparel and accessories.</p>
     <p>Explore all <a href="/collections">Product Collections</a>.</p>`
@@ -561,7 +561,7 @@ const SEO_ROUTES = [
     path: '/category/custom-gifts-for-men',
     title: 'Funny & Custom Gifts for Men | Snarky',
     desc: 'Ditch the boring ties. Get him a custom snarky t-shirt, funny coffee mug, or personalized gag gift that matches his real sense of humor.',
-    canonical: 'https://www.snarkyazzhumans.com/category/custom-gifts-for-men',
+    canonical: 'https://www.snarkyhumans.com/category/custom-gifts-for-men',
     body: `<h1>Custom & Funny Gifts for Men Who Want Nothing</h1>
     <p>Men are famously hard to shop for. Skip the generic ties and tech gadgets—get him something that actually matches his personality and humor.</p>
     <p>Shop <a href="/shirts">Funny Shirts</a> and <a href="/hoodies">Graphic Hoodies</a>.</p>`
@@ -570,7 +570,7 @@ const SEO_ROUTES = [
     path: '/category/custom-mothers-day-gifts',
     title: "Custom Mother's Day Gifts & Mom Humor | Snarky",
     desc: "Ditch generic flowers. Treat Mom to premium custom Mother's day gifts, sarcastic mom apparel, and beautiful custom hardcover journals.",
-    canonical: 'https://www.snarkyazzhumans.com/category/custom-mothers-day-gifts',
+    canonical: 'https://www.snarkyhumans.com/category/custom-mothers-day-gifts',
     body: `<h1>Custom Mother's Day Gifts (For Moms With a Sense of Humor)</h1>
     <p>Being a mom requires caffeine, chaos control, and a sharp sense of humor. Celebrate her survival skills with our custom Mother's Day gifts and journals.</p>
     <p>Shop <a href="/journals">Custom Journals</a> and <a href="/mugs">Mom Mugs</a>.</p>`
@@ -579,7 +579,7 @@ const SEO_ROUTES = [
     path: '/category/personalized-notebook-gifts',
     title: 'Personalized Custom Journals & Notebooks | Snarky',
     desc: 'Create beautiful custom hardcover notebooks and journals. The perfect personalized gift for students, coworkers, and writers.',
-    canonical: 'https://www.snarkyazzhumans.com/category/personalized-notebook-gifts',
+    canonical: 'https://www.snarkyhumans.com/category/personalized-notebook-gifts',
     body: `<h1>Personalized Hardcover Journals & Custom Notebook Gifts</h1>
     <p>Give a gift that feels personal and practical. Custom matte hardcover journals with 128 ruled pages make great gifts for birthdays, graduations, and work milestones.</p>
     <p>Design a notebook in our <a href="/custom-design">AI Custom Studio</a>.</p>`
@@ -621,7 +621,7 @@ SEO_ROUTES.forEach(route => {
     `<meta name="twitter:description" content="${route.desc}">`
   );
 
-  const canonicalUrl = route.canonical || `https://www.snarkyazzhumans.com${route.path.split('?')[0]}`;
+  const canonicalUrl = route.canonical || `https://www.snarkyhumans.com${route.path.split('?')[0]}`;
   outputHtml = outputHtml.replace(/<link\s+rel="canonical"[\s\S]*?>/gi, '');
   outputHtml = outputHtml.replace(
     '</head>',

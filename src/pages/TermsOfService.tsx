@@ -9,7 +9,7 @@ const TermsOfService = () => {
             <Helmet>
                 <title>Terms of Service | Snarky Apparel</title>
                 <meta name="description" content="Review the Terms of Service for Snarky A$$ Apparel. Read our website usage rules, purchasing policies, copyright rules, and legal disclaimers." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/terms" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/terms" />
             </Helmet>
             <Header />
             <main className="flex-1 bg-background">

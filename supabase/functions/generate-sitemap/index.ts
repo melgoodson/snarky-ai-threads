@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BASE_URL = 'https://www.snarkyazzhumans.com';
+const BASE_URL = 'https://www.snarkyhumans.com';
 
 const HARDCODED_PRODUCTS = [
   "personalization-blanket",

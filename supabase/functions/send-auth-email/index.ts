@@ -159,7 +159,7 @@ serve(async (req) => {
           <tr>
             <td style="padding:0 40px 32px;border-top:1px solid #222;margin-top:8px;">
               <p style="margin:24px 0 4px;font-size:14px;color:#cccccc;">Need help?</p>
-              <p style="margin:0;font-size:13px;color:#666666;font-style:italic;">Reply to this email or reach out to support@snarkyazzhumans.com.</p>
+              <p style="margin:0;font-size:13px;color:#666666;font-style:italic;">Reply to this email or reach out to support@snarkyhumans.com.</p>
             </td>
           </tr>
 
@@ -167,7 +167,7 @@ serve(async (req) => {
           <tr>
             <td style="padding:20px 40px;background:#0d0d0d;text-align:center;">
               <p style="margin:0;font-size:11px;color:#444444;line-height:1.6;">
-                This link was requested for authentication on SnarkyAzzHumans.com.<br />
+                This link was requested for authentication on SnarkyHumans.com.<br />
                 If you did not request this, you can safely ignore this email.
               </p>
             </td>
@@ -181,8 +181,8 @@ serve(async (req) => {
 
     // Send the email via Resend
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyazzhumans.com>",
-      replyTo: "support@snarkyazzhumans.com",
+      from: "Snarky Humans <hello@snarkyhumans.com>",
+      replyTo: "support@snarkyhumans.com",
       to: [email],
       subject,
       html,

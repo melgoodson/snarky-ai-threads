@@ -10,7 +10,7 @@ const ShippingInfo = () => {
             <Helmet>
                 <title>Shipping Information &amp; Tracking | Snarky</title>
                 <meta name="description" content="Get details on Snarky A$$ Apparel shipping rates, delivery timelines, fulfillment processes, free shipping over $50, and order tracking." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/shipping" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/shipping" />
             </Helmet>
             <Header />
             <main className="flex-1 bg-background">

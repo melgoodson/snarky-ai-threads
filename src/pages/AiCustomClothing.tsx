@@ -212,7 +212,7 @@ const pageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "AI Custom Clothing & One-of-One Gifts",
-  url: "https://www.snarkyazzhumans.com/ai-custom-clothing",
+  url: "https://www.snarkyhumans.com/ai-custom-clothing",
   description:
     "Turn trending meme-worthy moments, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts.",
 };
@@ -590,14 +590,14 @@ const AiCustomClothing = () => {
           name="description"
           content="Turn inside jokes, pet photos, work rants, and wild ideas into one-of-one AI-designed shirts, mugs, journals, totes, and custom gifts."
         />
-        <link rel="canonical" href="https://www.snarkyazzhumans.com/ai-custom-clothing" />
+        <link rel="canonical" href="https://www.snarkyhumans.com/ai-custom-clothing" />
         <meta property="og:title" content="AI Custom Clothing &amp; Personalized Gifts | Snarky" />
         <meta
           property="og:description"
           content="Turn trending meme-worthy moments, inside jokes, pet photos, and wild ideas into one-of-one AI-designed shirts, mugs, blankets, totes, greeting cards, and personalized gifts."
         />
-        <meta property="og:url" content="https://www.snarkyazzhumans.com/ai-custom-clothing" />
-        <meta property="og:image" content="https://www.snarkyazzhumans.com/images/ai-custom-clothing/roommate-sink-design.jpeg" />
+        <meta property="og:url" content="https://www.snarkyhumans.com/ai-custom-clothing" />
+        <meta property="og:image" content="https://www.snarkyhumans.com/images/ai-custom-clothing/roommate-sink-design.jpeg" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify(pageSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

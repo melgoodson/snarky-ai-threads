@@ -22,8 +22,8 @@ serve(async (req) => {
     const resend = new Resend(RESEND_API_KEY);
 
     const emailResponse = await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyazzhumans.com>",
-      replyTo: "support@snarkyazzhumans.com",
+      from: "Snarky Humans <hello@snarkyhumans.com>",
+      replyTo: "support@snarkyhumans.com",
       to: [email],
       subject: "Your snarky gear just landed. 🎁",
       html: `<!DOCTYPE html>
@@ -101,12 +101,12 @@ serve(async (req) => {
           <tr>
             <td style="padding:0 40px 40px;text-align:center;">
               <p style="margin:0 0 20px;font-size:15px;color:#aaaaaa;">Ready for round two?</p>
-              <a href="https://snarkyazzhumans.com/custom-design"
+              <a href="https://snarkyhumans.com/custom-design"
                  style="display:inline-block;background:#C0392B;color:#ffffff;font-size:14px;font-weight:900;letter-spacing:0.05em;text-decoration:none;padding:14px 28px;border-radius:8px;margin-bottom:12px;">
                 → DESIGN SOMETHING NEW
               </a>
               <br />
-              <a href="https://snarkyazzhumans.com/collections"
+              <a href="https://snarkyhumans.com/collections"
                  style="display:inline-block;color:#C0392B;font-size:14px;font-weight:700;text-decoration:none;padding:8px 0;">
                 Or browse what's already killing it →
               </a>
@@ -126,9 +126,9 @@ serve(async (req) => {
           <tr>
             <td style="padding:20px 40px;background:#0d0d0d;text-align:center;">
               <p style="margin:0;font-size:12px;color:#444444;line-height:1.6;">
-                You placed an order at SnarkyAzzHumans.com.<br />
+                You placed an order at SnarkyHumans.com.<br />
                 Questions? Just reply to this email — we've got you.<br />
-                <a href="https://snarkyazzhumans.com" style="color:#555555;">snarkyazzhumans.com</a>
+                <a href="https://snarkyhumans.com" style="color:#555555;">snarkyhumans.com</a>
               </p>
             </td>
           </tr>
@@ -143,7 +143,7 @@ serve(async (req) => {
 
     // Send internal admin notification
     await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyazzhumans.com>",
+      from: "Snarky Humans <hello@snarkyhumans.com>",
       to: ["teamsienvi@gmail.com", "sienviclientmelgoodson@gmail.com"],
       subject: `[INTERNAL] Order Delivered: ${orderId}`,
       html: `<!DOCTYPE html>

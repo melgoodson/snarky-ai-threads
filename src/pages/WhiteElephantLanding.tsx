@@ -12,7 +12,7 @@ const WhiteElephantLanding = () => {
             <Helmet>
                 <title>Best White Elephant Gifts Under $25 &amp; $50 | Snarky</title>
                 <meta name="description" content="Win the office holiday party or family exchange with hilarious white elephant gifts. Sarcastic mugs, funny tees, and snarky stuff people will actually fight to steal." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/category/white-elephant-gifts" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/category/white-elephant-gifts" />
             </Helmet>
             <Header />
             <main className="flex-1">

@@ -11,7 +11,7 @@ const Returns = () => {
             <Helmet>
                 <title>Return &amp; Exchange Policy | Snarky Apparel</title>
                 <meta name="description" content="Check our hassle-free return and exchange policy. Learn how Snarky A$$ Apparel handles order replacements, damaged items, and customer satisfaction." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/returns" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/returns" />
             </Helmet>
             <Header />
             <main className="flex-1 bg-background">

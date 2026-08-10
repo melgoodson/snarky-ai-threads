@@ -59,7 +59,7 @@ const BlogPost = () => {
         <title>How Funny Shirts Make Friends | Snarky Blog</title>
         <meta name="description" content="Discover why wearing funny, sarcastic t-shirts is the ultimate icebreaker to make like-minded friends and express your sense of humor." />
         <meta name="keywords" content="funny graphic tees make friends, snarky shirts conversation starter, edgy humor apparel, ice breaker shirts, funny tshirts social events, humor bonding, make friends with clothing, graphic tee culture" />
-        <link rel="canonical" href="https://www.snarkyazzhumans.com/blog/funny-snarky-shirts-make-friends" />
+        <link rel="canonical" href="https://www.snarkyhumans.com/blog/funny-snarky-shirts-make-friends" />
         
         {/* Open Graph */}
         <meta property="og:title" content="How Funny Snarky Shirts Make You New Friends - The Ultimate Ice Breaker" />

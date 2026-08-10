@@ -123,7 +123,7 @@ const Designs = () => {
       <Helmet>
         <title>Snarky Graphic Designs &amp; Custom Art | Snarky</title>
         <meta name="description" content="Explore our library of hilarious graphic snarky designs. Find original artwork ready to print on t-shirts, hoodies, mugs, journals, and totes." />
-        <link rel="canonical" href="https://www.snarkyazzhumans.com/designs" />
+        <link rel="canonical" href="https://www.snarkyhumans.com/designs" />
       </Helmet>
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">

@@ -24,7 +24,7 @@ const JournalLanding = () => {
             <Helmet>
                 <title>Custom Hardcover Journals &amp; Notebooks | Snarky</title>
                 <meta name="description" content="Design custom hardcover journals and notebooks. Premium matte finishes make the perfect personalized gift for writing down all your snarky thoughts." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/journals" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/journals" />
             </Helmet>
             <Header />
             <main className="flex-1">

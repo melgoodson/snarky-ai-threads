@@ -31,7 +31,7 @@ const ShirtLanding = () => {
             <Helmet>
                 <title>Funny &amp; Sarcastic T-Shirts | Snarky</title>
                 <meta name="description" content="Shop high-quality sarcastic and funny t-shirts. Heavyweight preshrunk cotton graphic tees with bold attitude for people who refuse boring apparel." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/shirts" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/shirts" />
             </Helmet>
             <Header />
             <main className="flex-1">

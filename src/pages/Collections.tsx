@@ -93,7 +93,7 @@ const Collections = () => {
       <Helmet>
         <title>All Snarky Collections &amp; Funny Gifts | Snarky</title>
         <meta name="description" content="Browse our complete catalog of funny t-shirts, custom hardcover journals, snarky coffee mugs, hoodies, tote bags, and personalized gag gifts." />
-        <link rel="canonical" href="https://www.snarkyazzhumans.com/collections" />
+        <link rel="canonical" href="https://www.snarkyhumans.com/collections" />
       </Helmet>
       <Header />
       <main className="flex-1">

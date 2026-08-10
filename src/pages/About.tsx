@@ -12,7 +12,7 @@ const About = () => {
             <Helmet>
                 <title>About Us | Snarky Apparel &amp; Veteran-Owned Humor</title>
                 <meta name="description" content="Learn about Snarky A$$ Apparel, a veteran-owned brand crafting high-quality sarcastic shirts, custom journals, mugs, and unapologetic gag gifts." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/about" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/about" />
             </Helmet>
             <Header />
             <main className="flex-1 bg-background text-foreground">

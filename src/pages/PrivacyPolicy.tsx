@@ -8,7 +8,7 @@ const PrivacyPolicy = () => {
             <Helmet>
                 <title>Privacy Policy | Snarky Apparel</title>
                 <meta name="description" content="Read the Snarky A$$ Apparel Privacy Policy. Learn how we protect your personal data, secure payment transactions, and handle customer information." />
-                <link rel="canonical" href="https://www.snarkyazzhumans.com/privacy" />
+                <link rel="canonical" href="https://www.snarkyhumans.com/privacy" />
             </Helmet>
             <Header />
             <main className="flex-1 bg-background">
