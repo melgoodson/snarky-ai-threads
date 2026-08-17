@@ -10,22 +10,9 @@ import { Button } from "@/components/ui/button";
 import { User, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
+import { HIDDEN_DESIGN_PATTERNS } from "@/lib/designConstants";
 
-// Designs temporarily hidden from the shop grid (title substrings, case-insensitive)
-const HIDDEN_DESIGN_PATTERNS: string[] = [
-  "World Takes All the Credit",
-  "Fueled by Caffeine & Deadlines",
-  "Deserves More Than a Holiday",
-  "Adulting Is Hard",
-  "Just Here for the Ice Cream",
-  "Red, White & Scoops",
-  "CEOs of Chaos",
-  "World's Okayest Parent",
-  "Powered by Love",
-  "Snacks Are Currency",
-  "Raising Humans Is Exhausting",
-  "Snarky Humans",
-];
+// HIDDEN_DESIGN_PATTERNS imported from @/lib/designConstants
 
 interface Design {
   id: string;

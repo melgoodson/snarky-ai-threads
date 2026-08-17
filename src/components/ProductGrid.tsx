@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Star } from "lucide-react";
 import personalizationBlanket from "@/assets/personalization-blanket.png";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
+import { HIDDEN_DESIGN_PATTERNS } from "@/lib/designConstants";
 
 // Designs within each event group that should get the "FEATURED" badge.
 // Title substrings are matched case-insensitively.
@@ -20,24 +21,7 @@ const FEATURED_BADGE_PATTERNS: Record<string, string[]> = {
   // Other event groups: all designs are featured by default
 };
 
-// Designs temporarily hidden from the "All Designs" grid.
-// Title substrings matched case-insensitively.
-const HIDDEN_DESIGN_PATTERNS: string[] = [
-  // Non-featured Labor Day
-  "World Takes All the Credit",
-  "Fueled by Caffeine & Deadlines",
-  "Deserves More Than a Holiday",
-  "Adulting Is Hard",
-  // Seasonal / temporarily hidden
-  "Just Here for the Ice Cream",
-  "Red, White & Scoops",
-  "CEOs of Chaos",
-  "World's Okayest Parent",
-  "Powered by Love",
-  "Snacks Are Currency",
-  "Raising Humans Is Exhausting",
-  "Snarky Humans",
-];
+// HIDDEN_DESIGN_PATTERNS imported from @/lib/designConstants
 
 interface Design {
   id: string;
@@ -295,7 +279,7 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
     const fetchSchedule = async () => {
       try {
         const month = new Date().getMonth();
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from("featured_schedules")
           .select("*")
           .eq("month", month)
@@ -374,17 +358,18 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
     }
   };
 
-  // Prioritize Q3 featured designs for the featured section
+  // Q3 event designs (fallback when no admin schedule exists)
   const q3FeaturedDesigns = designs.filter((d) =>
     d.id.startsWith("q3-") ||
     /labor[- ]day|grandparents|9[-/]11|hispanic/i.test(d.title) ||
     /labor-day|grandparents|9-11|hispanic/i.test(d.image_url)
   );
 
-  const featuredDesigns = q3FeaturedDesigns.length > 0
-    ? q3FeaturedDesigns
-    : (scheduledDesignIds && scheduledDesignIds.length > 0)
+  // Priority: Admin-scheduled designs > Q3 hardcoded > first 8
+  const featuredDesigns = (scheduledDesignIds && scheduledDesignIds.length > 0)
     ? designs.filter((d) => scheduledDesignIds.includes(d.id))
+    : q3FeaturedDesigns.length > 0
+    ? q3FeaturedDesigns
     : designs.slice(0, 8);
   const allDesigns = designs;
 

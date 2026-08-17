@@ -99,7 +99,7 @@ export function AdminFeaturedSchedule() {
   const fetchSchedule = useCallback(async (month: number) => {
     setLoading(true);
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("featured_schedules")
         .select("*")
         .eq("month", month)
@@ -172,14 +172,14 @@ export function AdminFeaturedSchedule() {
 
       if (schedule.id) {
         // Update existing
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("featured_schedules")
           .update(payload)
           .eq("id", schedule.id);
         if (error) throw error;
       } else {
         // Insert new
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("featured_schedules")
           .insert(payload);
         if (error) throw error;
