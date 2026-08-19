@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { sendSesEmail } from "../_shared/ses.ts";
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -21,23 +22,10 @@ serve(async (req) => {
             );
         }
 
-        const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-        if (!RESEND_API_KEY) {
-            console.error("[send-welcome-email] RESEND_API_KEY not configured");
-            return new Response(
-                JSON.stringify({ error: "Email service not configured" }),
-                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-        }
+        const fromEmail = Deno.env.get("AWS_SES_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "Snarky Humans <hello@snarkyhumans.com>";
+        const replyToEmail = "support@snarkyhumans.com";
 
-        const resend = new Resend(RESEND_API_KEY);
-
-        const { data, error } = await resend.emails.send({
-            from: "Snarky Humans <hello@snarkyhumans.com>",
-            replyTo: "support@snarkyhumans.com",
-            to: [email],
-            subject: "You're officially one of us. Here's what happens next. 😈",
-            html: `<!DOCTYPE html>
+        const welcomeHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -149,21 +137,56 @@ serve(async (req) => {
     </tr>
   </table>
 </body>
-</html>`,
+</html>`;
+
+        // 1. Try sending via Amazon SES
+        const sesResult = await sendSesEmail({
+            from: fromEmail,
+            replyTo: replyToEmail,
+            to: [email],
+            subject: "You're officially one of us. Here's what happens next. 😈",
+            html: welcomeHtml,
         });
 
-        if (error) {
-            console.error("[send-welcome-email] Resend error:", error);
+        if (sesResult.success) {
+            console.log(`[send-welcome-email] Sent via SES to ${email}, msgId=${sesResult.messageId}`);
             return new Response(
-                JSON.stringify({ error: "Failed to send welcome email", detail: error }),
-                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                JSON.stringify({ success: true, provider: "ses", messageId: sesResult.messageId }),
+                { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
         }
 
-        console.log(`[send-welcome-email] Sent to ${email}, id=${data?.id}`);
+        console.warn(`[send-welcome-email] SES failed: ${sesResult.error}. Checking Resend fallback...`);
+
+        // 2. Fallback to Resend if RESEND_API_KEY is available
+        const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+        if (RESEND_API_KEY) {
+            try {
+                const resend = new Resend(RESEND_API_KEY);
+                const { data, error } = await resend.emails.send({
+                    from: fromEmail,
+                    replyTo: replyToEmail,
+                    to: [email],
+                    subject: "You're officially one of us. Here's what happens next. 😈",
+                    html: welcomeHtml,
+                });
+
+                if (!error) {
+                    console.log(`[send-welcome-email] Sent via Resend to ${email}, id=${data?.id}`);
+                    return new Response(
+                        JSON.stringify({ success: true, provider: "resend", id: data?.id }),
+                        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                    );
+                }
+                console.error("[send-welcome-email] Resend error:", error);
+            } catch (resendErr) {
+                console.error("[send-welcome-email] Resend exception:", resendErr);
+            }
+        }
+
         return new Response(
-            JSON.stringify({ success: true, id: data?.id }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Failed to send welcome email", detail: sesResult.error }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
 
     } catch (err) {

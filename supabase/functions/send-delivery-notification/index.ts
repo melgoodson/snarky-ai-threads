@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { sendSesEmail } from "../_shared/ses.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,20 +14,11 @@ serve(async (req) => {
 
   try {
     const { email, orderId } = await req.json();
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
-    if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not configured");
-    }
+    const fromEmail = Deno.env.get("AWS_SES_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "Snarky Humans <hello@snarkyhumans.com>";
+    const replyToEmail = "support@snarkyhumans.com";
 
-    const resend = new Resend(RESEND_API_KEY);
-
-    const emailResponse = await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyhumans.com>",
-      replyTo: "support@snarkyhumans.com",
-      to: [email],
-      subject: "Your snarky gear just landed. 🎁",
-      html: `<!DOCTYPE html>
+    const customerHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -138,15 +130,9 @@ serve(async (req) => {
     </tr>
   </table>
 </body>
-</html>`,
-    });
+</html>`;
 
-    // Send internal admin notification
-    await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyhumans.com>",
-      to: ["teamsienvi@gmail.com", "sienviclientmelgoodson@gmail.com"],
-      subject: `[INTERNAL] Order Delivered: ${orderId}`,
-      html: `<!DOCTYPE html>
+    const adminHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -188,13 +174,84 @@ serve(async (req) => {
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
+
+    // 1. Send customer delivery notification via Amazon SES
+    const customerSesResult = await sendSesEmail({
+      from: fromEmail,
+      replyTo: replyToEmail,
+      to: [email],
+      subject: "Your snarky gear just landed. 🎁",
+      html: customerHtml,
     });
 
-    console.log("Delivery notification sent:", emailResponse);
+    let customerSent = false;
+    let customerResultData: any = customerSesResult;
+
+    if (customerSesResult.success) {
+      customerSent = true;
+      console.log(`[send-delivery-notification] Delivery notification sent via SES to ${email}, msgId=${customerSesResult.messageId}`);
+    } else {
+      console.warn(`[send-delivery-notification] SES failed for customer: ${customerSesResult.error}. Attempting Resend fallback...`);
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        try {
+          const resend = new Resend(resendApiKey);
+          const resendResponse = await resend.emails.send({
+            from: fromEmail,
+            replyTo: replyToEmail,
+            to: [email],
+            subject: "Your snarky gear just landed. 🎁",
+            html: customerHtml,
+          });
+          customerSent = true;
+          customerResultData = resendResponse;
+          console.log(`[send-delivery-notification] Delivery notification sent via Resend to ${email}`);
+        } catch (resendErr) {
+          console.error("[send-delivery-notification] Resend customer send failed:", resendErr);
+        }
+      }
+    }
+
+    // 2. Send admin alert via Amazon SES
+    const adminEmails = ["teamsienvi@gmail.com", "sienviclientmelgoodson@gmail.com"];
+    const adminSesResult = await sendSesEmail({
+      from: fromEmail,
+      to: adminEmails,
+      subject: `[INTERNAL] Order Delivered: ${orderId}`,
+      html: adminHtml,
+    });
+
+    if (adminSesResult.success) {
+      console.log(`[send-delivery-notification] Admin alert sent via SES for order ${orderId}`);
+    } else {
+      console.warn(`[send-delivery-notification] SES failed for admin alert: ${adminSesResult.error}`);
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        try {
+          const resend = new Resend(resendApiKey);
+          await resend.emails.send({
+            from: fromEmail,
+            to: adminEmails,
+            subject: `[INTERNAL] Order Delivered: ${orderId}`,
+            html: adminHtml,
+          });
+          console.log(`[send-delivery-notification] Admin alert sent via Resend for order ${orderId}`);
+        } catch (resendAdminErr) {
+          console.error("[send-delivery-notification] Resend admin alert failed:", resendAdminErr);
+        }
+      }
+    }
+
+    if (!customerSent && !customerSesResult.success) {
+      return new Response(
+        JSON.stringify({ error: customerSesResult.error || "Failed to send delivery notification" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
-      JSON.stringify({ success: true, emailResponse }),
+      JSON.stringify({ success: true, detail: customerResultData }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }

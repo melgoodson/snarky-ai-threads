@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { sendSesEmail } from "../_shared/ses.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,12 +21,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, orderId, totalAmount }: EmailRequest = await req.json();
 
-    const emailResponse = await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyhumans.com>",
-      replyTo: "support@snarkyhumans.com",
-      to: [email],
-      subject: "Order locked in. We're on it. 🔥",
-      html: `<!DOCTYPE html>
+    const fromEmail = Deno.env.get("AWS_SES_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "Snarky Humans <hello@snarkyhumans.com>";
+    const replyToEmail = "support@snarkyhumans.com";
+
+    const customerHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -139,15 +136,9 @@ const handler = async (req: Request): Promise<Response> => {
     </tr>
   </table>
 </body>
-</html>`,
-    });
+</html>`;
 
-    // Send internal admin notification
-    await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyhumans.com>",
-      to: ["teamsienvi@gmail.com", "sienviclientmelgoodson@gmail.com"],
-      subject: `[INTERNAL] New Order Received: ${orderId}`,
-      html: `<!DOCTYPE html>
+    const adminHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -190,12 +181,83 @@ const handler = async (req: Request): Promise<Response> => {
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
+
+    // 1. Send customer confirmation via Amazon SES
+    const customerSesResult = await sendSesEmail({
+      from: fromEmail,
+      replyTo: replyToEmail,
+      to: [email],
+      subject: "Order locked in. We're on it. 🔥",
+      html: customerHtml,
     });
 
-    console.log("Order confirmation email sent:", emailResponse);
+    let customerSent = false;
+    let customerResultData: any = customerSesResult;
 
-    return new Response(JSON.stringify(emailResponse), {
+    if (customerSesResult.success) {
+      customerSent = true;
+      console.log(`[send-order-confirmation] Customer confirmation sent via SES to ${email}, msgId=${customerSesResult.messageId}`);
+    } else {
+      console.warn(`[send-order-confirmation] SES failed for customer: ${customerSesResult.error}. Attempting Resend fallback...`);
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        try {
+          const resend = new Resend(resendApiKey);
+          const resendResponse = await resend.emails.send({
+            from: fromEmail,
+            replyTo: replyToEmail,
+            to: [email],
+            subject: "Order locked in. We're on it. 🔥",
+            html: customerHtml,
+          });
+          customerSent = true;
+          customerResultData = resendResponse;
+          console.log(`[send-order-confirmation] Customer confirmation sent via Resend to ${email}`);
+        } catch (resendErr) {
+          console.error("[send-order-confirmation] Resend customer send failed:", resendErr);
+        }
+      }
+    }
+
+    // 2. Send admin alert via Amazon SES
+    const adminEmails = ["teamsienvi@gmail.com", "sienviclientmelgoodson@gmail.com"];
+    const adminSesResult = await sendSesEmail({
+      from: fromEmail,
+      to: adminEmails,
+      subject: `[INTERNAL] New Order Received: ${orderId}`,
+      html: adminHtml,
+    });
+
+    if (adminSesResult.success) {
+      console.log(`[send-order-confirmation] Admin alert sent via SES for order ${orderId}`);
+    } else {
+      console.warn(`[send-order-confirmation] SES failed for admin alert: ${adminSesResult.error}`);
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        try {
+          const resend = new Resend(resendApiKey);
+          await resend.emails.send({
+            from: fromEmail,
+            to: adminEmails,
+            subject: `[INTERNAL] New Order Received: ${orderId}`,
+            html: adminHtml,
+          });
+          console.log(`[send-order-confirmation] Admin alert sent via Resend for order ${orderId}`);
+        } catch (resendAdminErr) {
+          console.error("[send-order-confirmation] Resend admin alert failed:", resendAdminErr);
+        }
+      }
+    }
+
+    if (!customerSent && !customerSesResult.success) {
+      return new Response(
+        JSON.stringify({ error: customerSesResult.error || "Failed to send order confirmation email" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(JSON.stringify({ success: true, detail: customerResultData }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

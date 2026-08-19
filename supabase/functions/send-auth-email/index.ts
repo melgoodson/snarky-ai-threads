@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { sendSesEmail } from "../_shared/ses.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,19 +37,9 @@ serve(async (req) => {
       );
     }
 
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) {
-      console.error("[send-auth-email] RESEND_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const resend = new Resend(RESEND_API_KEY);
 
     console.log(`[send-auth-email] Generating link of type '${type}' for email: ${email}`);
 
@@ -65,7 +56,6 @@ serve(async (req) => {
     if (linkError) {
       console.error("[send-auth-email] generateLink error:", linkError);
       
-      // Extract a readable error message safely
       let errorMessage = "Failed to generate authorization link";
       if (linkError.message && typeof linkError.message === "string") {
         errorMessage = linkError.message;
@@ -110,6 +100,9 @@ serve(async (req) => {
     const buttonLabel = type === "signup"
       ? "CONFIRM REGISTRATION"
       : "SIGN IN INSTANTLY";
+
+    const fromEmail = Deno.env.get("AWS_SES_FROM_EMAIL") || Deno.env.get("SES_FROM_EMAIL") || "Snarky Humans <hello@snarkyhumans.com>";
+    const replyToEmail = "support@snarkyhumans.com";
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -179,27 +172,54 @@ serve(async (req) => {
 </body>
 </html>`;
 
-    // Send the email via Resend
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "Snarky Humans <hello@snarkyhumans.com>",
-      replyTo: "support@snarkyhumans.com",
+    // 1. Try sending via Amazon SES
+    const sesResult = await sendSesEmail({
+      from: fromEmail,
+      replyTo: replyToEmail,
       to: [email],
       subject,
       html,
     });
 
-    if (emailError) {
-      console.error("[send-auth-email] Resend error:", emailError);
+    if (sesResult.success) {
+      console.log(`[send-auth-email] Auth email sent via SES to ${email}, msgId=${sesResult.messageId}`);
       return new Response(
-        JSON.stringify({ error: "Failed to send verification email", detail: emailError }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: true, provider: "ses", message: "Verification email sent!" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[send-auth-email] Email sent successfully to ${email}, id=${emailData?.id}`);
+    console.warn(`[send-auth-email] SES failed: ${sesResult.error}. Checking Resend fallback...`);
+
+    // 2. Fallback to Resend if RESEND_API_KEY is available
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (RESEND_API_KEY) {
+      try {
+        const resend = new Resend(RESEND_API_KEY);
+        const { data: emailData, error: emailError } = await resend.emails.send({
+          from: fromEmail,
+          replyTo: replyToEmail,
+          to: [email],
+          subject,
+          html,
+        });
+
+        if (!emailError) {
+          console.log(`[send-auth-email] Auth email sent via Resend to ${email}, id=${emailData?.id}`);
+          return new Response(
+            JSON.stringify({ success: true, provider: "resend", message: "Verification email sent!" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.error("[send-auth-email] Resend error:", emailError);
+      } catch (resendErr) {
+        console.error("[send-auth-email] Resend exception:", resendErr);
+      }
+    }
+
     return new Response(
-      JSON.stringify({ success: true, message: "Verification email sent!" }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Failed to send auth email", detail: sesResult.error }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (err) {
