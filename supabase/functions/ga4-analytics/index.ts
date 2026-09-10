@@ -210,7 +210,7 @@ serve(async (req) => {
     });
 
     const browserBreakdown = (browserReport.rows || []).map((row: any) => ({
-      name: row.dimensionValues[0].value,
+      name: row.dimensionValues[0].value || 'Unknown',
       value: parseInt(row.metricValues[0].value, 10),
     }));
 
@@ -224,7 +224,7 @@ serve(async (req) => {
     });
 
     const osBreakdown = (osReport.rows || []).map((row: any) => ({
-      name: row.dimensionValues[0].value,
+      name: row.dimensionValues[0].value || 'Unknown',
       value: parseInt(row.metricValues[0].value, 10),
     }));
 
@@ -252,7 +252,7 @@ serve(async (req) => {
     });
 
     const countryBreakdown = (countryReport.rows || []).map((row: any) => ({
-      name: row.dimensionValues[0].value,
+      name: row.dimensionValues[0].value || 'Unknown',
       value: parseInt(row.metricValues[0].value, 10),
     }));
 
