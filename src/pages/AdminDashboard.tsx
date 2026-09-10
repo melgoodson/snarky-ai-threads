@@ -140,13 +140,15 @@ interface TrafficAnalytics {
   totalSessions: number;
   averageSessionDuration: number;
   bounceRate: number;
+  engagementRate: number;
+  pagesPerSession: number;
   topPages: Array<{ page: string; views: number }>;
   deviceBreakdown: Array<{ name: string; value: number }>;
   browserBreakdown: Array<{ name: string; value: number }>;
   countryBreakdown: Array<{ name: string; value: number }>;
   osBreakdown: Array<{ name: string; value: number }>;
   trafficSources: Array<{ name: string; value: number }>;
-  avgScrollDepth: number;
+  dailyBreakdown: Array<{ date: string; visitors: number; sessions: number; pageViews: number }>;
 }
 
 export default function AdminDashboard() {
@@ -161,6 +163,9 @@ export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [trafficAnalytics, setTrafficAnalytics] = useState<TrafficAnalytics | null>(null);
   const [dateRange, setDateRange] = useState<string>("30");
+  const [trafficDateRange, setTrafficDateRange] = useState<string>("30");
+  const [trafficLoading, setTrafficLoading] = useState(false);
+  const [trafficError, setTrafficError] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -186,140 +191,58 @@ export default function AdminDashboard() {
     if (isAdmin) {
       fetchTrafficAnalytics();
     }
-  }, [isAdmin, dateRange]);
+  }, [isAdmin, trafficDateRange]);
 
   const fetchTrafficAnalytics = async () => {
     try {
-      const daysAgo = parseInt(dateRange);
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+      setTrafficLoading(true);
+      setTrafficError(null);
 
-      // Fetch sessions
-      const { data: sessions, error: sessionsError } = await supabase
-        .from('analytics_sessions')
-        .select('*')
-        .gte('started_at', cutoffDate.toISOString());
+      const daysAgo = parseInt(trafficDateRange);
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - daysAgo);
 
-      if (sessionsError) throw sessionsError;
+      // Format dates as YYYY-MM-DD for GA4 API
+      const formatDate = (d: Date) => d.toISOString().slice(0, 10);
 
-      // Fetch page views
-      const { data: pageViews, error: pageViewsError } = await supabase
-        .from('analytics_page_views')
-        .select('*')
-        .gte('viewed_at', cutoffDate.toISOString());
-
-      if (pageViewsError) throw pageViewsError;
-
-      // Calculate metrics
-      const totalSessions = sessions?.length || 0;
-      const uniqueVisitors = new Set(sessions?.map(s => s.visitor_id)).size;
-      // Only count bounce rate on sessions that have ended — active/incomplete sessions
-      // all default to is_bounce=true, which would inflate the rate to ~100%.
-      const completedSessions = sessions?.filter(s => s.ended_at) || [];
-      const completedBounces = completedSessions.filter(s => s.is_bounce).length;
-      const bounceRate = completedSessions.length > 0
-        ? Math.round((completedBounces / completedSessions.length) * 100)
-        : 0;
-
-      // Average session duration
-      let totalDuration = 0;
-      let sessionsWithDuration = 0;
-      sessions?.forEach(session => {
-        if (session.started_at && session.ended_at) {
-          const duration = new Date(session.ended_at).getTime() - new Date(session.started_at).getTime();
-          if (duration > 0) {
-            totalDuration += duration;
-            sessionsWithDuration++;
-          }
-        }
+      const { data, error } = await supabase.functions.invoke('ga4-analytics', {
+        body: {
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+        },
       });
-      const avgDuration = sessionsWithDuration > 0 ? Math.round(totalDuration / sessionsWithDuration / 1000) : 0;
 
-      // Top pages
-      const pageViewCounts: Record<string, number> = {};
-      pageViews?.forEach(pv => {
-        pageViewCounts[pv.path] = (pageViewCounts[pv.path] || 0) + 1;
-      });
-      const topPages = Object.entries(pageViewCounts)
-        .map(([page, views]) => ({ page, views }))
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 10);
+      if (error) throw error;
 
-      // Device breakdown from sessions
-      const deviceCounts: Record<string, number> = {};
-      sessions?.forEach(s => {
-        if (s.device_type) {
-          deviceCounts[s.device_type] = (deviceCounts[s.device_type] || 0) + 1;
-        }
-      });
-      const deviceBreakdown = Object.entries(deviceCounts).map(([name, value]) => ({ name, value }));
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to fetch GA4 data');
+      }
 
-      // Browser breakdown from sessions
-      const browserCounts: Record<string, number> = {};
-      sessions?.forEach(s => {
-        if (s.browser) {
-          browserCounts[s.browser] = (browserCounts[s.browser] || 0) + 1;
-        }
-      });
-      const browserBreakdown = Object.entries(browserCounts).map(([name, value]) => ({ name, value }));
-
-      // Country breakdown from sessions
-      const countryCounts: Record<string, number> = {};
-      sessions?.forEach(s => {
-        const country = s.country || 'XX';
-        if (country !== 'XX') {
-          countryCounts[country] = (countryCounts[country] || 0) + 1;
-        }
-      });
-      const countryBreakdown = Object.entries(countryCounts)
-        .map(([code, value]) => ({ name: isoToCountryName(code), value }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 10);
-
-      // OS breakdown from sessions
-      const osCounts: Record<string, number> = {};
-      sessions?.forEach(s => {
-        const os = s.os || 'Unknown';
-        osCounts[os] = (osCounts[os] || 0) + 1;
-      });
-      const osBreakdown = Object.entries(osCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
-
-      // Traffic sources from sessions — map null/unknown → 'Direct'
-      const SOURCE_LABELS: Record<string, string> = {
-        direct: 'Direct', organic: 'Organic', paid: 'Paid', social: 'Social',
-        email: 'Email', referral: 'Referral', unknown: 'Direct',
-      };
-      const sourceCounts: Record<string, number> = {};
-      sessions?.forEach(s => {
-        const raw = (s as any).traffic_source_type || 'direct';
-        const label = SOURCE_LABELS[raw] || 'Direct';
-        sourceCounts[label] = (sourceCounts[label] || 0) + 1;
-      });
-      const trafficSources = Object.entries(sourceCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
-
-      // Average scroll depth from page views
-      const scrollViews = pageViews?.filter(pv => pv.scroll_depth && pv.scroll_depth > 0) || [];
-      const avgScrollDepth = scrollViews.length > 0 
-        ? Math.round(scrollViews.reduce((acc, pv) => acc + (pv.scroll_depth || 0), 0) / scrollViews.length)
-        : 0;
-
+      const a = data.analytics;
       setTrafficAnalytics({
-        totalPageViews: pageViews?.length || 0,
-        uniqueVisitors,
-        totalSessions,
-        averageSessionDuration: avgDuration,
-        bounceRate,
-        topPages,
-        deviceBreakdown,
-        browserBreakdown,
-        countryBreakdown,
-        osBreakdown,
-        trafficSources,
-        avgScrollDepth,
+        totalPageViews: a.totalPageViews,
+        uniqueVisitors: a.uniqueVisitors,
+        totalSessions: a.totalSessions,
+        averageSessionDuration: a.averageSessionDuration,
+        bounceRate: a.bounceRate,
+        engagementRate: a.engagementRate,
+        pagesPerSession: a.pagesPerSession,
+        topPages: a.topPages,
+        deviceBreakdown: a.deviceBreakdown,
+        browserBreakdown: a.browserBreakdown,
+        countryBreakdown: a.countryBreakdown,
+        osBreakdown: a.osBreakdown,
+        trafficSources: a.trafficSources,
+        dailyBreakdown: a.dailyBreakdown,
       });
-    } catch (error) {
-      console.error('Error fetching traffic analytics:', error);
-      toast.error('Failed to load traffic analytics');
+    } catch (error: any) {
+      console.error('Error fetching GA4 traffic analytics:', error);
+      const msg = error?.message || 'Failed to load traffic analytics';
+      setTrafficError(msg);
+      toast.error(msg);
+    } finally {
+      setTrafficLoading(false);
     }
   };
 
@@ -813,8 +736,59 @@ export default function AdminDashboard() {
               </div>
             </TabsContent>
 
-            {/* Traffic Analytics Tab */}
+            {/* Traffic Analytics Tab — powered by GA4 Data API */}
             <TabsContent value="traffic" className="space-y-6">
+              {/* Date Range + Source Badge */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <Card className="w-full sm:w-auto">
+                  <CardContent className="flex items-center gap-3 py-3 px-4">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Select value={trafficDateRange} onValueChange={setTrafficDateRange}>
+                      <SelectTrigger className="w-[180px] border-0 bg-transparent p-0 h-auto font-medium">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7">Last 7 days</SelectItem>
+                        <SelectItem value="14">Last 14 days</SelectItem>
+                        <SelectItem value="30">Last 30 days</SelectItem>
+                        <SelectItem value="90">Last 90 days</SelectItem>
+                        <SelectItem value="180">Last 6 months</SelectItem>
+                        <SelectItem value="365">Last year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </CardContent>
+                </Card>
+                <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-500 gap-1.5 py-1 px-2.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Source: Google Analytics 4
+                </Badge>
+              </div>
+
+              {/* Loading / Error states */}
+              {trafficLoading && (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-3 text-muted-foreground">Loading GA4 data…</span>
+                </div>
+              )}
+
+              {trafficError && !trafficLoading && (
+                <Card className="border-red-500/30">
+                  <CardContent className="py-6">
+                    <div className="flex items-center gap-3 text-red-400">
+                      <AlertCircle className="h-5 w-5 shrink-0" />
+                      <div>
+                        <p className="font-medium">Failed to load GA4 traffic data</p>
+                        <p className="text-sm text-muted-foreground mt-1">{trafficError}</p>
+                      </div>
+                      <Button variant="outline" size="sm" className="ml-auto" onClick={fetchTrafficAnalytics}>Retry</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!trafficLoading && !trafficError && (
+              <>
               {/* Key Traffic Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
@@ -825,7 +799,7 @@ export default function AdminDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">{trafficAnalytics?.totalPageViews || 0}</p>
+                    <p className="text-3xl font-bold">{trafficAnalytics?.totalPageViews?.toLocaleString() || 0}</p>
                   </CardContent>
                 </Card>
 
@@ -833,11 +807,11 @@ export default function AdminDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-sm">
                       <Users className="h-4 w-4" />
-                      Unique Visitors
+                      Active Users
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">{trafficAnalytics?.uniqueVisitors || 0}</p>
+                    <p className="text-3xl font-bold">{trafficAnalytics?.uniqueVisitors?.toLocaleString() || 0}</p>
                   </CardContent>
                 </Card>
 
@@ -849,7 +823,7 @@ export default function AdminDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">{trafficAnalytics?.totalSessions || 0}</p>
+                    <p className="text-3xl font-bold">{trafficAnalytics?.totalSessions?.toLocaleString() || 0}</p>
                   </CardContent>
                 </Card>
 
@@ -873,6 +847,44 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Daily Traffic Trend */}
+              {trafficAnalytics?.dailyBreakdown && trafficAnalytics.dailyBreakdown.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Daily Traffic Trend</CardTitle>
+                    <CardDescription>Visitors, sessions & page views over time</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={trafficAnalytics.dailyBreakdown}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis
+                          dataKey="date"
+                          className="text-xs"
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                          tickFormatter={(v) => {
+                            const d = new Date(v + 'T00:00:00');
+                            return `${d.getMonth() + 1}/${d.getDate()}`;
+                          }}
+                        />
+                        <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                          }}
+                        />
+                        <Legend />
+                        <Line type="monotone" dataKey="visitors" stroke="hsl(var(--chart-1))" strokeWidth={2} name="Active Users" dot={false} />
+                        <Line type="monotone" dataKey="sessions" stroke="hsl(var(--chart-2))" strokeWidth={2} name="Sessions" dot={false} />
+                        <Line type="monotone" dataKey="pageViews" stroke="hsl(var(--chart-3))" strokeWidth={2} name="Page Views" dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Charts Row */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1053,12 +1065,12 @@ export default function AdminDashboard() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Engagement Metrics</CardTitle>
-                    <CardDescription>User interaction data</CardDescription>
+                    <CardDescription>GA4 engagement data</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Average Scroll Depth</span>
-                      <Badge variant="secondary">{trafficAnalytics?.avgScrollDepth || 0}%</Badge>
+                      <span className="text-sm font-medium">Engagement Rate</span>
+                      <Badge variant="secondary">{trafficAnalytics?.engagementRate || 0}%</Badge>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Bounce Rate</span>
@@ -1067,14 +1079,26 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Pages per Session</span>
                       <Badge variant="secondary">
-                        {trafficAnalytics && trafficAnalytics.totalSessions > 0
-                          ? (trafficAnalytics.totalPageViews / trafficAnalytics.totalSessions).toFixed(1)
-                          : '0'}
+                        {trafficAnalytics?.pagesPerSession?.toFixed(1) || '0'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Avg Session Duration</span>
+                      <Badge variant="secondary">
+                        {(() => {
+                          const s = trafficAnalytics?.averageSessionDuration || 0;
+                          if (s === 0) return '—';
+                          const m = Math.floor(s / 60);
+                          const sec = s % 60;
+                          return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+                        })()}
                       </Badge>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+              </>
+              )}
             </TabsContent>
 
             {/* Orders Tab */}

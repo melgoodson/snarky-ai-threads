@@ -1,5 +1,9 @@
 project_id = "birjqwhhleqtirwkzcwl"
 
+
+[functions.ga4-analytics]
+verify_jwt = false
+
 [functions.printify-webhook]
 verify_jwt = false
 
