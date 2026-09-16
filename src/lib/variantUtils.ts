@@ -266,6 +266,7 @@ export const getBlankMockup = (templateImageUrl: string | undefined, title: stri
   if (t.includes('tee') || t.includes('shirt')) return '/images/shirt-mockup.png';
   if (t.includes('blanket')) return personalizationBlanketFallback;
   if (t.includes('notebook') || t.includes('journal')) return '/images/notebook-mockup.png';
+  if (t.includes('desk mat') || t.includes('deskmat') || t.includes('mousepad')) return '/images/desk-mat-mockup.png';
   // Unknown product type — fall back to whatever Printify gave us
   return templateImageUrl || '';
 };
@@ -273,7 +274,27 @@ export const getBlankMockup = (templateImageUrl: string | undefined, title: stri
 export const getOverlayStyle = (title: string, sizeMode: 'default' | 'large' | 'small' = 'default') => {
   const t = title.toLowerCase();
   const isTote = t.includes('tote') || t.includes('bag');
-  
+  const isDeskMat = t.includes('desk mat') || t.includes('deskmat') || t.includes('mousepad');
+
+  if (isDeskMat) {
+    if (sizeMode === 'large') {
+      return {
+        containerClass: "absolute inset-0 flex items-center justify-center p-6",
+        imageClass: "max-w-[85%] max-h-[85%] object-contain"
+      };
+    }
+    if (sizeMode === 'small') {
+      return {
+        containerClass: "absolute inset-0 flex items-center justify-center p-3",
+        imageClass: "max-w-[85%] max-h-[85%] object-contain"
+      };
+    }
+    return {
+      containerClass: "absolute inset-0 flex items-center justify-center p-4",
+      imageClass: "max-w-[85%] max-h-[85%] object-contain"
+    };
+  }
+
   if (isTote) {
     if (sizeMode === 'large') {
       return {
@@ -321,6 +342,7 @@ export const getProductType = (title: string): string => {
   if (lower.includes('card') || lower.includes('greeting')) return 'card';
   if (lower.includes('blanket')) return 'unknown'; // HIDDEN: investigating print quality
   if (lower.includes('notebook') || lower.includes('journal')) return 'notebook';
+  if (lower.includes('desk mat') || lower.includes('deskmat') || lower.includes('mousepad')) return 'deskmat';
   return 'unknown';
 };
 
@@ -389,6 +411,9 @@ export const cleanProductTitle = (title: string): string => {
   }
   if (lower.includes('blanket')) {
     return 'Personalized Blanket';
+  }
+  if (lower.includes('desk mat') || lower.includes('deskmat') || lower.includes('mousepad')) {
+    return 'Desk Mat & Gaming Mouse Pad';
   }
   if (lower.includes('hoodie') || lower.includes('sweatshirt')) {
     return 'Unisex Hoodie';

@@ -110,8 +110,28 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/desk-mats" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium text-primary">
+                  Desk Mats 🔥
+                </Link>
+              </li>
+              <li>
                 <Link to="/journals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Journals
+                </Link>
+              </li>
+              <li>
+                <Link to="/tote-bags" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Tote Bags
+                </Link>
+              </li>
+              <li>
+                <Link to="/mugs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Mugs
+                </Link>
+              </li>
+              <li>
+                <Link to="/greeting-cards" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Greeting Cards
                 </Link>
               </li>
             </ul>

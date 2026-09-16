@@ -7,6 +7,7 @@ import { Sparkles, Gift, ShoppingBag, Heart, Camera, PartyPopper, Users, Baby, S
 
 // SEO-optimized collection structure — 3 main silos
 const SNARKY_COLLECTIONS = [
+  { name: "Snarky Desk Mats", slug: "/desk-mats", emoji: "🖥️", description: "3mm neoprene desk mats & gaming mouse pads", keywords: "snarky desk mat, custom desk mat, gaming mouse pad" },
   { name: "Snarky T-Shirts", slug: "/shirts", emoji: "👕", description: "Bold, sarcastic tees for people who speak their mind", keywords: "snarky t shirts, sarcastic t-shirt, funny quote shirt" },
   { name: "Snarky Mugs", slug: "/mugs", emoji: "☕", description: "Coffee mugs with attitude — perfect office gifts", keywords: "snarky coffee mug, funny mug gift" },
   { name: "Snarky Greeting Cards", slug: "/greeting-cards", emoji: "💌", description: "Funny sarcastic cards for birthdays and holidays", keywords: "snarky birthday cards, funny sarcastic greeting cards" },
@@ -16,6 +17,7 @@ const SNARKY_COLLECTIONS = [
 ];
 
 const PERSONALIZED_COLLECTIONS = [
+  { name: "Custom Desk Mats & Gaming Pads", slug: "/desk-mats", emoji: "🖥️", description: "Personalized 3mm neoprene desk mats in 3 sizes", keywords: "custom desk mat, personalized desk mat, extended mouse pad" },
   { name: "Personalized Notebooks & Journals", slug: "/journals", emoji: "📓", description: "Custom hardcover journals & personalized notebooks", keywords: "personalized notebook gifts, custom hardcover journals, custom journals" },
   { name: "Gifts for Him", slug: "/designs", emoji: "👨", description: "Personalized gifts for boyfriend, husband, or dad", keywords: "personalized gifts for him, personalized gifts for boyfriend, personalized gifts for men" },
   { name: "Gifts for Her", slug: "/designs", emoji: "👩", description: "Custom gifts for girlfriend, wife, or mom", keywords: "personalized gifts for her, personalized gifts for girlfriend" },
@@ -37,6 +39,7 @@ const GIFT_COLLECTIONS = [
 ];
 
 const SHOP_BY_PRODUCT = [
+  { name: "Desk Mats", slug: "/desk-mats", emoji: "🖥️", description: "3mm neoprene desk mats in 3 sizes with hemmed edges", keywords: "custom desk mat, custom gaming mouse pad" },
   { name: "T-Shirts", slug: "/shirts", emoji: "👕", description: "Premium cotton tees with bold DTG prints", keywords: "personalized t shirts, custom t shirt printing for sarcastic designs" },
   { name: "Hoodies", slug: "/hoodies", emoji: "🧥", description: "Cozy pullover and zip-up custom hoodies", keywords: "personalized hoodie, custom hoodie" },
   { name: "Hardcover Journals", slug: "/journals", emoji: "📓", description: "Premium matte-finish custom journals", keywords: "custom hardcover journals, custom journals" },

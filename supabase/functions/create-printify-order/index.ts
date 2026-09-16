@@ -100,6 +100,9 @@ serve(async (req) => {
       'sweatshirt': 77,
       'mug': 175,
       'tote': 83,
+      'deskmat': 488,
+      'desk-mat': 488,
+      'mousepad': 488,
       'default': 6, // Default to Gildan 5000 tee
     };
 

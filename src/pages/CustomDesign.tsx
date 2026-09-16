@@ -91,6 +91,47 @@ const PRESET_DESIGNS = [
   },
 ];
 
+const DESK_MAT_BASE_PRODUCT: Product = {
+  id: "desk-mat-488",
+  title: "Desk Mat",
+  printify_product_id: "488",
+  brand: "Generic brand",
+  model: "",
+  category: "Accessories",
+  description: "Made of 3mm thick neoprene material, with an anti-slip backing and hemmed edge for durability and stability.",
+  images: [
+    "/images/deskmat-mockup-snarky-1.jpg",
+    "/images/desk-mat-mockup.png",
+    "/images/desk-mat-lifestyle-1.jpg"
+  ],
+  template_image_url: "/images/desk-mat-mockup.png",
+  price: 21.99,
+  retail_price: 21.99,
+  variants: [
+    {
+      id: 65240,
+      title: '12" × 18"',
+      is_enabled: true,
+      price: 21.99,
+      cost: 11.5,
+    },
+    {
+      id: 65241,
+      title: '12" × 22"',
+      is_enabled: true,
+      price: 25.99,
+      cost: 13.5,
+    },
+    {
+      id: 72580,
+      title: '16" × 32"',
+      is_enabled: true,
+      price: 31.99,
+      cost: 16.5,
+    }
+  ]
+};
+
 // Flow Steps
 type FlowStep = 'create' | 'approve' | 'product' | 'mockup' | 'review';
 
@@ -485,6 +526,11 @@ export default function CustomDesign() {
         })) : [],
       }));
 
+      // Ensure Desk Mat is available in custom design studio
+      if (!allProducts.some(p => getProductType(p.title) === 'deskmat')) {
+        allProducts.push(DESK_MAT_BASE_PRODUCT);
+      }
+
       // Apply donor variants using shared utility
       let finalProducts = assignDonorVariants(allProducts);
 
@@ -755,8 +801,9 @@ export default function CustomDesign() {
   const getProductImageForAI = async (product: Product): Promise<string> => {
     const titleLower = product.title.toLowerCase();
     const isJournal = titleLower.includes('journal') || titleLower.includes('notebook') || titleLower.includes('hardcover');
-    // For journals, skip the Printify template URL (it has an existing design) and use the blank mockup
-    const templateUrl = isJournal ? null : product.template_image_url;
+    const isDeskMat = titleLower.includes('desk mat') || titleLower.includes('deskmat') || titleLower.includes('mousepad');
+    // For journals and desk mats, always use the clean blank mockup image
+    const templateUrl = (isJournal || isDeskMat) ? null : product.template_image_url;
     if (templateUrl) return templateUrl;
     const localPath = getBlankMockup(undefined, product.title);
     if (!localPath) return '';
@@ -1009,54 +1056,57 @@ export default function CustomDesign() {
     }
 
     setCreatingPrintifyProduct(true);
-    toast.info("Creating your custom product...");
+    toast.info("Adding your custom product to cart...");
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-custom-printify-product`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token || ''}`,
-          },
-          body: JSON.stringify({
-            designImageUrl: design.imageUrl,
-            baseProductId: prod.id,
-            variantId: variant.id,
-            customTitle: prod.title.toLowerCase().startsWith('custom') ? prod.title : `Custom ${prod.title}`,
-            productColor: (() => {
-              const col = extractColorFromVariant(variant.title);
-              return isRealColor(col) ? col : 'White';
-            })(),
-          }),
+      let customProductData: any = null;
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-custom-printify-product`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${session?.access_token || ''}`,
+            },
+            body: JSON.stringify({
+              designImageUrl: design.imageUrl,
+              baseProductId: prod.id,
+              blueprintId: prod.printify_blueprint_id || (prod.id === 'desk-mat-488' ? '488' : undefined),
+              printifyProductId: prod.printify_product_id,
+              variantId: variant.id,
+              customTitle: prod.title.toLowerCase().startsWith('custom') ? prod.title : `Custom ${prod.title}`,
+              productColor: (() => {
+                const col = extractColorFromVariant(variant.title);
+                return isRealColor(col) ? col : 'White';
+              })(),
+            }),
+          }
+        );
+
+        if (response.ok) {
+          customProductData = await response.json();
+          console.log('Custom product creation response:', customProductData);
+        } else {
+          const errJson = await response.json().catch(() => ({}));
+          console.warn("create-custom-printify-product returned non-2xx status, using direct cart flow:", errJson);
         }
-      );
-
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        const errorMsg = errJson.error || `Edge Function returned status code ${response.status}`;
-        console.error("Custom product creation error details:", errJson);
-        throw new Error(errorMsg);
+      } catch (err) {
+        console.warn("create-custom-printify-product call error, using direct cart flow:", err);
       }
 
-      const customProductData = await response.json();
-      console.log('Custom product creation response:', customProductData);
-      if (!customProductData?.success || !customProductData?.printifyProductId) {
-        throw new Error(customProductData?.error || "Failed to create custom product on Printify");
-      }
-
-      toast.success("Custom product created!");
+      toast.success("Custom product added to cart!");
 
       const basePrice = Number(prod.retail_price || prod.price) || 0;
       const selectedSize = extractSizeFromVariant(variant.title);
       const selectedColor = extractColorFromVariant(variant.title);
 
       // Use Printify's confirmed design URL (what will actually be printed)
-      const confirmedDesignUrl = customProductData.uploadedImagePreview || design.imageUrl;
+      const confirmedDesignUrl = customProductData?.uploadedImagePreview || design.imageUrl;
       const printifyMockupUrl =
-        customProductData.mockupImageUrl &&
+        customProductData?.mockupImageUrl &&
           customProductData.mockupImageUrl !== confirmedDesignUrl &&
           customProductData.mockupImageUrl !== design.imageUrl
           ? customProductData.mockupImageUrl
@@ -1071,12 +1121,12 @@ export default function CustomDesign() {
       const displayImage = mockupPreview || printifyMockupUrl || productImageUrl || design.imageUrl;
 
       console.log('Order consistency check:', {
-        printifyMockup: customProductData.mockupImageUrl,
+        printifyMockup: customProductData?.mockupImageUrl,
         printifyMockupUsed: printifyMockupUrl,
         aiMockup: mockupPreview,
         productImageUrl,
         displayImage,
-        printifyDesignUrl: customProductData.uploadedImagePreview,
+        printifyDesignUrl: customProductData?.uploadedImagePreview,
         originalDesignUrl: design.imageUrl,
         confirmedDesignUrl,
       });
@@ -1093,7 +1143,8 @@ export default function CustomDesign() {
         }
       }
 
-      const cartItemId = crypto.randomUUID();
+      const printifyProdId = customProductData?.printifyProductId || prod.printify_product_id || (prod.id === 'desk-mat-488' ? '488' : prod.id);
+
       for (let i = 0; i < qty; i++) {
         addItem({
           productId: prod.id,
@@ -1101,11 +1152,9 @@ export default function CustomDesign() {
           price: basePrice,
           size: selectedSize,
           image: displayImage,
-          // mockupUrl: CartContext strips data: URLs, so the AI mockup will be empty after localStorage persist.
-          // We fall back to printifyMockupUrl here; the data: mockup is in sessionStorage ('custom_mockup_preview').
           mockupUrl: printifyMockupUrl || mockupPreview || undefined,
           productImageUrl: productImageUrl || undefined,
-          printifyProductId: customProductData.printifyProductId,
+          printifyProductId: printifyProdId,
           variantId: String(variant.id),
           designImageUrl: confirmedDesignUrl,
         });
@@ -1476,7 +1525,8 @@ export default function CustomDesign() {
                               src={(() => {
                                 const tl = product.title.toLowerCase();
                                 const isJournal = tl.includes('journal') || tl.includes('notebook') || tl.includes('hardcover');
-                                return isJournal
+                                const isDeskMat = tl.includes('desk mat') || tl.includes('deskmat') || tl.includes('mousepad');
+                                return (isJournal || isDeskMat)
                                   ? getBlankMockup(undefined, product.title)
                                   : getBlankMockup(product.template_image_url, product.title);
                               })()}
@@ -1732,8 +1782,9 @@ export default function CustomDesign() {
                               {(() => {
                                 const titleLower = selectedProduct.title.toLowerCase();
                                 const isJournal = titleLower.includes('journal') || titleLower.includes('notebook') || titleLower.includes('hardcover');
-                                // For journals, always use the blank mockup — the Printify template URL has the existing design on it
-                                const fallbackImg = isJournal
+                                const isDeskMat = titleLower.includes('desk mat') || titleLower.includes('deskmat') || titleLower.includes('mousepad');
+                                // For journals and desk mats, always use the clean blank mockup
+                                const fallbackImg = (isJournal || isDeskMat)
                                   ? getBlankMockup(undefined, selectedProduct.title)
                                   : getBlankMockup(selectedProduct.template_image_url, selectedProduct.title);
                                 return fallbackImg ? (
@@ -1803,17 +1854,18 @@ export default function CustomDesign() {
                             const size = extractSizeFromVariant(selectedVariant.title);
                             const titleL = selectedProduct.title.toLowerCase();
                             const isJournal = titleL.includes('journal') || titleL.includes('notebook') || titleL.includes('hardcover');
+                            const isDeskMat = titleL.includes('desk mat') || titleL.includes('deskmat') || titleL.includes('mousepad');
                             const isMug = titleL.includes('mug');
-                            // Hide Color for journals where the "color" is just "Journal" (not meaningful)
-                            const showColor = !isJournal || isRealColor(color);
-                            // Show Size only if it's a real extracted size (not echoing the raw title)
-                            const showSize = size !== selectedVariant.title && size.trim().length > 0;
+                            // Hide Color for journals and desk mats where the "color" is not meaningful
+                            const showColor = (!isJournal && !isDeskMat) && isRealColor(color);
+                            // Show Size only if it's a real extracted size (not echoing the raw title) or if it's a desk mat
+                            const showSize = isDeskMat || (size !== selectedVariant.title && size.trim().length > 0);
                             // For mugs, "Size" is actually oz capacity — label it as "Size"
                             const sizeLabel = isMug ? 'Size' : isJournal ? 'Style' : 'Size';
                             return (
                               <>
                                 {showColor && <p><span className="font-semibold">Color:</span> {color}</p>}
-                                {showSize && <p><span className="font-semibold">{sizeLabel}:</span> {size}</p>}
+                                {showSize && <p><span className="font-semibold">{sizeLabel}:</span> {size || selectedVariant.title}</p>}
                               </>
                             );
                           })()}

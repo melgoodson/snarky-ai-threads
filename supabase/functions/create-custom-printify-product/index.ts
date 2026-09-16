@@ -40,6 +40,11 @@ const PRINT_PLACEMENT_CONFIG: Record<string, {
   'notebook': { scale: 0.65, x: 0.75, y: 0.5, maxScalePercent: 60, position: 'front' },
   'hardcover': { scale: 0.65, x: 0.75, y: 0.5, maxScalePercent: 60, position: 'front' },
 
+  // Desk mats & Gaming pads: Full edge-to-edge sublimation
+  'deskmat': { scale: 1.0, x: 0.5, y: 0.5, maxScalePercent: 100, position: 'front' },
+  'desk mat': { scale: 1.0, x: 0.5, y: 0.5, maxScalePercent: 100, position: 'front' },
+  'mousepad': { scale: 1.0, x: 0.5, y: 0.5, maxScalePercent: 100, position: 'front' },
+
   // Candles: Wrapped design
   'candle': { scale: 0.90, x: 0.5, y: 0.5, maxScalePercent: 85, position: 'front' },
 
@@ -108,6 +113,8 @@ serve(async (req) => {
     const {
       designImageUrl,
       baseProductId,
+      blueprintId: inputBlueprintId,
+      printifyProductId: inputPrintifyProductId,
       variantId,
       customTitle,
       productColor,
@@ -116,16 +123,18 @@ serve(async (req) => {
     } = await req.json();
 
     console.log('Creating custom Printify product:', {
-      designImageUrl,
+      designImageUrl: designImageUrl ? (designImageUrl.startsWith('data:') ? 'data:image...' : designImageUrl) : null,
       baseProductId,
+      inputBlueprintId,
+      inputPrintifyProductId,
       variantId,
       customTitle,
       productColor,
       designDimensions: { width: designWidth, height: designHeight }
     });
 
-    if (!designImageUrl || !baseProductId) {
-      throw new Error('designImageUrl and baseProductId are required');
+    if (!designImageUrl || (!baseProductId && !inputBlueprintId && !inputPrintifyProductId)) {
+      throw new Error('designImageUrl and baseProductId/blueprintId are required');
     }
 
     if (!variantId) {
@@ -135,13 +144,107 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch base product details from database
-    const { data: baseProduct, error: productError } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', baseProductId)
-      .single();
+    let baseProduct: any = null;
+    const lookupId = baseProductId || inputPrintifyProductId || inputBlueprintId;
 
-    if (productError || !baseProduct) {
+    if (lookupId) {
+      // 1. Try UUID lookup
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(lookupId))) {
+        const { data } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', lookupId)
+          .maybeSingle();
+        if (data) baseProduct = data;
+      }
+
+      // 2. Try lookup by printify_product_id or printify_blueprint_id
+      if (!baseProduct) {
+        const cleanId = String(lookupId).replace(/^desk-mat-/, '');
+        const { data } = await supabase
+          .from('products')
+          .select('*')
+          .or(`printify_product_id.eq.${cleanId},printify_blueprint_id.eq.${cleanId}`)
+          .maybeSingle();
+        if (data) baseProduct = data;
+      }
+    }
+
+    // 3. Fallback for Desk Mat (Blueprint 488) or other blueprints
+    if (!baseProduct) {
+      const idStr = String(lookupId);
+      const isDeskMat = idStr.includes('488') || idStr.toLowerCase().includes('desk') || (customTitle && customTitle.toLowerCase().includes('desk'));
+
+      if (isDeskMat) {
+        console.log('Using Desk Mat blueprint 488 fallback');
+        baseProduct = {
+          id: idStr,
+          title: "Desk Mat & Gaming Mouse Pad",
+          printify_product_id: "488",
+          printify_blueprint_id: "488",
+          retail_price: 21.99,
+          price: 21.99,
+          brand: "Generic brand",
+          model: "Desk Mat",
+          category: "Accessories",
+          print_area_dimensions: { width: 3870, height: 2610, xOffset: 0, yOffset: 0 },
+        };
+
+        // Try to persist to database so future queries find it
+        try {
+          const { data: inserted } = await supabase
+            .from('products')
+            .insert({
+              title: "Desk Mat & Gaming Mouse Pad",
+              description: "Made of 3mm thick neoprene material, with an anti-slip backing and hemmed edge for durability and stability.",
+              price: 21.99,
+              retail_price: 21.99,
+              base_cost: 11.5,
+              category: "Accessories",
+              brand: "Generic brand",
+              model: "Desk Mat",
+              is_active: true,
+              printify_blueprint_id: "488",
+              printify_product_id: "488",
+              template_image_url: "/images/desk-mat-mockup.png",
+              images: [
+                "/images/deskmat-mockup-snarky-1.jpg",
+                "/images/deskmat-mockup-rbf-2.jpg",
+                "/images/deskmat-mockup-overthinking-3.jpg",
+                "/images/desk-mat-mockup.png",
+                "/images/desk-mat-lifestyle-1.jpg"
+              ],
+              print_area_dimensions: { width: 3870, height: 2610, xOffset: 0, yOffset: 0 },
+              variants: [
+                { id: 65240, title: '12" × 18"', is_enabled: true, price: 21.99, cost: 11.5 },
+                { id: 65241, title: '12" × 22"', is_enabled: true, price: 25.99, cost: 13.5 },
+                { id: 72580, title: '16" × 32"', is_enabled: true, price: 31.99, cost: 16.5 }
+              ]
+            })
+            .select()
+            .maybeSingle();
+          if (inserted) {
+            baseProduct = inserted;
+            console.log('Persisted Desk Mat product to products table with ID:', inserted.id);
+          }
+        } catch (dbErr) {
+          console.warn('Could not auto-insert desk mat to products table:', dbErr);
+        }
+      } else if (inputBlueprintId || /^\d{1,5}$/.test(idStr)) {
+        const bpId = String(inputBlueprintId || idStr);
+        baseProduct = {
+          id: idStr,
+          title: customTitle || "Custom Product",
+          printify_product_id: bpId,
+          printify_blueprint_id: bpId,
+          retail_price: 29.99,
+          price: 29.99,
+          print_area_dimensions: { width: 3000, height: 3500 },
+        };
+      }
+    }
+
+    if (!baseProduct) {
       throw new Error(`Base product not found: ${baseProductId}`);
     }
 

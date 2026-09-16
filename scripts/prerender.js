@@ -484,6 +484,23 @@ const SEO_ROUTES = [
     <p>For legal inquiries, visit our <a href="/contact">Contact Page</a> or email <a href="mailto:support@snarkyhumans.com">support@snarkyhumans.com</a>.</p>`
   },
   {
+    path: '/desk-mats',
+    title: 'Custom Desk Mats & Gaming Mouse Pads | Snarky Humans',
+    desc: 'Design custom neoprene desk mats and extended gaming mouse pads. 3mm cushioning, anti-fray hemmed edges, non-slip rubber base. Featured Item of the Month!',
+    canonical: 'https://www.snarkyhumans.com/desk-mats',
+    body: `<h1>Custom Neoprene Desk Mats & Extended Gaming Mouse Pads</h1>
+    <p>Transform your workspace into an unapologetic statement piece with Snarky Humans custom desk mats. Built from 3mm dense neoprene with precision hemmed anti-fray borders, a non-slip natural rubber grip base, and ultra-vibrant 4K edge-to-edge dye sublimation printing.</p>
+    <h2>Desk Mat Specifications & Sizing</h2>
+    <ul>
+      <li><strong>3 Sizes Available:</strong> 12" × 18" (Compact), 12" × 22" (Standard Desk), 16" × 32" (Extended Battlestation).</li>
+      <li><strong>Material:</strong> 100% Neoprene with micro-weave speed top for smooth, accurate optical and laser mouse tracking.</li>
+      <li><strong>Anti-Fray Hemmed Edges:</strong> Heavy-duty stitched borders prevent peeling and fraying over years of intense daily use.</li>
+      <li><strong>Spill Defense:</strong> 3mm dense cushioning absorbs desk impacts and minor coffee splashes.</li>
+    </ul>
+    <h2>Design Your Custom Desk Mat</h2>
+    <p>Customize your desk mat with your own text, AI artwork, pet photos, or choose from our hilarious snarky design library. Perfect for home office workstations, gaming setups, and coworker gifts.</p>`
+  },
+  {
     path: '/tote-bags',
     title: 'Custom Tote Bags & Canvas Totes | Snarky',
     desc: 'Shop durable, funny canvas tote bags with sarcastic quotes. Heavy-duty cotton totes perfect for groceries, work, errands, or carrying your attitude.',

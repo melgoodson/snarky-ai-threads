@@ -16,6 +16,21 @@ interface ProductCategory {
 
 const PRODUCT_CATEGORIES: ProductCategory[] = [
     {
+        title: "CUSTOM",
+        highlight: "DESK MATS",
+        tagline: "3mm cushioned neoprene with hemmed anti-fray edges. The ultimate battlestation & office upgrade.",
+        cta: "Shop Desk Mats",
+        href: "/desk-mats",
+        images: [
+            "/images/deskmat-mockup-snarky-1.jpg",
+            "/images/deskmat-mockup-rbf-2.jpg",
+            "/images/deskmat-mockup-overthinking-3.jpg",
+            "/images/desk-mat-lifestyle-1.jpg",
+        ],
+        gradient: "from-amber-500/20 to-orange-500/20",
+        badge: "⭐ Item of the Month",
+    },
+    {
         title: "SNARKY",
         highlight: "SHIRTS",
         tagline: "Heavyweight cotton tees that say everything you're thinking — so you don't have to.",

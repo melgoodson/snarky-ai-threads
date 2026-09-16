@@ -21,6 +21,8 @@ function getProductLabel(title: string): string {
   if (lower.includes('blanket')) return 'Blanket';
   if (lower.includes('candle')) return 'Candle';
   if (lower.includes('hoodie') || lower.includes('sweatshirt')) return 'Hoodie';
+  if (lower.includes('desk mat') || lower.includes('deskmat') || lower.includes('mousepad')) return 'Desk Mat';
+  if (lower.includes('journal') || lower.includes('notebook')) return 'Journal';
   return 'Shirt';
 }
 

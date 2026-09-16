@@ -50,6 +50,7 @@ import JournalLanding from "./pages/JournalLanding";
 import ToteBagLanding from "./pages/ToteBagLanding";
 import MugLanding from "./pages/MugLanding";
 import GreetingCardLanding from "./pages/GreetingCardLanding";
+import DeskMatLanding from "./pages/DeskMatLanding";
 import CategoryLanding from "./pages/CategoryLanding";
 import WhiteElephantLanding from "./pages/WhiteElephantLanding";
 import CoworkerGiftsLanding from "./pages/CoworkerGiftsLanding";
@@ -228,6 +229,8 @@ const App = () => (
             <Route path="/tote-bags" element={<ToteBagLanding />} />
             <Route path="/mugs" element={<MugLanding />} />
             <Route path="/greeting-cards" element={<GreetingCardLanding />} />
+            <Route path="/desk-mats" element={<DeskMatLanding />} />
+            <Route path="/deskmats" element={<DeskMatLanding />} />
             <Route path="/category/white-elephant-gifts" element={<WhiteElephantLanding />} />
             <Route path="/category/funny-coworker-gifts" element={<CoworkerGiftsLanding />} />
             <Route path="/ai-custom-clothing" element={<AiCustomClothing />} />

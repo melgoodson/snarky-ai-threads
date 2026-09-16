@@ -85,6 +85,14 @@ const PRODUCT_CONFIG: Record<string, {
     printMethod: 'digital printing on matte laminated hardcover',
     surfaceEffects: 'subtle matte sheen, slight edge shadows, pages visible on right edge of book'
   },
+  'deskmat': {
+    placement: 'printed crisply and clearly on the top surface of the neoprene desk mat / mouse pad',
+    texture: 'smooth neoprene fabric with fine micro-weave texture and clean stitched border',
+    perspective: 'desk mat resting on the workstation desk viewed from a natural top or 3/4 perspective',
+    blending: 'sublimation print infused into neoprene fabric with vivid colors and sharp text',
+    printMethod: 'dye-sublimation print on neoprene',
+    surfaceEffects: 'natural desk lighting, subtle fabric sheen, keyboard and mouse nearby on the desk'
+  },
   'default': {
     placement: 'centered on primary visible surface',
     texture: 'appropriate material texture for the product type',
@@ -99,6 +107,7 @@ function getProductConfig(productTitle: string) {
   const titleLower = productTitle.toLowerCase();
   // Check specific product type keywords first (order matters — 'hardcover' before 'card')
   if (titleLower.includes('journal') || titleLower.includes('hardcover') || titleLower.includes('notebook')) return PRODUCT_CONFIG['journal'];
+  if (titleLower.includes('desk mat') || titleLower.includes('deskmat') || titleLower.includes('mousepad') || titleLower.includes('mat')) return PRODUCT_CONFIG['deskmat'];
   if (titleLower.includes('blanket')) return PRODUCT_CONFIG['blanket'];
   if (titleLower.includes('hoodie') || titleLower.includes('sweatshirt')) return PRODUCT_CONFIG['hoodie'];
   if (titleLower.includes('mug')) return PRODUCT_CONFIG['mug'];
