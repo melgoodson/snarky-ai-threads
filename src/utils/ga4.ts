@@ -1,3 +1,5 @@
+import { isTrackingExcluded } from '@/lib/trackingExclusion';
+
 export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
 declare global {
@@ -10,6 +12,7 @@ declare global {
 }
 
 export const initGA4 = () => {
+  if (isTrackingExcluded()) return;
   if (!GA_MEASUREMENT_ID) {
     console.warn('GA4 Measurement ID is missing. Analytics will not be loaded.');
     return;
@@ -41,7 +44,7 @@ export const initGA4 = () => {
 };
 
 export const trackPageView = (path: string) => {
-  if (!GA_MEASUREMENT_ID || !window.gtag) return;
+  if (!GA_MEASUREMENT_ID || !window.gtag || isTrackingExcluded()) return;
   
   window.gtag('config', GA_MEASUREMENT_ID, {
     page_path: path,
@@ -49,7 +52,7 @@ export const trackPageView = (path: string) => {
 };
 
 export const trackEvent = (eventName: string, params?: Record<string, unknown>) => {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function' || isTrackingExcluded()) return;
 
   window.gtag('event', eventName, params || {});
 };

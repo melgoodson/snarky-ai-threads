@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { isTrackingExcluded } from '@/lib/trackingExclusion';
 
 const TRACKING_ENDPOINT =
     'https://mhuxrnxajtiwxauhlhlv.supabase.co/functions/v1/track-analytics';
@@ -38,7 +39,7 @@ function isBot(): boolean {
 // --- Core send ---------------------------------------------------------
 
 function sendTrackingEvent(): void {
-    if (isBot()) return;
+    if (isBot() || isTrackingExcluded()) return;
 
     const utm = getUtmParams();
     const payload = JSON.stringify({

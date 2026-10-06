@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { isTrackingExcluded } from '@/lib/trackingExclusion';
 
 const TTP_COOKIE_KEY = '_ttp';
 const TTCLID_PARAM_KEY = 'ttclid';
@@ -68,6 +69,7 @@ export function useTikTokTracking() {
     properties: TikTokEventProperties = {},
     customerInfo: TikTokCustomerInfo = {}
   ) => {
+    if (isTrackingExcluded()) return;
     try {
       // 1. Get TikTok specific parameters
       const ttp = getCookie(TTP_COOKIE_KEY);
@@ -177,7 +179,7 @@ export function useTikTokTracking() {
   // Track standard page views (PageView) in browser for SPA navigation
   useEffect(() => {
     // Don't track admin pages as standard PageView
-    if (location.pathname.startsWith('/admin')) {
+    if (location.pathname.startsWith('/admin') || isTrackingExcluded()) {
       return;
     }
 

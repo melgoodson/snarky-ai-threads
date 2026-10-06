@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { isTrackingExcluded } from '@/lib/trackingExclusion';
 import { getOverlayStyle } from '@/lib/variantUtils';
 
 const TTP_COOKIE_KEY = '_ttp';
@@ -68,7 +69,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addItem = (newItem: Omit<CartItem, 'id' | 'quantity'>) => {
     // Dispatch AddToCart event to TikTok Events API
-    try {
+    if (!isTrackingExcluded()) try {
       const ttp = getCookie(TTP_COOKIE_KEY);
       const ttclid = sessionStorage.getItem(STORED_TTCLID_KEY);
       const email = localStorage.getItem(STORED_USER_EMAIL);

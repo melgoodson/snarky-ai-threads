@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { isTrackingExcluded } from '@/lib/trackingExclusion';
 
 const VISITOR_ID_KEY = 'snarky_visitor_id';
 const SESSION_ID_KEY = 'snarky_session_id';
@@ -163,6 +164,7 @@ export function useAnalytics() {
   const initSession = useCallback(async () => {
     if (sessionInitialized.current) return;
     sessionInitialized.current = true;
+    if (isTrackingExcluded()) return;
 
     const { deviceType, browser, os } = detectDevice();
     const utmParams = getUtmParams();
@@ -202,6 +204,7 @@ export function useAnalytics() {
 
   // Track page view
   const trackPageView = useCallback(async () => {
+    if (isTrackingExcluded()) return;
     const loadTime = Math.round(performance.now());
     pageStartTime.current = Date.now();
     maxScrollDepth.current = 0;
@@ -272,6 +275,7 @@ export function useAnalytics() {
 
   /** Write session ended_at via async (heartbeat) and beacon (page exit) */
   const beaconUpdateSession = useCallback(() => {
+    if (isTrackingExcluded()) return;
     const endedAt = new Date().toISOString();
     // Async path (heartbeat every 30s, in-app nav)
     void Promise.resolve(
