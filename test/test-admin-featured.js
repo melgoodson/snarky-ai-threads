@@ -30,7 +30,7 @@ async function testAdminFeaturedSchedule() {
   console.log("1. Authenticating as admin: teamsienvi@gmail.com ...");
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email: 'teamsienvi@gmail.com',
-    password: 'SnarkyAdmin2026!'
+    password: process.env.TEST_ADMIN_PASSWORD
   });
 
   if (authError) {

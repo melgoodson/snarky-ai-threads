@@ -27,7 +27,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function restoreSchedule() {
   const { error: authError } = await supabase.auth.signInWithPassword({
     email: 'teamsienvi@gmail.com',
-    password: 'SnarkyAdmin2026!'
+    password: process.env.TEST_ADMIN_PASSWORD
   });
   if (authError) throw authError;
 
