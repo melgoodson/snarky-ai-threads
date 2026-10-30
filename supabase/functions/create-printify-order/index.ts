@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireServiceRole } from "../_shared/require-service-role.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,9 @@ serve(async (req) => {
   }
 
   try {
+    const denied = requireServiceRole(req, corsHeaders);
+    if (denied) return denied;
+
     const { orderId } = await req.json();
 
     if (!orderId) {
@@ -39,6 +43,16 @@ serve(async (req) => {
 
     if (orderError || !order) {
       throw new Error('Order not found');
+    }
+
+    // Only fulfil paid orders. Callers mark the order paid first and a
+    // successful submission moves it to processing, so this also blocks
+    // duplicate submissions.
+    if (order.status !== 'paid') {
+      return new Response(
+        JSON.stringify({ error: `Order is not awaiting fulfillment (status: ${order.status})` }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log('Order details:', order);
