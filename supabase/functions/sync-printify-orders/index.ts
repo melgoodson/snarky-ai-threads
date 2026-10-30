@@ -1,17 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAdmin } from '../_shared/require-admin.ts';
+import { withAllowedOrigin } from '../_shared/cors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(withAllowedOrigin(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const denied = await requireAdmin(req, corsHeaders);
+    if (denied) return denied;
+
     const printifyApiToken = Deno.env.get('PRINTIFY_API_TOKEN');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -160,4 +165,4 @@ serve(async (req) => {
       }
     );
   }
-});
+}));

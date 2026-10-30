@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { rateLimit } from '../_shared/rate-limit.ts';
+import { withAllowedOrigin } from '../_shared/cors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -147,7 +148,7 @@ async function toImagePart(image: string): Promise<{ inlineData: { mimeType: str
   return { inlineData: { mimeType: 'image/jpeg', data: image } };
 }
 
-serve(async (req) => {
+serve(withAllowedOrigin(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -293,4 +294,4 @@ OUTPUT: One square-format photorealistic ${color} ${product} on a white backgrou
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
-});
+}));

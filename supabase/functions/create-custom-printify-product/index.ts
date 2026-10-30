@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { rateLimit } from '../_shared/rate-limit.ts';
+import { withAllowedOrigin } from '../_shared/cors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -97,7 +98,7 @@ function calculateOptimalScale(
   return Math.min(Math.max(optimalScale * 0.85, 0.5), maxScale);
 }
 
-serve(async (req) => {
+serve(withAllowedOrigin(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -616,4 +617,4 @@ serve(async (req) => {
       }
     );
   }
-});
+}));

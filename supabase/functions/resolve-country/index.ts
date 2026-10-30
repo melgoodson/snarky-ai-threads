@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { withAllowedOrigin } from '../_shared/cors.ts';
 
 /**
  * Resolve visitor country using ip-api.com (free, no key required).
@@ -35,7 +36,7 @@ function extractIp(req: Request): string | null {
   return req.headers.get('x-real-ip') ?? null;
 }
 
-serve(async (req) => {
+serve(withAllowedOrigin(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -81,5 +82,5 @@ serve(async (req) => {
     JSON.stringify({ country: 'XX' }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
-});
+}));
 

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { rateLimit } from '../_shared/rate-limit.ts';
+import { withAllowedOrigin } from '../_shared/cors.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -87,7 +88,7 @@ const MODELS = [
   "gemini-2.5-flash-image",
 ];
 
-serve(async (req) => {
+serve(withAllowedOrigin(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -285,4 +286,4 @@ OUTPUT: A single photorealistic image of the person wearing the ${color} ${produ
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

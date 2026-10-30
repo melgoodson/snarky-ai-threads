@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { encode as base64url } from "https://deno.land/std@0.168.0/encoding/base64url.ts";
+import { requireAdmin } from '../_shared/require-admin.ts';
+import { withAllowedOrigin } from '../_shared/cors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,10 +82,13 @@ async function runReport(
 }
 
 // ── Main handler ────────────────────────────────────────────────
-serve(async (req) => {
+serve(withAllowedOrigin(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
+    const denied = await requireAdmin(req, corsHeaders);
+    if (denied) return denied;
+
     const reqBody = await req.json();
     const { startDate, endDate } = reqBody;
 
@@ -293,4 +298,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
-});
+}));
