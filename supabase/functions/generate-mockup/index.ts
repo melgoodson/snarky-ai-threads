@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { rateLimit } from '../_shared/rate-limit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,6 +93,9 @@ serve(async (req) => {
   }
 
   try {
+    const limited = await rateLimit(req, corsHeaders, 'generate-mockup', 60);
+    if (limited) return limited;
+
     const body = await req.json();
     const { userImage, productImage, productTitle, productColor } = body;
 
