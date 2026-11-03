@@ -1,60 +1,89 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Sparkles, ArrowRight, Flame, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const BEST_SELLERS = [
+interface SpotlightItem {
+  id: string;
+  tabLabel: string;
+  label: string;
+  title: string;
+  tagline: string;
+  badge: string;
+  price: string;
+  originalPrice: string;
+  image: string;
+  shopHref: string;
+  customHref: string;
+  specs: string;
+}
+
+const BEST_SELLERS: SpotlightItem[] = [
   {
     id: "shirt",
-    label: "🔥 H-A-W-T Right Now",
-    title: "Custom Unisex Tee",
-    tagline: "Your design. Their jaw on the floor.",
-    badge: "BEST SELLER",
-    price: "$29.99",
-    emoji: "👕",
-    href: "/custom-design?product=tee",
-    color: "from-red-600 to-rose-500",
+    tabLabel: "Graphic Tees",
+    label: "#1 Best Seller",
+    title: "Heavyweight Snarky Tee",
+    tagline: "100% preshrunk cotton tees that say everything you're thinking — so you don't have to.",
+    badge: "SAVE 56%",
+    price: "$15.69",
+    originalPrice: "$35.69",
+    image: "/images/carousel/shirt-hero-new-2.jpg",
+    shopHref: "/shirts",
+    customHref: "/custom-design?product=tee",
+    specs: "Gildan® 5000 • S–5XL • DTG Print",
   },
   {
     id: "hoodie",
-    label: "❄️ New Drop",
-    title: "Custom Hoodie",
-    tagline: "Cozy chaos. Exclusively yours.",
-    badge: "NEW",
-    price: "$49.99",
-    emoji: "🧥",
-    href: "/custom-design?product=hoodie",
-    color: "from-violet-600 to-purple-500",
+    tabLabel: "Hoodies",
+    label: "Fan Favorite",
+    title: "Cozy Snarky Hoodie",
+    tagline: "Fleece-lined warmth dripping with attitude. Pull it on, hood up, mic drop.",
+    badge: "SAVE $20",
+    price: "$39.99",
+    originalPrice: "$59.99",
+    image: "/images/carousel/hoodie-hero-1.jpg",
+    shopHref: "/hoodies",
+    customHref: "/custom-design?product=hoodie",
+    specs: "Heavy Blend™ Fleece • Double-Lined Hood",
+  },
+  {
+    id: "deskmat",
+    tabLabel: "Desk Mats",
+    label: "Item of the Month",
+    title: "Custom Snarky Desk Mat",
+    tagline: "3mm cushioned neoprene with anti-fray stitched edges. Upgrade your battlestation.",
+    badge: "NEW DROP",
+    price: "$21.99",
+    originalPrice: "$29.99",
+    image: "/images/deskmat-mockup-snarky-1.jpg",
+    shopHref: "/desk-mats",
+    customHref: "/custom-design?product=deskmat",
+    specs: "3 Sizes • Non-Slip Rubber Base",
   },
   {
     id: "mug",
-    label: "☕ Morning Essential",
-    title: "Custom Mug 15oz",
-    tagline: "Because basic mugs are for basic people.",
+    tabLabel: "Mood Mugs",
+    label: "Office Essential",
+    title: "Brutally Honest Mug",
+    tagline: "Start your morning with a hot take. Dishwasher-safe ceramic built for the 9-to-5.",
     badge: "POPULAR",
-    price: "$19.99",
-    emoji: "☕",
-    href: "/custom-design?product=mug",
-    color: "from-amber-500 to-orange-400",
-  },
-  {
-    id: "card",
-    label: "💌 Say It Snarky",
-    title: "Custom Greeting Card",
-    tagline: "Cards that say what you ACTUALLY mean.",
-    badge: "NEW",
-    price: "$7.99",
-    emoji: "💌",
-    href: "/custom-design?product=card",
-    color: "from-pink-500 to-rose-400",
+    price: "$14.99",
+    originalPrice: "$34.99",
+    image: "/images/carousel/mug-hero-1.jpg",
+    shopHref: "/mugs",
+    customHref: "/custom-design?product=mug",
+    specs: "11oz & 15oz • Glossy Ceramic",
   },
 ];
 
-const STORAGE_KEY = "snarky_popup_last_shown";
+const STORAGE_KEY = "snarky_popup_v2_last_shown";
 const COOLDOWN_MS = 1000 * 60 * 60 * 4; // 4 hours between shows
 
 export const BestSellersPopup = () => {
   const [visible, setVisible] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,27 +91,27 @@ export const BestSellersPopup = () => {
     const now = Date.now();
     if (now - last < COOLDOWN_MS) return;
 
-    // Show after 6 seconds on the page
-    const timer = setTimeout(() => setVisible(true), 6000);
+    // Show after 3.5 seconds on the page
+    const timer = setTimeout(() => setVisible(true), 3500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-cycle through items
+  // Auto-cycle through items unless hovered
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || isPaused) return;
     const interval = setInterval(
       () => setActiveIdx((i) => (i + 1) % BEST_SELLERS.length),
-      3000
+      4000
     );
     return () => clearInterval(interval);
-  }, [visible]);
+  }, [visible, isPaused]);
 
   const close = () => {
     localStorage.setItem(STORAGE_KEY, String(Date.now()));
     setVisible(false);
   };
 
-  const handleShop = (href: string) => {
+  const handleNavigate = (href: string) => {
     close();
     navigate(href);
   };
@@ -95,105 +124,154 @@ export const BestSellersPopup = () => {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in duration-300"
+        className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 animate-in fade-in duration-300"
         onClick={close}
       />
 
-      {/* Modal */}
+      {/* Modal Container */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="relative w-full max-w-md pointer-events-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+          className="relative w-full max-w-xl pointer-events-auto animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
           onClick={(e) => e.stopPropagation()}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Close */}
-          <button
-            onClick={close}
-            className="absolute -top-3 -right-3 z-10 bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white rounded-full p-1.5 transition-colors shadow-xl"
-            aria-label="Close popup"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          {/* Main Card */}
+          <div className="relative bg-card border border-border/90 rounded-2xl overflow-hidden shadow-[0_25px_70px_-15px_rgba(0,0,0,0.85),0_0_40px_hsl(var(--primary)/0.18)]">
+            {/* Close Button */}
+            <button
+              onClick={close}
+              className="absolute top-3.5 right-3.5 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white/80 hover:text-white rounded-full p-2 transition-all duration-200 shadow-lg"
+              aria-label="Close popup"
+            >
+              <X className="h-4 w-4" />
+            </button>
 
-          {/* Card */}
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/60">
-            {/* Header bar */}
-            <div className={`bg-gradient-to-r ${active.color} px-5 py-3 flex items-center gap-2`}>
-              <Flame className="h-4 w-4 text-white" />
-              <span className="text-white text-sm font-black uppercase tracking-widest">
-                {active.label}
-              </span>
-              <div className="ml-auto flex items-center gap-1">
-                <Star className="h-3 w-3 text-white fill-white" />
-                <Star className="h-3 w-3 text-white fill-white" />
-                <Star className="h-3 w-3 text-white fill-white" />
-                <Star className="h-3 w-3 text-white fill-white" />
-                <Star className="h-3 w-3 text-white fill-white" />
+            {/* Split Grid: Product Photo on Left, Details on Right */}
+            <div className="grid sm:grid-cols-[220px_1fr]">
+              {/* Left: Real Product Image */}
+              <div
+                className="relative aspect-[16/10] sm:aspect-auto sm:h-full bg-muted overflow-hidden cursor-pointer group"
+                onClick={() => handleNavigate(active.shopHref)}
+              >
+                <img
+                  key={active.image}
+                  src={active.image}
+                  alt={active.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-card/40" />
+
+                {/* Floating Discount Badge */}
+                <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-lg">
+                  {active.badge}
+                </span>
+
+                {/* Bottom rating pill on image */}
+                <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, idx) => (
+                      <Star
+                        key={idx}
+                        className="h-3 w-3 text-amber-400 fill-amber-400"
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-bold text-white ml-1">
+                    4.9 / 5
+                  </span>
+                </div>
+              </div>
+
+              {/* Right: Content */}
+              <div className="p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                <div>
+                  {/* Eyebrow label */}
+                  <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-primary mb-1.5">
+                    <Flame className="h-3.5 w-3.5 fill-primary" />
+                    <span>{active.label}</span>
+                  </div>
+
+                  {/* Product Title */}
+                  <h3 className="text-foreground font-black text-xl sm:text-2xl tracking-tight leading-tight">
+                    {active.title}
+                  </h3>
+
+                  {/* Specs pill */}
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 mt-1">
+                    {active.specs}
+                  </p>
+
+                  {/* Tagline */}
+                  <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mt-2.5">
+                    {active.tagline}
+                  </p>
+                </div>
+
+                {/* Price + Dual Action Buttons */}
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      From
+                    </span>
+                    <span className="text-foreground text-2xl sm:text-3xl font-black tracking-tight">
+                      {active.price}
+                    </span>
+                    <span className="text-muted-foreground text-sm line-through font-semibold">
+                      {active.originalPrice}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="hero"
+                      size="default"
+                      className="flex-1 font-black group"
+                      onClick={() => handleNavigate(active.shopHref)}
+                    >
+                      Shop Now
+                      <ArrowRight className="ml-1.5 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="default"
+                      className="font-bold px-3.5"
+                      onClick={() => handleNavigate(active.customHref)}
+                    >
+                      <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                      Customize
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Body */}
-            <div className="p-6 space-y-5">
-              {/* Product highlight */}
-              <div className="flex items-center gap-4">
-                <div
-                  className={`w-16 h-16 rounded-xl bg-gradient-to-br ${active.color} flex items-center justify-center text-3xl shadow-lg flex-shrink-0`}
-                >
-                  {active.emoji}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-gradient-to-r ${active.color} text-white`}
-                    >
-                      {active.badge}
-                    </span>
-                  </div>
-                  <h3 className="text-white font-black text-lg leading-tight">
-                    {active.title}
-                  </h3>
-                  <p className="text-zinc-400 text-sm mt-0.5">{active.tagline}</p>
-                </div>
+            {/* Bottom Bar: Interactive Category Tabs + Dismiss */}
+            <div className="bg-secondary/50 border-t border-border px-4 py-2.5 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                {BEST_SELLERS.map((item, i) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveIdx(i)}
+                    className={`px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap transition-all ${
+                      i === activeIdx
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {item.tabLabel}
+                  </button>
+                ))}
               </div>
 
-              {/* Price + CTA */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-zinc-500 text-xs uppercase tracking-wider">Starting from</p>
-                  <p className="text-white text-3xl font-black">{active.price}</p>
-                </div>
-                <button
-                  onClick={() => handleShop(active.href)}
-                  className={`flex items-center gap-2 bg-gradient-to-r ${active.color} hover:opacity-90 text-white font-black px-5 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95`}
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Customize It
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Carousel dots */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex gap-1.5">
-                  {BEST_SELLERS.map((item, i) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveIdx(i)}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === activeIdx
-                          ? `w-6 bg-gradient-to-r ${active.color}`
-                          : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
-                      }`}
-                      aria-label={`View ${item.title}`}
-                    />
-                  ))}
-                </div>
-                <button
-                  onClick={close}
-                  className="text-zinc-600 hover:text-zinc-400 text-xs transition-colors"
-                >
-                  Maybe later
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={close}
+                className="text-muted-foreground hover:text-foreground text-xs font-medium whitespace-nowrap transition-colors pl-2"
+              >
+                Maybe later
+              </button>
             </div>
           </div>
         </div>

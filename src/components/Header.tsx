@@ -208,50 +208,45 @@ export const Header = ({ brandAsHeading = true }: HeaderProps = {}) => {
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        {/* Top Banner */}
-        <div className="border-b border-border bg-background">
-          <div className="container px-3 sm:px-4 py-2 sm:py-3">
-            <Link to="/" className="block text-center hover:opacity-80 transition-opacity">
-              <BrandTitle className="text-base sm:text-xl md:text-2xl font-black tracking-tight uppercase">
+        {/* Single-Row Navigation Menu with Brand on Left */}
+        <div className="container flex h-16 items-center justify-between px-4 gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64 bg-background">
+                  <nav className="flex flex-col gap-4 mt-8">
+                    <NavLinks isMobile={true} />
+                  </nav>
+                  <div className="mt-8 pt-4 border-t border-border">
+                    {isLoggedIn ? (
+                      <Link to="/profile" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                        <User className="h-4 w-4" />
+                        Profile
+                      </Link>
+                    ) : (
+                      <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                        Sign Up
+                      </Link>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Brand Title */}
+            <Link to="/" className="hover:opacity-80 transition-opacity">
+              <BrandTitle className="text-base sm:text-xl md:text-2xl font-black tracking-tight uppercase whitespace-nowrap">
                 <span className="text-primary">SNARKY</span>{" "}
                 <span className="text-foreground">HUMANS</span>
               </BrandTitle>
             </Link>
           </div>
-        </div>
-
-        {/* Navigation Menu */}
-        <div className="container flex h-16 items-center justify-between px-4">
-          {/* Mobile Menu */}
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 bg-background">
-                <nav className="flex flex-col gap-4 mt-8">
-                  <NavLinks isMobile={true} />
-                </nav>
-                <div className="mt-8 pt-4 border-t border-border">
-                  {isLoggedIn ? (
-                    <Link to="/profile" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-                      <User className="h-4 w-4" />
-                      Profile
-                    </Link>
-                  ) : (
-                    <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                      Sign Up
-                    </Link>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          {/* Desktop spacer */}
-          <div className="hidden md:block w-[100px]" />
 
           {/* Desktop Navigation - centered */}
           <nav className="hidden md:flex items-center justify-center gap-6 flex-1">

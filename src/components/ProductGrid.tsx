@@ -4,10 +4,96 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, Star } from "lucide-react";
-import personalizationBlanket from "@/assets/personalization-blanket.png";
+import { ArrowRight, TrendingUp, Shirt, Palette, Sparkles, Flame, Calendar } from "lucide-react";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 import { HIDDEN_DESIGN_PATTERNS } from "@/lib/designConstants";
+
+// Curated 2-Row (8-item) Featured Apparel Showcase with real lifestyle & garment photography
+const FEATURED_APPAREL_ITEMS = [
+  {
+    id: "f2acfadd-7310-43d8-b437-74c5449c8c70",
+    title: "Kindly F*ck Off — Heavyweight Tee",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/carousel/shirt-hero-new-1.jpg",
+    hoverImage: "/images/designs/1.jpg",
+    category: "BESTSELLER TEE",
+    badge: "🔥 BEST SELLER",
+    href: "/designs/f2acfadd-7310-43d8-b437-74c5449c8c70",
+  },
+  {
+    id: "8e16af21-c0a0-46b4-a90b-d1eb95e0754e",
+    title: "Respectfully, No! — Retro Pin-Up Tee",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/carousel/shirt-hero-new-2.jpg",
+    hoverImage: "/images/designs/6.jpg",
+    category: "SNARKY TEE",
+    href: "/designs/8e16af21-c0a0-46b4-a90b-d1eb95e0754e",
+  },
+  {
+    id: "8bebc34c-e44d-4439-a131-51f89e3c9aa1",
+    title: "How Bold of You to Ass-U-Me I Care — Hoodie",
+    price: 39.99,
+    originalPrice: 59.99,
+    image: "/images/carousel/hoodie-hero-2.jpg",
+    hoverImage: "/images/designs/2.jpg",
+    category: "COZY HOODIE",
+    badge: "FAN FAVORITE",
+    href: "/designs/8bebc34c-e44d-4439-a131-51f89e3c9aa1",
+  },
+  {
+    id: "free-hugs",
+    title: "Free Hugs — Horror Slasher Tee",
+    price: 21.69,
+    originalPrice: 41.69,
+    image: "/images/carousel/free-hugs-2.png",
+    hoverImage: "/images/carousel/free-hugs-1.png",
+    category: "DARK HUMOR TEE",
+    href: "/product/free-hugs",
+  },
+  {
+    id: "dark",
+    title: "Punching People With Words & Attitude Tee",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/carousel/dark-2.png",
+    hoverImage: "/images/carousel/dark-1.png",
+    category: "ATTITUDE TEE",
+    href: "/product/dark",
+  },
+  {
+    id: "6af9d64d-09b6-4636-9f50-7133e6d9ab44",
+    title: "It Is What It Is — Ransom Collage Tee",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/carousel/shirt-hero-new-3.png",
+    hoverImage: "/images/designs/5.jpg",
+    category: "SNARKY TEE",
+    href: "/designs/6af9d64d-09b6-4636-9f50-7133e6d9ab44",
+  },
+  {
+    id: "abduct-me",
+    title: "Abduct Me — I'm Done With Humans Tee",
+    price: 21.69,
+    originalPrice: 41.69,
+    image: "/images/carousel/abduct-me-2.png",
+    hoverImage: "/images/carousel/abduct-me-1.png",
+    category: "ALIEN HUMOR TEE",
+    badge: "GIFT PICK",
+    href: "/product/abduct-me",
+  },
+  {
+    id: "69fa13c5-49e2-41ad-a298-b229fea17722",
+    title: "Snarky Humans™ Signature Fleece Hoodie",
+    price: 39.99,
+    originalPrice: 59.99,
+    image: "/images/carousel/hoodie-hero-1.jpg",
+    hoverImage: "/images/designs/9.jpg",
+    category: "SIGNATURE HOODIE",
+    href: "/designs/69fa13c5-49e2-41ad-a298-b229fea17722",
+  },
+];
 
 // Designs within each event group that should get the "FEATURED" badge.
 // Title substrings are matched case-insensitively.
@@ -21,8 +107,6 @@ const FEATURED_BADGE_PATTERNS: Record<string, string[]> = {
   // Other event groups: all designs are featured by default
 };
 
-// HIDDEN_DESIGN_PATTERNS imported from @/lib/designConstants
-
 interface Design {
   id: string;
   title: string;
@@ -31,7 +115,6 @@ interface Design {
 }
 
 // Monthly featured rotation — SEO-researched themes per month
-// Each month targets high-volume keywords from AnswerThePublic / search data
 const MONTHLY_FEATURED: Record<number, {
   headline: string;
   subheadline: string;
@@ -139,13 +222,13 @@ const MONTHLY_FEATURED: Record<number, {
     ],
   },
   10: { // November
-    headline: "THANKFUL & SNARKY",
-    subheadline: "Black Friday meets attitude. Personalized gift guide for everyone on your list.",
+    headline: "SNARKY APPAREL & GIFTS",
+    subheadline: "Heavyweight graphic tees, cozy hoodies, and seasonal attitude — printed when you order.",
     themes: [
-      { label: "🦃 Thanksgiving Snark", keywords: "funny thanksgiving shirt, snarky holiday tee" },
-      { label: "🛒 Gift Guide", keywords: "personalized gifts christmas, best websites to order personalized gifts online" },
-      { label: "💞 Gifts for Couples", keywords: "affordable personalized gifts for couples, personalized anniversary gifts" },
-      { label: "👵 Gifts for Grandma", keywords: "personalized gifts grandma, custom photo gift grandma" },
+      { label: "👕 Heavyweight Tees", keywords: "snarky t-shirts, sarcastic graphic tees" },
+      { label: "🧥 Snarky Hoodies", keywords: "funny hoodies, sarcastic sweatshirt" },
+      { label: "🎄 Holiday & White Elephant", keywords: "white elephant gifts, funny gag shirts" },
+      { label: "✨ AI Custom Prints", keywords: "personalized gifts christmas, custom shirts" },
     ],
   },
   11: { // December
@@ -262,12 +345,19 @@ const FALLBACK_DESIGNS: Design[] = [
 
 const getCurrentMonthData = () => {
   const month = new Date().getMonth();
-  return MONTHLY_FEATURED[month] || MONTHLY_FEATURED[8]; // fallback to Q3 September
+  return MONTHLY_FEATURED[month] || MONTHLY_FEATURED[10];
 };
 
-export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
+interface ProductGridProps {
+  categorySlug?: string;
+  section?: "both" | "featured-hero" | "all-only";
+}
+
+export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps) => {
   const [designs, setDesigns] = useState<Design[]>([]);
   const [loading, setLoading] = useState(true);
+  const [heroTab, setHeroTab] = useState<"apparel" | "seasonal">("apparel");
+  const [showOnShirt, setShowOnShirt] = useState(false);
   const navigate = useNavigate();
 
   // Dynamic month data — starts with hardcoded defaults, overridden by DB schedule
@@ -288,12 +378,14 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
 
         if (!error && data && data.headline) {
           setMonthData({
-            headline: data.headline.replace(/Q3\s*/g, ''),
-            subheadline: (data.subheadline || getCurrentMonthData().subheadline).replace(/\s*Q3\s*/g, ' '),
+            headline: data.headline.replace(/Q3\s*/g, ""),
+            subheadline: (data.subheadline || getCurrentMonthData().subheadline).replace(/\s*Q3\s*/g, " "),
             themes: (data.themes as { label: string; keywords: string }[]) || getCurrentMonthData().themes,
           });
           if (data.design_ids && data.design_ids.length > 0) {
             setScheduledDesignIds(data.design_ids);
+            // If admin explicitly scheduled designs for the current month, default to showing them
+            setHeroTab("seasonal");
           }
         } else {
           setMonthData(getCurrentMonthData());
@@ -318,75 +410,120 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
-      let fetchedDesigns = data || [];
-      const existingUrls = new Set(fetchedDesigns.map((d: any) => d.image_url));
-      const missingQ3 = FALLBACK_DESIGNS.filter(d => !existingUrls.has(d.image_url));
-      fetchedDesigns = [...missingQ3, ...fetchedDesigns];
+
+      let fetchedDesigns: Design[] = data || [];
+      const existingUrls = new Set(
+        fetchedDesigns.map((d) => resolveDesignImage(d.image_url))
+      );
+      const missingQ3 = FALLBACK_DESIGNS.filter(
+        (d) => !existingUrls.has(resolveDesignImage(d.image_url))
+      );
+      fetchedDesigns = [...fetchedDesigns, ...missingQ3];
+
+      // Deduplicate by resolved image URL and title
+      const seenImages = new Set<string>();
+      fetchedDesigns = fetchedDesigns.filter((d) => {
+        const key = resolveDesignImage(d.image_url).toLowerCase();
+        if (seenImages.has(key)) return false;
+        seenImages.add(key);
+        return true;
+      });
 
       // Filter designs based on target gift persona or category keywords
       if (categorySlug) {
         const slug = categorySlug.toLowerCase();
         if (slug.includes("coworker") || slug.includes("office")) {
-          fetchedDesigns = fetchedDesigns.filter(d => 
-            ["RBF Champion", "Snarky Humans", "Dark", "White Idol Morning"].some(t => d.title.includes(t))
+          fetchedDesigns = fetchedDesigns.filter((d) =>
+            ["RBF Champion", "Snarky Humans", "Dark", "White Idol Morning"].some((t) => d.title.includes(t))
           );
         } else if (slug.includes("men") || slug.includes("dad")) {
-          fetchedDesigns = fetchedDesigns.filter(d => 
-            ["Fathers", "Sasquatches", "Abduct Me"].some(t => d.title.includes(t))
+          fetchedDesigns = fetchedDesigns.filter((d) =>
+            ["Fathers", "Sasquatches", "Abduct Me"].some((t) => d.title.includes(t))
           );
         } else if (slug.includes("mom") || slug.includes("mother")) {
-          fetchedDesigns = fetchedDesigns.filter(d => 
-            ["RBF Champion", "Snarky Humans", "White Idol Morning", "Good Morning"].some(t => d.title.includes(t))
+          fetchedDesigns = fetchedDesigns.filter((d) =>
+            ["RBF Champion", "Snarky Humans", "White Idol Morning", "Good Morning"].some((t) => d.title.includes(t))
           );
         } else if (slug.includes("teacher")) {
-          fetchedDesigns = fetchedDesigns.filter(d => 
-            ["RBF Champion", "Snarky Humans", "White Idol Morning", "Dark"].some(t => d.title.includes(t))
+          fetchedDesigns = fetchedDesigns.filter((d) =>
+            ["RBF Champion", "Snarky Humans", "White Idol Morning", "Dark"].some((t) => d.title.includes(t))
           );
         } else if (slug.includes("christmas") || slug.includes("white-elephant") || slug.includes("gag")) {
-          fetchedDesigns = fetchedDesigns.filter(d => 
-            ["Free Hugs", "Abduct Me", "Sasquatches", "Dark", "RBF Champion", "Snarky Humans"].some(t => d.title.includes(t))
+          fetchedDesigns = fetchedDesigns.filter((d) =>
+            ["Free Hugs", "Abduct Me", "Sasquatches", "Dark", "RBF Champion", "Snarky Humans"].some((t) => d.title.includes(t))
           );
         }
       }
 
       setDesigns(fetchedDesigns);
-    } catch (error) {
-      // silently handle
+    } catch {
+      setDesigns(FALLBACK_DESIGNS);
     } finally {
       setLoading(false);
     }
   };
 
-  // Q3 event designs (fallback when no admin schedule exists)
-  const q3FeaturedDesigns = designs.filter((d) =>
-    d.id.startsWith("q3-") ||
-    /labor[- ]day|grandparents|9[-/]11|hispanic/i.test(d.title) ||
-    /labor-day|grandparents|9-11|hispanic/i.test(d.image_url)
+  const visibleAllDesigns = designs.filter(
+    (design) =>
+      !HIDDEN_DESIGN_PATTERNS.some((p) =>
+        design.title.toLowerCase().includes(p.toLowerCase())
+      )
   );
 
-  // Priority: Admin-scheduled designs > Q3 hardcoded > first 8
-  const featuredDesigns = (scheduledDesignIds && scheduledDesignIds.length > 0)
-    ? designs.filter((d) => scheduledDesignIds.includes(d.id))
-    : q3FeaturedDesigns.length > 0
-    ? q3FeaturedDesigns
-    : designs.slice(0, 8);
-  const allDesigns = designs;
+  const scheduledDesigns =
+    scheduledDesignIds && scheduledDesignIds.length > 0
+      ? designs.filter((d) => scheduledDesignIds.includes(d.id))
+      : [];
+
+  const seasonalDesigns: Design[] = [...scheduledDesigns];
+  for (const d of visibleAllDesigns) {
+    if (seasonalDesigns.length >= 8) break;
+    if (!seasonalDesigns.some((existing) => existing.id === d.id)) {
+      seasonalDesigns.push(d);
+    }
+  }
+
+  // Q3 event designs (for categorized event tabs when viewing full featured section)
+  const q3FeaturedDesigns = designs.filter(
+    (d) =>
+      d.id.startsWith("q3-") ||
+      /labor[- ]day|grandparents|9[-/]11|hispanic/i.test(d.title) ||
+      /labor-day|grandparents|9-11|hispanic/i.test(d.image_url)
+  );
+
+  const featuredDesigns =
+    scheduledDesigns.length > 0
+      ? scheduledDesigns
+      : q3FeaturedDesigns.length > 0
+      ? q3FeaturedDesigns
+      : visibleAllDesigns.slice(0, 8);
 
   const [activeEventTab, setActiveEventTab] = useState<string>("all");
 
   const getEventGroups = (allFeatured: Design[]) => {
-    const laborDayDesigns = allFeatured.filter(d =>
-      /labor/i.test(d.id) || /labor/i.test(d.title) || /labor/i.test(d.image_url)
+    const laborDayDesigns = allFeatured.filter(
+      (d) =>
+        /labor/i.test(d.id) ||
+        /labor/i.test(d.title) ||
+        /labor/i.test(d.image_url)
     );
-    const grandparentsDesigns = allFeatured.filter(d =>
-      /grandparent/i.test(d.id) || /grandparent/i.test(d.title) || /grandparent/i.test(d.image_url)
+    const grandparentsDesigns = allFeatured.filter(
+      (d) =>
+        /grandparent/i.test(d.id) ||
+        /grandparent/i.test(d.title) ||
+        /grandparent/i.test(d.image_url)
     );
-    const patriotDesigns = allFeatured.filter(d =>
-      /9-11|patriot|never-forget/i.test(d.id) || /9-11|patriot|never forget/i.test(d.title) || /9-11/i.test(d.image_url)
+    const patriotDesigns = allFeatured.filter(
+      (d) =>
+        /9-11|patriot|never-forget/i.test(d.id) ||
+        /9-11|patriot|never forget/i.test(d.title) ||
+        /9-11/i.test(d.image_url)
     );
-    const hispanicDesigns = allFeatured.filter(d =>
-      /hispanic|heritage|cultura|orgullo/i.test(d.id) || /hispanic|heritage|cultura|orgullo/i.test(d.title) || /hispanic/i.test(d.image_url)
+    const hispanicDesigns = allFeatured.filter(
+      (d) =>
+        /hispanic|heritage|cultura|orgullo/i.test(d.id) ||
+        /hispanic|heritage|cultura|orgullo/i.test(d.title) ||
+        /hispanic/i.test(d.image_url)
     );
 
     return [
@@ -396,7 +533,8 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         badge: "WORK & ANTI-OVERWORK",
         icon: "🛠️",
         badgeBg: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-        description: "Work hard, rest harder. Sarcastic apparel for anyone who works like it's not every single day.",
+        description:
+          "Work hard, rest harder. Sarcastic apparel for anyone who works like it's not every single day.",
         designs: laborDayDesigns,
       },
       {
@@ -405,7 +543,8 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         badge: "NOT RETIRED • PROFESSIONAL SPOILERS",
         icon: "👵",
         badgeBg: "bg-pink-500/10 text-pink-400 border-pink-500/30",
-        description: "Awesome in aging. Cheeky, heartwarming gifts for the grandparents with zero filter.",
+        description:
+          "Awesome in aging. Cheeky, heartwarming gifts for the grandparents with zero filter.",
         designs: grandparentsDesigns,
       },
       {
@@ -414,7 +553,8 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         badge: "NEVER FORGET • UNITED WE STAND",
         icon: "🇺🇸",
         badgeBg: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-        description: "Honoring the heroes, remembering the lives lost, and standing united.",
+        description:
+          "Honoring the heroes, remembering the lives lost, and standing united.",
         designs: patriotDesigns,
       },
       {
@@ -423,11 +563,164 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         badge: "HISTORIA • CULTURA • ORGULLO",
         icon: "💃",
         badgeBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-        description: "Celebrate our culture, roots, and pride with vibrant festive designs.",
+        description:
+          "Celebrate our culture, roots, and pride with vibrant festive designs.",
         designs: hispanicDesigns,
       },
-    ].filter(group => group.designs.length > 0);
+    ].filter((group) => group.designs.length > 0);
   };
+
+  // ── Mode 1: Top-of-Homepage 2-Row Featured / Seasonal Clothing Hero ──
+  if (section === "featured-hero") {
+    return (
+      <section className="pt-4 pb-8 md:pt-6 md:pb-12 border-b border-border/60 bg-gradient-to-b from-card/40 to-background">
+        <div className="container px-4">
+          {/* Compact Single-Row Header: Headline + Quick Category / Seasonal Controls */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4 md:mb-5">
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-none">
+                {monthData.headline.split(" ").map((word, i, arr) => (
+                  <span
+                    key={i}
+                    className={i === arr.length - 1 ? "text-primary" : ""}
+                  >
+                    {word}{" "}
+                  </span>
+                ))}
+              </h1>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-2xl font-medium">
+                {monthData.subheadline}
+              </p>
+            </div>
+
+            {/* Right Controls: Seasonal toggle (when scheduled) + Quick Category Links */}
+            <div className="flex flex-wrap items-center gap-2">
+              {scheduledDesigns.length > 0 && (
+                <div className="inline-flex items-center rounded-lg border border-border bg-card p-1">
+                  <button
+                    type="button"
+                    onClick={() => setHeroTab("apparel")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                      heroTab === "apparel"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Flame className="h-3.5 w-3.5" />
+                    Featured Apparel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroTab("seasonal")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                      heroTab === "seasonal"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Calendar className="h-3.5 w-3.5" />
+                    Seasonal Drops ({scheduledDesigns.length})
+                  </button>
+                </div>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-bold h-8 text-xs"
+                onClick={() => navigate("/shirts")}
+              >
+                Graphic Tees
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-bold h-8 text-xs"
+                onClick={() => navigate("/hoodies")}
+              >
+                Cozy Hoodies
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                className="font-bold h-8 text-xs"
+                onClick={() => navigate("/custom-design")}
+              >
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                Customize Yours
+              </Button>
+            </div>
+          </div>
+
+          {/* 2 Rows of Clothing (8 items = 4 cols × 2 rows on desktop) */}
+          {heroTab === "apparel" ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+              {FEATURED_APPAREL_ITEMS.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  price={item.price}
+                  originalPrice={item.originalPrice}
+                  image={item.image}
+                  hoverImage={item.hoverImage}
+                  category={item.category}
+                  badge={item.badge}
+                  href={item.href}
+                />
+              ))}
+            </div>
+          ) : loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="aspect-square w-full rounded-xl" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+              {seasonalDesigns.slice(0, 8).map((design) => (
+                <ProductCard
+                  key={design.id}
+                  id={design.id}
+                  title={design.title}
+                  price={15.69}
+                  priceLabel="From"
+                  image={resolveDesignImage(design.image_url)}
+                  category="SEASONAL DESIGN"
+                  badge="FEATURED"
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Bottom Quick Action Strip */}
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/50">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              {monthData.themes.map((theme, idx) => (
+                <span
+                  key={idx}
+                  className="text-xs font-semibold bg-secondary/80 border border-border px-3 py-1 rounded-full text-muted-foreground"
+                >
+                  {theme.label}
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-center">
+              <Button
+                variant="hero"
+                size="sm"
+                className="group font-bold"
+                onClick={() => navigate("/designs")}
+              >
+                Browse All Designs
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (loading) {
     return (
@@ -435,7 +728,7 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
         <div className="container px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
-              FEATURED <span className="text-primary">DESIGNS</span>
+              ALL <span className="text-primary">DESIGNS</span>
             </h2>
             <p className="text-muted-foreground text-lg font-medium">
               Our most popular snarky shirts. Because normal is boring.
@@ -454,24 +747,34 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
   return (
     <section id="products" className="py-16 md:py-24">
       <div className="container px-4">
-        {/* Featured This Month — Separated by Holiday & Event */}
-        {featuredDesigns.length > 0 && (() => {
+        {/* Featured This Month — Separated by Holiday & Event (when section === "both") */}
+        {section === "both" && featuredDesigns.length > 0 && (() => {
           const eventGroups = getEventGroups(featuredDesigns);
-          const visibleGroups = activeEventTab === "all"
-            ? eventGroups
-            : eventGroups.filter(g => g.id === activeEventTab);
+          const visibleGroups =
+            activeEventTab === "all"
+              ? eventGroups
+              : eventGroups.filter((g) => g.id === activeEventTab);
 
           return (
             <div className="mb-20">
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-4">
                   <TrendingUp className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-primary uppercase tracking-widest">Featured This Month</span>
+                  <span className="text-sm font-bold text-primary uppercase tracking-widest">
+                    Featured This Month
+                  </span>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
-                  {monthData.headline.split(' ').map((word, i) => (
-                    <span key={i} className={i === monthData.headline.split(' ').length - 1 ? "text-primary" : ""}>
-                      {word}{' '}
+                  {monthData.headline.split(" ").map((word, i) => (
+                    <span
+                      key={i}
+                      className={
+                        i === monthData.headline.split(" ").length - 1
+                          ? "text-primary"
+                          : ""
+                      }
+                    >
+                      {word}{" "}
                     </span>
                   ))}
                 </h2>
@@ -480,107 +783,169 @@ export const ProductGrid = ({ categorySlug }: { categorySlug?: string }) => {
                 </p>
               </div>
 
-              {/* Interactive Event Filter Tabs */}
-              <div className="flex flex-wrap justify-center gap-2 mb-12">
-                <button
-                  onClick={() => setActiveEventTab("all")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                    activeEventTab === "all"
-                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
-                      : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  ✨ All Events ({featuredDesigns.length})
-                </button>
-                {eventGroups.map((group) => (
-                  <button
-                    key={group.id}
-                    onClick={() => setActiveEventTab(group.id)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
-                      activeEventTab === group.id
-                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
-                        : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
-                    }`}
-                  >
-                    <span>{group.icon}</span>
-                    <span>{group.name} ({group.designs.length})</span>
-                  </button>
-                ))}
-              </div>
+              {eventGroups.length > 0 ? (
+                <>
+                  {/* Interactive Event Filter Tabs */}
+                  <div className="flex flex-wrap justify-center gap-2 mb-12">
+                    <button
+                      onClick={() => setActiveEventTab("all")}
+                      className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                        activeEventTab === "all"
+                          ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
+                          : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      ✨ All Events ({featuredDesigns.length})
+                    </button>
+                    {eventGroups.map((group) => (
+                      <button
+                        key={group.id}
+                        onClick={() => setActiveEventTab(group.id)}
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                          activeEventTab === group.id
+                            ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105"
+                            : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary hover:text-foreground"
+                        }`}
+                      >
+                        <span>{group.icon}</span>
+                        <span>
+                          {group.name} ({group.designs.length})
+                        </span>
+                      </button>
+                    ))}
+                  </div>
 
-              {/* Categorized Event Sub-Sections */}
-              <div className="space-y-16">
-                {visibleGroups.map((group) => (
-                  <div key={group.id} className="rounded-2xl border border-border/80 p-6 md:p-8 bg-card/60 backdrop-blur-sm shadow-xl transition-all">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-border/50">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="text-2xl">{group.icon}</span>
-                          <h3 className="text-2xl md:text-3xl font-black tracking-tight">{group.name}</h3>
-                          <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border ${group.badgeBg}`}>
-                            {group.badge}
+                  {/* Categorized Event Sub-Sections */}
+                  <div className="space-y-16">
+                    {visibleGroups.map((group) => (
+                      <div
+                        key={group.id}
+                        className="rounded-2xl border border-border/80 p-6 md:p-8 bg-card/60 backdrop-blur-sm shadow-xl transition-all"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-border/50">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="text-2xl">{group.icon}</span>
+                              <h3 className="text-2xl md:text-3xl font-black tracking-tight">
+                                {group.name}
+                              </h3>
+                              <span
+                                className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border ${group.badgeBg}`}
+                              >
+                                {group.badge}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground font-medium">
+                              {group.description}
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-muted-foreground bg-secondary px-3 py-1.5 rounded-full w-fit">
+                            {group.designs.length}{" "}
+                            {group.designs.length === 1 ? "Design" : "Designs"}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground font-medium">{group.description}</p>
-                      </div>
-                      <span className="text-xs font-bold text-muted-foreground bg-secondary px-3 py-1.5 rounded-full w-fit">
-                        {group.designs.length} {group.designs.length === 1 ? "Design" : "Designs"}
-                      </span>
-                    </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                      {group.designs
-                        .filter((design) => {
-                          const patterns = FEATURED_BADGE_PATTERNS[group.id];
-                          // If no patterns defined, show all; otherwise only show matching designs
-                          return !patterns || patterns.some(
-                            (p) => design.title.toLowerCase().includes(p.toLowerCase())
-                          );
-                        })
-                        .map((design) => (
-                          <ProductCard
-                            key={design.id}
-                            id={design.id}
-                            title={design.title}
-                            price={0}
-                            image={resolveDesignImage(design.image_url)}
-                            category={group.name}
-                            badge="FEATURED"
-                          />
-                        ))}
-                    </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                          {group.designs
+                            .filter((design) => {
+                              const patterns = FEATURED_BADGE_PATTERNS[group.id];
+                              return (
+                                !patterns ||
+                                patterns.some((p) =>
+                                  design.title
+                                    .toLowerCase()
+                                    .includes(p.toLowerCase())
+                                )
+                              );
+                            })
+                            .map((design) => (
+                              <ProductCard
+                                key={design.id}
+                                id={design.id}
+                                title={design.title}
+                                price={15.69}
+                                priceLabel="From"
+                                image={resolveDesignImage(design.image_url)}
+                                category={group.name}
+                                badge="FEATURED"
+                              />
+                            ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                  {featuredDesigns.slice(0, 8).map((design) => (
+                    <ProductCard
+                      key={design.id}
+                      id={design.id}
+                      title={design.title}
+                      price={15.69}
+                      priceLabel="From"
+                      image={resolveDesignImage(design.image_url)}
+                      category="FEATURED APPAREL"
+                      badge="FEATURED"
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           );
         })()}
 
         {/* All Designs */}
-        <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight mb-3 md:mb-4">
-            ALL <span className="text-primary">DESIGNS</span>
-          </h2>
-          <p className="text-muted-foreground text-base md:text-xl font-medium">
-            Browse the full collection. Because normal is boring.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 md:mb-12">
+          <div>
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight mb-2">
+              ALL <span className="text-primary">DESIGNS</span>
+            </h2>
+            <p className="text-muted-foreground text-base md:text-xl font-medium">
+              Browse the full collection — print any design on tees, hoodies, mugs &amp; more.
+            </p>
+          </div>
+          <div className="inline-flex items-center rounded-lg border border-border bg-card p-1 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setShowOnShirt(false)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                !showOnShirt
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Palette className="h-3.5 w-3.5" />
+              Design Art
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowOnShirt(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                showOnShirt
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Shirt className="h-3.5 w-3.5" />
+              Preview on Tee
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {allDesigns
-            .filter((design) => !HIDDEN_DESIGN_PATTERNS.some(
-              (p) => design.title.toLowerCase().includes(p.toLowerCase())
-            ))
-            .map((design) => (
-              <ProductCard
-                key={design.id}
-                id={design.id}
-                title={design.title}
-                price={0}
-                image={resolveDesignImage(design.image_url)}
-                category=""
-              />
-            ))}
+          {visibleAllDesigns.map((design) => (
+            <ProductCard
+              key={design.id}
+              id={design.id}
+              title={design.title}
+              price={15.69}
+              priceLabel="From"
+              image={resolveDesignImage(design.image_url)}
+              category="SNARKY DESIGN"
+              showOnShirt={showOnShirt}
+            />
+          ))}
         </div>
       </div>
     </section>

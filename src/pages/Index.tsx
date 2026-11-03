@@ -1,6 +1,5 @@
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
-import { Hero } from "@/components/Hero";
 import { HeroUGCVideo } from "@/components/HeroUGCVideo";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { UGCTestimonials } from "@/components/UGCTestimonials";
@@ -49,25 +48,27 @@ const Index = () => {
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       </Helmet>
       <Header />
-      <div className="bg-primary text-primary-foreground py-2.5 px-4 text-center">
-        <p className="text-xs sm:text-sm md:text-base font-medium leading-snug">
+      <div className="bg-primary text-primary-foreground py-2 px-4 text-center">
+        <p className="text-xs sm:text-sm font-medium leading-snug">
           <span className="sm:hidden">✨ AI-powered snarky customs — try CUSTOMIZE!</span>
           <span className="hidden sm:inline">Snarky customizations not found anywhere else — try CUSTOMIZE in the menu and use AI to craft your own Snarky designs!</span>
         </p>
       </div>
       <main className="flex-1">
-        <Hero />
+        {/* First thing visitors see: 2 rows of Featured / Seasonal Clothing */}
+        <ProductGrid section="featured-hero" />
+
         <AiCustomGiftCTA location="homepage_banner" variant="homepage" />
-        <HeroUGCVideo />
         <ProductShowcase />
+        <div id="products">
+          <ProductGrid section="all-only" />
+        </div>
+        <HeroUGCVideo />
         <UGCTestimonials />
         <WebsiteReviews />
-        {/* Email capture — placed after social proof, before product grid for max conversion */}
+        {/* Email capture — placed after social proof */}
         <EmailCapture variant="homepage" source="homepage_banner" />
-        <div id="products">
-          <ProductGrid />
-        </div>
-        
+
         {/* Commercial Intent SEO Section */}
         <section className="container px-4 py-10 md:py-16 bg-muted/30">
           <div className="max-w-5xl mx-auto space-y-6 md:space-y-8">
