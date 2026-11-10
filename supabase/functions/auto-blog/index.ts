@@ -507,7 +507,9 @@ function buildSystemPrompt(targetKeywords: string[]): string {
 - Genuinely helpful underneath the snark
 
 BRAND CONTEXT:
-- Snarky Humans sells custom-designed apparel (t-shirts, hoodies), blankets, mugs, and greeting cards
+- Snarky Humans sells custom-designed apparel (t-shirts, hoodies), blankets, desk mats, journals, tote bags, mugs, and greeting cards
+- Active Storewide Promotion: BUY 3, GET 1 FREE across all tees, hoodies, mugs & gifts (4th item automatically FREE in cart), with heavyweight graphic tees on sale from $15.69 (regularly $35.69)
+- Featured New Drops: "Caution: Choking Hazard — Heavyweight Tee" (/product/caution-choking-hazard), "I Got a Dig Bick — You Read That Wrong Tee" (/product/dig-bick-read-wrong), and "Warning: Choking Hazard (Large Parts) — Tee" (/product/warning-choking-hazard)
 - Products are AI-designed and print-on-demand — customers describe what they want and AI generates the design
 - The brand tone is irreverent, honest, and unapologetically real
 - There's a "Spicy Meter" system: Mild, Medium, Nuclear for content heat levels

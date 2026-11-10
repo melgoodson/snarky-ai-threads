@@ -82,11 +82,17 @@ const aiCustomClothingPageSchema = {
 const SEO_ROUTES = [
   {
     path: '/',
-    title: 'Snarky Humans | Funny Shirts & Personalized Gifts',
-    desc: 'Shop funny t-shirts, personalized gifts, custom hardcover journals, mugs & greeting cards. Unapologetic designs for people who speak their mind.',
+    title: 'Snarky Humans | Funny Shirts & Personalized Gifts — Buy 3, Get 1 Free',
+    desc: 'Shop funny t-shirts from $15.69, personalized gifts, custom hardcover journals, mugs & hoodies. Buy 3, Get 1 FREE storewide on all snarky apparel & gifts.',
     canonical: 'https://www.snarkyhumans.com/',
-    body: `<h1>Snarky Humans — Unapologetic Shirts & Personalized Gifts</h1>
-    <p>Welcome to Snarky Humans, the premier destination for sarcastic graphic tees, funny coffee mugs, custom hardcover journals, canvas tote bags, and personalized gifts built for people who refuse to wear boring clothes. We specialize in turning dark humor, workplace sarcasm, pop culture moments, and unapologetic attitude into high-quality physical products that command respect, spark conversations, and bring genuine laughter to every occasion.</p>
+    body: `<h1>Snarky Humans — Unapologetic Shirts & Personalized Gifts (Buy 3, Get 1 FREE)</h1>
+    <p>Welcome to Snarky Humans, the premier destination for sarcastic graphic tees, funny coffee mugs, custom hardcover journals, canvas tote bags, and personalized gifts built for people who refuse to wear boring clothes. Take advantage of our storewide <strong>Buy 3, Get 1 FREE</strong> sale with heavyweight graphic tees starting at $15.69 (regularly $35.69). When you add any 4 items to your cart, the 4th item is automatically free at checkout.</p>
+    <h2>Featured New Graphic Tee Drops</h2>
+    <ul>
+      <li><a href="/product/caution-choking-hazard">Caution: Choking Hazard — Heavyweight Tee ($15.69)</a>: High-voltage distressed yellow warning graphic printed on a Gildan 5000 100% cotton tee.</li>
+      <li><a href="/product/dig-bick-read-wrong">I Got a Dig Bick — You Read That Wrong Tee ($15.69)</a>: The ultimate double-take optical illusion graphic tee in vintage distressed cream and burnt orange.</li>
+      <li><a href="/product/warning-choking-hazard">Warning: Choking Hazard (Large Parts) — Gag Tee ($15.69)</a>: Bold adult-humor warning label graphic tee built for bachelor parties, gag gifts, and white elephant swaps.</li>
+    </ul>
     <h2>Our Core Product Collections</h2>
     <p>Whether you are shopping for a hilarious graphic t-shirt for yourself or looking for the perfect customized gift for a friend, coworker, family member, or partner, we have carefully designed collections for every personality:</p>
     <ul>
@@ -452,11 +458,11 @@ const SEO_ROUTES = [
   },
   {
     path: '/shirts',
-    title: 'Funny & Sarcastic T-Shirts | Snarky',
-    desc: 'Shop high-quality sarcastic and funny t-shirts. Heavyweight preshrunk cotton graphic tees with bold attitude for people who refuse boring apparel.',
+    title: 'Funny & Sarcastic T-Shirts From $15.69 | Buy 3 Get 1 Free | Snarky',
+    desc: 'Shop high-quality sarcastic and funny t-shirts on sale for $15.69 (reg. $35.69) + Buy 3, Get 1 FREE. Heavyweight preshrunk cotton graphic tees with bold attitude.',
     canonical: 'https://www.snarkyhumans.com/shirts',
-    body: `<h1>Funny & Sarcastic Graphic T-Shirts</h1>
-    <p>Shop high-quality sarcastic and funny t-shirts printed on premium heavyweight 100% preshrunk cotton. Designed for people who wear their humor and attitude with pride every single day.</p>
+    body: `<h1>Funny & Sarcastic Graphic T-Shirts — Buy 3, Get 1 FREE</h1>
+    <p>Shop high-quality sarcastic and funny t-shirts printed on premium heavyweight 100% preshrunk cotton, now on sale for $15.69 (regularly $35.69) with our storewide Buy 3, Get 1 FREE promotion.</p>
     <h2>T-Shirt Construction & Specs</h2>
     <ul>
       <li><strong>Garment Material:</strong> Gildan 5000 5.3 oz/yd² 100% preshrunk heavyweight cotton.</li>
@@ -464,8 +470,59 @@ const SEO_ROUTES = [
       <li><strong>Unisex Sizing:</strong> True-to-size unisex fit ranging from Small to 5XL.</li>
       <li><strong>Printing Technology:</strong> Direct-to-Garment (DTG) printing for soft, long-lasting graphics.</li>
     </ul>
-    <h2>Bestselling Shirt Designs</h2>
-    <p>Check out customer favorites including "RBF Champion", "Snarky Humans", and "Free Hugs - Just Kidding". Our t-shirts make incredible conversation starters and unique gifts for birthdays and holidays. Want a custom quote? Build your own shirt in our <a href="/custom-design?product=tee">AI T-Shirt Generator</a>.</p>`
+    <h2>Bestselling & New Drop Shirt Designs</h2>
+    <p>Check out our latest drops including <a href="/product/caution-choking-hazard">Caution: Choking Hazard Tee</a>, <a href="/product/dig-bick-read-wrong">I Got a Dig Bick — You Read That Wrong Tee</a>, and <a href="/product/warning-choking-hazard">Warning: Choking Hazard (Large Parts) Tee</a>, alongside customer favorites like <a href="/product/rbf-champion">RBF Champion</a>, <a href="/product/snarky-humans">Snarky Humans</a>, and <a href="/product/free-hugs">Free Hugs</a>. Want a custom quote? Build your own shirt in our <a href="/custom-design?product=tee">AI T-Shirt Generator</a>.</p>`
+  },
+  {
+    path: '/product/caution-choking-hazard',
+    title: 'Caution: Choking Hazard — Heavyweight Tee | $15.69 Sale | Snarky Humans',
+    desc: 'Shop the Caution: Choking Hazard Heavyweight Tee on sale for $15.69 (reg. $35.69) + Buy 3, Get 1 FREE. High-voltage distressed yellow graphic on 100% cotton Gildan 5000.',
+    canonical: 'https://www.snarkyhumans.com/product/caution-choking-hazard',
+    schemas: [{
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "Caution: Choking Hazard — Heavyweight Tee",
+      image: ["https://www.snarkyhumans.com/images/designs/1.jpeg", "https://www.snarkyhumans.com/images/designs/10.jpeg", "https://www.snarkyhumans.com/images/designs/7.jpeg", "https://www.snarkyhumans.com/images/designs/caution-choking-hazard-art.png"],
+      description: "High-voltage distressed yellow Caution: Choking Hazard warning graphic printed on a heavyweight 100% preshrunk cotton Gildan 5000 unisex tee.",
+      brand: { "@type": "Brand", name: "Snarky Humans" },
+      offers: { "@type": "Offer", url: "https://www.snarkyhumans.com/product/caution-choking-hazard", priceCurrency: "USD", price: "15.69", availability: "https://schema.org/InStock" }
+    }],
+    body: `<h1>Caution: Choking Hazard — Heavyweight Graphic Tee</h1>
+    <p>Bold, unapologetic, and guaranteed to get a double-take across the room. The Caution: Choking Hazard tee pairs high-voltage distressed yellow warning graphics with our signature Gildan 5000 heavyweight 100% cotton black tee. On sale now for $15.69 (regularly $35.69) and eligible for our storewide Buy 3, Get 1 FREE promotion.</p>`
+  },
+  {
+    path: '/product/dig-bick-read-wrong',
+    title: 'I Got a Dig Bick — You Read That Wrong Tee | $15.69 Sale | Snarky Humans',
+    desc: 'Shop the I Got a Dig Bick — You Read That Wrong Tee on sale for $15.69 (reg. $35.69) + Buy 3, Get 1 FREE. Vintage distressed double-take optical illusion graphic tee.',
+    canonical: 'https://www.snarkyhumans.com/product/dig-bick-read-wrong',
+    schemas: [{
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "I Got a Dig Bick — You Read That Wrong Tee",
+      image: ["https://www.snarkyhumans.com/images/designs/3.jpeg", "https://www.snarkyhumans.com/images/designs/5.jpeg", "https://www.snarkyhumans.com/images/designs/6.jpeg", "https://www.snarkyhumans.com/images/designs/dig-bick-read-wrong-art.png"],
+      description: "I Got a Dig Bick. You That Read Wrong. You Read That Wrong Too. Vintage distressed double-take graphic tee on heavyweight 100% cotton.",
+      brand: { "@type": "Brand", name: "Snarky Humans" },
+      offers: { "@type": "Offer", url: "https://www.snarkyhumans.com/product/dig-bick-read-wrong", priceCurrency: "USD", price: "15.69", availability: "https://schema.org/InStock" }
+    }],
+    body: `<h1>I Got a Dig Bick — You Read That Wrong Double-Take Graphic Tee</h1>
+    <p>Watch everyone read your shirt three times in a row before realizing they fell for both traps. Printed in vintage distressed cream and burnt-orange typography on a heavyweight Gildan 5000 100% cotton tee. On sale for $15.69 (regularly $35.69) with Buy 3, Get 1 FREE storewide.</p>`
+  },
+  {
+    path: '/product/warning-choking-hazard',
+    title: 'Warning: Choking Hazard (Large Parts) Gag Tee | $15.69 Sale | Snarky Humans',
+    desc: 'Shop the Warning: Choking Hazard (Large Parts) Gag Tee for $15.69 (reg. $35.69) + Buy 3, Get 1 FREE. Unapologetic adult-humor warning sign graphic tee.',
+    canonical: 'https://www.snarkyhumans.com/product/warning-choking-hazard',
+    schemas: [{
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "Warning: Choking Hazard (Large Parts) — Gag Tee",
+      image: ["https://www.snarkyhumans.com/images/designs/2.jpeg", "https://www.snarkyhumans.com/images/designs/9.jpeg", "https://www.snarkyhumans.com/images/designs/4.jpeg", "https://www.snarkyhumans.com/images/designs/warning-choking-hazard-art.png"],
+      description: "Official safety warning label parody graphic tee: Warning Choking Hazard — Package Contains Large Parts. Heavyweight 100% cotton unisex fit.",
+      brand: { "@type": "Brand", name: "Snarky Humans" },
+      offers: { "@type": "Offer", url: "https://www.snarkyhumans.com/product/warning-choking-hazard", priceCurrency: "USD", price: "15.69", availability: "https://schema.org/InStock" }
+    }],
+    body: `<h1>Warning: Choking Hazard (Large Parts) — Adult Humor Gag Tee</h1>
+    <p>Styled like an official safety warning label, this heavyweight 100% cotton graphic tee is the ultimate gag gift, bachelor party shirt, or white elephant exchange winner. On sale for $15.69 (regularly $35.69) and eligible for Buy 3, Get 1 FREE.</p>`
   },
   {
     path: '/terms',
