@@ -8,13 +8,22 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, Gift, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getOverlayStyle } from '@/lib/variantUtils';
 
 export const Cart = () => {
-  const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCart();
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    totalItems,
+    subtotalPrice,
+    bogoDiscount,
+    freeItemsCount,
+    totalPrice,
+  } = useCart();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -36,8 +45,18 @@ export const Cart = () => {
 
   const FREE_SHIPPING_THRESHOLD = 50;
   const isFreeShipping = totalPrice >= FREE_SHIPPING_THRESHOLD;
-  const amountNeeded = FREE_SHIPPING_THRESHOLD - totalPrice;
+  const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - totalPrice);
   const progressPercentage = Math.min((totalPrice / FREE_SHIPPING_THRESHOLD) * 100, 100);
+
+  const rem = totalItems % 4;
+  const itemsNeededForFree = rem === 0 ? 0 : 4 - rem;
+
+  const handleClaimFreeFourthItem = () => {
+    if (items.length === 0) return;
+    // Increment the lowest-priced item in cart by 1 so the 4th item is immediately FREE
+    const target = [...items].sort((a, b) => a.price - b.price)[0];
+    updateQuantity(target.id, target.quantity + 1);
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -56,7 +75,7 @@ export const Cart = () => {
           <SheetTitle className="text-2xl font-black">YOUR CART</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col h-full pt-6">
+        <div className="flex flex-col h-full pt-5">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
               <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
@@ -66,11 +85,47 @@ export const Cart = () => {
               <p className="text-sm text-muted-foreground mt-2">
                 Add some snarky threads to get started
               </p>
+              <div className="mt-4 inline-flex items-center gap-2 bg-primary/10 border border-primary/25 text-primary px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider">
+                <Gift className="h-4 w-4" />
+                Sale: Buy 3, Get 1 FREE Storewide
+              </div>
             </div>
           ) : (
             <>
-              <div className="p-4 bg-muted/40 rounded-xl border border-border/50 mb-4 space-y-2">
-                <p className="text-sm font-semibold flex justify-between">
+              {/* Buy 3, Get 1 Free Promotion Banner */}
+              <div className="p-3.5 bg-primary/10 rounded-xl border border-primary/30 mb-3 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-primary">
+                    <Gift className="h-4 w-4 shrink-0" />
+                    <span>
+                      {freeItemsCount > 0 && rem === 0
+                        ? `🎉 BUY 3, GET 1 FREE APPLIED! (${freeItemsCount} item${freeItemsCount > 1 ? 's' : ''} FREE)`
+                        : rem === 3
+                        ? "🎁 You have 3 items! Your 4th item is 100% FREE!"
+                        : `🔥 Buy 3, Get 1 FREE: Add ${itemsNeededForFree} more for a FREE item!`}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full shrink-0">
+                    {totalItems % 4 === 0 && freeItemsCount > 0 ? 'UNLOCKED' : `${totalItems % 4}/4`}
+                  </span>
+                </div>
+                {rem === 3 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="default"
+                    className="w-full h-8 text-xs font-black uppercase tracking-wider"
+                    onClick={handleClaimFreeFourthItem}
+                  >
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                    + Add 4th Item for FREE ($0.00)
+                  </Button>
+                )}
+              </div>
+
+              {/* Free Shipping Progress */}
+              <div className="p-3 bg-muted/40 rounded-xl border border-border/50 mb-4 space-y-1.5">
+                <p className="text-xs font-semibold flex justify-between">
                   <span>
                     {isFreeShipping 
                       ? "🎉 You've unlocked FREE shipping!" 
@@ -81,7 +136,7 @@ export const Cart = () => {
                     ${totalPrice.toFixed(2)} / $50
                   </span>
                 </p>
-                <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
                   <div 
                     className="bg-primary h-full transition-all duration-500 ease-out" 
                     style={{ width: `${progressPercentage}%` }}
@@ -227,13 +282,25 @@ export const Cart = () => {
                 })}
               </div>
 
-              <div className="border-t border-border pt-4 space-y-4">
-                <div className="flex justify-between text-lg font-bold">
+              <div className="border-t border-border pt-4 space-y-2.5">
+                {bogoDiscount > 0 && (
+                  <>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Subtotal ({totalItems} items)</span>
+                      <span>${subtotalPrice.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-bold text-green-500">
+                      <span>Buy 3, Get 1 Free ({freeItemsCount} FREE)</span>
+                      <span>-${bogoDiscount.toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-between text-lg font-black">
                   <span>TOTAL</span>
                   <span>${totalPrice.toFixed(2)}</span>
                 </div>
                 <Button
-                  className="w-full"
+                  className="w-full font-black"
                   size="lg"
                   onClick={handleCheckout}
                 >

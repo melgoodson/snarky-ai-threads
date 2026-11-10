@@ -622,6 +622,16 @@ const DesignDetail = () => {
 
             {/* RIGHT: All selections in one column */}
             <div className="space-y-6">
+              {/* Buy 3 Get 1 Free Sale Banner */}
+              <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-between gap-3">
+                <div className="text-xs sm:text-sm font-bold text-foreground">
+                  <span className="inline-block bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mr-2">
+                    🔥 BUY 3, GET 1 FREE
+                  </span>
+                  Mix &amp; match any 4 items storewide — your <strong>4th item is 100% FREE</strong> in cart!
+                </div>
+              </div>
+
               {/* Step 1: Product type — compact horizontal strip */}
               <div>
                 <h2 className="text-sm font-bold uppercase tracking-wider mb-3">

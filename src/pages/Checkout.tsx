@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart, CartItem } from '@/contexts/CartContext';
+import { useCart, CartItem, calculateBogoDiscount } from '@/contexts/CartContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -359,10 +359,12 @@ const Checkout = () => {
   console.log('Checkout items:', checkoutItems);
   console.log('Checkout items prices:', checkoutItems.map(item => ({ title: item.title, price: item.price, type: typeof item.price })));
 
-  const effectiveTotal = checkoutItems.reduce(
-    (sum, item) => sum + (Number(item.price) || 0) * item.quantity,
-    0
-  );
+  const {
+    subtotalPrice: rawSubtotal,
+    bogoDiscount,
+    freeItemsCount,
+    totalPrice: effectiveTotal,
+  } = calculateBogoDiscount(checkoutItems);
 
   const discountAmount = appliedCoupon ? Math.max(0, effectiveTotal - 0.50) : 0;
   const finalTotal = appliedCoupon ? 0.50 : effectiveTotal;
@@ -894,8 +896,14 @@ const Checkout = () => {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>${effectiveTotal.toFixed(2)}</span>
+                    <span>${rawSubtotal.toFixed(2)}</span>
                   </div>
+                  {bogoDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600 font-semibold">
+                      <span>Buy 3, Get 1 Free ({freeItemsCount} FREE)</span>
+                      <span>-${bogoDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
                   {appliedCoupon && (
                     <div className="flex justify-between text-sm text-green-600 font-semibold">
                       <span>Discount ({appliedCoupon})</span>

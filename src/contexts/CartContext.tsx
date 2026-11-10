@@ -31,6 +31,30 @@ export interface CartItem {
   productImageUrl?: string; // Base product image used for fallback previews
 }
 
+export function calculateBogoDiscount(cartItems: CartItem[]) {
+  const unitPrices: number[] = [];
+  for (const item of cartItems) {
+    const p = Number(item.price) || 0;
+    for (let i = 0; i < item.quantity; i++) {
+      unitPrices.push(p);
+    }
+  }
+  // Sort ascending so the lowest-priced item in every 4-item bundle is FREE
+  unitPrices.sort((a, b) => a - b);
+  const freeItemsCount = Math.floor(unitPrices.length / 4);
+  const bogoDiscount = Number(
+    unitPrices
+      .slice(0, freeItemsCount)
+      .reduce((sum, p) => sum + p, 0)
+      .toFixed(2)
+  );
+  const subtotalPrice = Number(
+    unitPrices.reduce((sum, p) => sum + p, 0).toFixed(2)
+  );
+  const totalPrice = Number(Math.max(0, subtotalPrice - bogoDiscount).toFixed(2));
+  return { subtotalPrice, bogoDiscount, freeItemsCount, totalPrice };
+}
+
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, 'id' | 'quantity'>) => void;
@@ -38,6 +62,9 @@ interface CartContextType {
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
+  subtotalPrice: number;
+  bogoDiscount: number;
+  freeItemsCount: number;
   totalPrice: number;
 }
 
@@ -138,12 +165,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setItems(prev => {
+      const nextCount = prev.reduce((s, it) => s + it.quantity, 0) + 1;
+      const rem = nextCount % 4;
+      const bogoMessage =
+        rem === 0
+          ? '🎉 Buy 3, Get 1 FREE Applied! 1 item is now FREE!'
+          : rem === 3
+          ? '🎁 Add 1 more item and get it 100% FREE!'
+          : `🔥 Buy 3, Get 1 FREE: Add ${4 - rem} more for a FREE item!`;
+
       const existing = prev.find(
         item => item.productId === newItem.productId && item.size === newItem.size
       );
 
       if (existing) {
-        toast.success('Updated quantity in cart');
+        toast.success(`Updated quantity in cart • ${bogoMessage}`);
         return prev.map(item =>
           item.id === existing.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -153,7 +189,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       // Trigger custom toast confirmation with clear next steps
       toast.custom((t) => (
-        <div className="bg-card text-card-foreground border border-border shadow-2xl p-5 rounded-2xl w-full max-w-sm space-y-4 pointer-events-auto flex flex-col animate-in slide-in-from-bottom-2 duration-300">
+        <div className="bg-card text-card-foreground border border-border shadow-2xl p-5 rounded-2xl w-full max-w-sm space-y-3.5 pointer-events-auto flex flex-col animate-in slide-in-from-bottom-2 duration-300">
           <div className="flex gap-3">
             <div className="w-12 h-12 rounded-xl bg-muted overflow-hidden flex-shrink-0 border border-border relative">
               {(() => {
@@ -200,6 +236,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               <p className="text-xs text-muted-foreground truncate">{newItem.title}</p>
               <p className="text-xs font-bold text-primary mt-0.5">${newItem.price.toFixed(2)}</p>
             </div>
+          </div>
+
+          <div className="bg-primary/10 border border-primary/25 rounded-lg px-3 py-1.5 text-[11px] font-bold text-primary">
+            {bogoMessage}
           </div>
           
           <div className="grid grid-cols-3 gap-2">
@@ -257,7 +297,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const { subtotalPrice, bogoDiscount, freeItemsCount, totalPrice } = calculateBogoDiscount(items);
 
   return (
     <CartContext.Provider
@@ -268,6 +308,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         updateQuantity,
         clearCart,
         totalItems,
+        subtotalPrice,
+        bogoDiscount,
+        freeItemsCount,
         totalPrice,
       }}
     >

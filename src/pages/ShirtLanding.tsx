@@ -12,15 +12,20 @@ import snarkyHumans from "@/assets/snarky-humans.png";
 import freeHugs from "@/assets/free-hugs.png";
 
 const FEATURED_SHIRTS = [
-    { id: "rbf-champion", title: "RBF Champion", price: 21.36, image: rbfChampion, category: "ATTITUDE" },
-    { id: "snarky-humans", title: "Snarky Humans", price: 20.69, image: snarkyHumans, category: "SNARKY" },
-    { id: "free-hugs", title: "Free Hugs", price: 21.69, image: freeHugs, category: "SARCASM" },
+    { id: "caution-choking-hazard", title: "Caution: Choking Hazard", price: 15.69, originalPrice: 35.69, image: "/images/designs/1.jpeg", hoverImage: "/images/designs/7.jpeg", category: "NEW DROP • B3G1 FREE" },
+    { id: "dig-bick-read-wrong", title: "I Got a Dig Bick", price: 15.69, originalPrice: 35.69, image: "/images/designs/5.jpeg", hoverImage: "/images/designs/6.jpeg", category: "NEW DROP • B3G1 FREE" },
+    { id: "warning-choking-hazard", title: "Warning: Choking Hazard", price: 15.69, originalPrice: 35.69, image: "/images/designs/2.jpeg", hoverImage: "/images/designs/4.jpeg", category: "NEW DROP • B3G1 FREE" },
+    { id: "rbf-champion", title: "RBF Champion", price: 21.36, originalPrice: 41.36, image: rbfChampion, category: "ATTITUDE" },
+    { id: "snarky-humans", title: "Snarky Humans", price: 20.69, originalPrice: 40.69, image: snarkyHumans, category: "SNARKY" },
+    { id: "free-hugs", title: "Free Hugs", price: 21.69, originalPrice: 41.69, image: freeHugs, category: "SARCASM" },
 ];
 
 const HERO_IMAGES = [
+    "/images/designs/1.jpeg",
+    "/images/designs/5.jpeg",
+    "/images/designs/2.jpeg",
     "/images/carousel/shirt-hero-new-1.jpg",
     "/images/carousel/shirt-hero-new-2.jpg",
-    "/images/carousel/shirt-hero-new-3.png",
 ];
 
 const ShirtLanding = () => {
@@ -57,9 +62,12 @@ const ShirtLanding = () => {
                                         BROWSE DESIGNS
                                     </Button>
                                 </div>
-                                <div className="mt-6 flex items-center gap-2">
+                                <div className="mt-6 flex flex-wrap items-center gap-3">
                                     <p className="text-3xl font-black">Starting at <span className="text-primary">$15.69</span></p>
                                     <span className="text-lg text-muted-foreground line-through">$35.69</span>
+                                    <span className="inline-flex items-center bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full">
+                                        🔥 BUY 3, GET 1 FREE
+                                    </span>
                                 </div>
                             </div>
                             <div className="max-w-md mx-auto w-full">
@@ -149,7 +157,12 @@ const ShirtLanding = () => {
                                         <div className="p-4 text-center">
                                             <span className="text-xs font-bold text-primary uppercase tracking-widest">{shirt.category}</span>
                                             <h3 className="font-bold text-lg group-hover:text-primary transition-colors mt-1">{shirt.title}</h3>
-                                            <p className="text-2xl font-black mt-1">${shirt.price.toFixed(2)}</p>
+                                            <div className="flex items-center justify-center gap-2 mt-1">
+                                                <p className="text-2xl font-black">${shirt.price.toFixed(2)}</p>
+                                                {shirt.originalPrice && (
+                                                    <span className="text-sm text-muted-foreground line-through">${shirt.originalPrice.toFixed(2)}</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

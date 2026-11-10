@@ -49,9 +49,9 @@ const Index = () => {
       </Helmet>
       <Header />
       <div className="bg-primary text-primary-foreground py-2 px-4 text-center">
-        <p className="text-xs sm:text-sm font-medium leading-snug">
-          <span className="sm:hidden">✨ AI-powered snarky customs — try CUSTOMIZE!</span>
-          <span className="hidden sm:inline">Snarky customizations not found anywhere else — try CUSTOMIZE in the menu and use AI to craft your own Snarky designs!</span>
+        <p className="text-xs sm:text-sm font-bold leading-snug tracking-wide">
+          <span className="sm:hidden">🔥 SALE: BUY 3, GET 1 FREE Storewide + Up to 56% Off!</span>
+          <span className="hidden sm:inline">🔥 SALE EVENT: BUY 3, GET 1 FREE on all tees, hoodies &amp; gifts (4th item automatically FREE in cart) — or use CUSTOMIZE to craft your own AI design!</span>
         </p>
       </div>
       <main className="flex-1">

@@ -4,12 +4,45 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, Shirt, Palette, Sparkles, Flame, Calendar } from "lucide-react";
+import { ArrowRight, TrendingUp, Shirt, Palette, Sparkles, Flame, Calendar, Gift } from "lucide-react";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 import { HIDDEN_DESIGN_PATTERNS } from "@/lib/designConstants";
 
-// Curated 2-Row (8-item) Featured Apparel Showcase with real lifestyle & garment photography
+// Curated 2-Row (8-item) Featured Apparel Showcase with paired lifestyle & flat-lay photography
 const FEATURED_APPAREL_ITEMS = [
+  {
+    id: "caution-choking-hazard",
+    title: "Caution: Choking Hazard — Heavyweight Tee",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/designs/1.jpeg",
+    hoverImage: "/images/designs/7.jpeg",
+    category: "NEW DROP • GAG HUMOR",
+    badge: "🔥 NEW DROP",
+    href: "/product/caution-choking-hazard",
+  },
+  {
+    id: "dig-bick-read-wrong",
+    title: "I Got a Dig Bick — Double-Take Tee",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/designs/5.jpeg",
+    hoverImage: "/images/designs/6.jpeg",
+    category: "NEW DROP • SARCASM TEE",
+    badge: "🔥 NEW DROP",
+    href: "/product/dig-bick-read-wrong",
+  },
+  {
+    id: "warning-choking-hazard",
+    title: "Warning: Choking Hazard (Large Parts) — Tee",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/designs/2.jpeg",
+    hoverImage: "/images/designs/4.jpeg",
+    category: "NEW DROP • ADULT HUMOR",
+    badge: "🔥 NEW DROP",
+    href: "/product/warning-choking-hazard",
+  },
   {
     id: "f2acfadd-7310-43d8-b437-74c5449c8c70",
     title: "Kindly F*ck Off — Heavyweight Tee",
@@ -18,7 +51,7 @@ const FEATURED_APPAREL_ITEMS = [
     image: "/images/carousel/shirt-hero-new-1.jpg",
     hoverImage: "/images/designs/1.jpg",
     category: "BESTSELLER TEE",
-    badge: "🔥 BEST SELLER",
+    badge: "BEST SELLER",
     href: "/designs/f2acfadd-7310-43d8-b437-74c5449c8c70",
   },
   {
@@ -53,26 +86,6 @@ const FEATURED_APPAREL_ITEMS = [
     href: "/product/free-hugs",
   },
   {
-    id: "dark",
-    title: "Punching People With Words & Attitude Tee",
-    price: 15.69,
-    originalPrice: 35.69,
-    image: "/images/carousel/dark-2.png",
-    hoverImage: "/images/carousel/dark-1.png",
-    category: "ATTITUDE TEE",
-    href: "/product/dark",
-  },
-  {
-    id: "6af9d64d-09b6-4636-9f50-7133e6d9ab44",
-    title: "It Is What It Is — Ransom Collage Tee",
-    price: 15.69,
-    originalPrice: 35.69,
-    image: "/images/carousel/shirt-hero-new-3.png",
-    hoverImage: "/images/designs/5.jpg",
-    category: "SNARKY TEE",
-    href: "/designs/6af9d64d-09b6-4636-9f50-7133e6d9ab44",
-  },
-  {
     id: "abduct-me",
     title: "Abduct Me — I'm Done With Humans Tee",
     price: 21.69,
@@ -83,15 +96,36 @@ const FEATURED_APPAREL_ITEMS = [
     badge: "GIFT PICK",
     href: "/product/abduct-me",
   },
+];
+
+// Latest paired tee designs also surfaced at the top of All Designs
+const LATEST_PAIRED_DESIGNS: Design[] = [
   {
-    id: "69fa13c5-49e2-41ad-a298-b229fea17722",
-    title: "Snarky Humans™ Signature Fleece Hoodie",
-    price: 39.99,
-    originalPrice: 59.99,
-    image: "/images/carousel/hoodie-hero-1.jpg",
-    hoverImage: "/images/designs/9.jpg",
-    category: "SIGNATURE HOODIE",
-    href: "/designs/69fa13c5-49e2-41ad-a298-b229fea17722",
+    id: "caution-choking-hazard",
+    title: "Caution: Choking Hazard — Heavyweight Tee",
+    description: "High-voltage distressed yellow warning graphic tee — paired with lifestyle & flat-lay views.",
+    image_url: "/images/designs/7.jpeg",
+    hover_image_url: "/images/designs/10.jpeg",
+    href: "/product/caution-choking-hazard",
+    badge: "🔥 NEW DROP",
+  },
+  {
+    id: "dig-bick-read-wrong",
+    title: "I Got a Dig Bick — You Read That Wrong Tee",
+    description: "I Got a Dig Bick — You That Read Wrong — You Read That Wrong Too double-take graphic tee.",
+    image_url: "/images/designs/6.jpeg",
+    hover_image_url: "/images/designs/3.jpeg",
+    href: "/product/dig-bick-read-wrong",
+    badge: "🔥 NEW DROP",
+  },
+  {
+    id: "warning-choking-hazard",
+    title: "Warning: Choking Hazard (Large Parts) — Tee",
+    description: "Warning: Choking Hazard — Package Contains Large Parts — Keep Out Of Reach Of Small Women gag tee.",
+    image_url: "/images/designs/4.jpeg",
+    hover_image_url: "/images/designs/9.jpeg",
+    href: "/product/warning-choking-hazard",
+    badge: "🔥 NEW DROP",
   },
 ];
 
@@ -112,6 +146,9 @@ interface Design {
   title: string;
   description: string;
   image_url: string;
+  hover_image_url?: string;
+  href?: string;
+  badge?: string;
 }
 
 // Monthly featured rotation — SEO-researched themes per month
@@ -223,12 +260,12 @@ const MONTHLY_FEATURED: Record<number, {
   },
   10: { // November
     headline: "SNARKY APPAREL & GIFTS",
-    subheadline: "Heavyweight graphic tees, cozy hoodies, and seasonal attitude — printed when you order.",
+    subheadline: "Heavyweight graphic tees, cozy hoodies & gag gifts — Buy 3, Get 1 FREE storewide!",
     themes: [
+      { label: "🔥 Buy 3, Get 1 FREE", keywords: "buy 3 get 1 free shirts, snarky t-shirt sale" },
       { label: "👕 Heavyweight Tees", keywords: "snarky t-shirts, sarcastic graphic tees" },
       { label: "🧥 Snarky Hoodies", keywords: "funny hoodies, sarcastic sweatshirt" },
       { label: "🎄 Holiday & White Elephant", keywords: "white elephant gifts, funny gag shirts" },
-      { label: "✨ AI Custom Prints", keywords: "personalized gifts christmas, custom shirts" },
     ],
   },
   11: { // December
@@ -245,6 +282,7 @@ const MONTHLY_FEATURED: Record<number, {
 };
 
 const FALLBACK_DESIGNS: Design[] = [
+  ...LATEST_PAIRED_DESIGNS,
   {
     id: "q3-labor-day-1",
     title: "Labor Day: Back to Work Tomorrow",
@@ -411,7 +449,7 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
 
       if (error) throw error;
 
-      let fetchedDesigns: Design[] = data || [];
+      let fetchedDesigns: Design[] = [...LATEST_PAIRED_DESIGNS, ...(data || [])];
       const existingUrls = new Set(
         fetchedDesigns.map((d) => resolveDesignImage(d.image_url))
       );
@@ -434,11 +472,11 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
         const slug = categorySlug.toLowerCase();
         if (slug.includes("coworker") || slug.includes("office")) {
           fetchedDesigns = fetchedDesigns.filter((d) =>
-            ["RBF Champion", "Snarky Humans", "Dark", "White Idol Morning"].some((t) => d.title.includes(t))
+            ["RBF Champion", "Snarky Humans", "Dark", "White Idol Morning", "Dig Bick"].some((t) => d.title.includes(t))
           );
         } else if (slug.includes("men") || slug.includes("dad")) {
           fetchedDesigns = fetchedDesigns.filter((d) =>
-            ["Fathers", "Sasquatches", "Abduct Me"].some((t) => d.title.includes(t))
+            ["Fathers", "Sasquatches", "Abduct Me", "Choking Hazard", "Dig Bick"].some((t) => d.title.includes(t))
           );
         } else if (slug.includes("mom") || slug.includes("mother")) {
           fetchedDesigns = fetchedDesigns.filter((d) =>
@@ -450,7 +488,7 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
           );
         } else if (slug.includes("christmas") || slug.includes("white-elephant") || slug.includes("gag")) {
           fetchedDesigns = fetchedDesigns.filter((d) =>
-            ["Free Hugs", "Abduct Me", "Sasquatches", "Dark", "RBF Champion", "Snarky Humans"].some((t) => d.title.includes(t))
+            ["Choking Hazard", "Dig Bick", "Free Hugs", "Abduct Me", "Sasquatches", "Dark", "RBF Champion", "Snarky Humans"].some((t) => d.title.includes(t))
           );
         }
       }
@@ -575,9 +613,18 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
     return (
       <section className="pt-4 pb-8 md:pt-6 md:pb-12 border-b border-border/60 bg-gradient-to-b from-card/40 to-background">
         <div className="container px-4">
-          {/* Compact Single-Row Header: Headline + Quick Category / Seasonal Controls */}
+          {/* Compact Single-Row Header: Headline + Sale Callout + Quick Category Links */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4 md:mb-5">
             <div>
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm">
+                  <Gift className="h-3 w-3" />
+                  BUY 3, GET 1 FREE
+                </span>
+                <span className="text-xs font-bold text-muted-foreground">
+                  Sale Tees from <strong className="text-foreground">$15.69</strong> <span className="line-through opacity-75">$35.69</span> • Hover any card to view paired mockup
+                </span>
+              </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-none">
                 {monthData.headline.split(" ").map((word, i, arr) => (
                   <span
@@ -588,9 +635,6 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
                   </span>
                 ))}
               </h1>
-              <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-2xl font-medium">
-                {monthData.subheadline}
-              </p>
             </div>
 
             {/* Right Controls: Seasonal toggle (when scheduled) + Quick Category Links */}
@@ -684,10 +728,13 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
                   id={design.id}
                   title={design.title}
                   price={15.69}
+                  originalPrice={35.69}
                   priceLabel="From"
                   image={resolveDesignImage(design.image_url)}
+                  hoverImage={design.hover_image_url}
                   category="SEASONAL DESIGN"
-                  badge="FEATURED"
+                  badge={design.badge || "FEATURED"}
+                  href={design.href}
                 />
               ))}
             </div>
@@ -761,7 +808,7 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
                 <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-4">
                   <TrendingUp className="h-4 w-4 text-primary" />
                   <span className="text-sm font-bold text-primary uppercase tracking-widest">
-                    Featured This Month
+                    Featured This Month • Buy 3, Get 1 Free
                   </span>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
@@ -864,10 +911,13 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
                                 id={design.id}
                                 title={design.title}
                                 price={15.69}
+                                originalPrice={35.69}
                                 priceLabel="From"
                                 image={resolveDesignImage(design.image_url)}
+                                hoverImage={design.hover_image_url}
                                 category={group.name}
                                 badge="FEATURED"
+                                href={design.href}
                               />
                             ))}
                         </div>
@@ -883,10 +933,13 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
                       id={design.id}
                       title={design.title}
                       price={15.69}
+                      originalPrice={35.69}
                       priceLabel="From"
                       image={resolveDesignImage(design.image_url)}
+                      hoverImage={design.hover_image_url}
                       category="FEATURED APPAREL"
-                      badge="FEATURED"
+                      badge={design.badge || "FEATURED"}
+                      href={design.href}
                     />
                   ))}
                 </div>
@@ -902,7 +955,7 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
               ALL <span className="text-primary">DESIGNS</span>
             </h2>
             <p className="text-muted-foreground text-base md:text-xl font-medium">
-              Browse the full collection — print any design on tees, hoodies, mugs &amp; more.
+              Browse the full collection — Buy 3, Get 1 FREE across all tees, hoodies, mugs &amp; gifts.
             </p>
           </div>
           <div className="inline-flex items-center rounded-lg border border-border bg-card p-1 self-start sm:self-auto">
@@ -940,10 +993,14 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
               id={design.id}
               title={design.title}
               price={15.69}
+              originalPrice={35.69}
               priceLabel="From"
               image={resolveDesignImage(design.image_url)}
+              hoverImage={design.hover_image_url}
               category="SNARKY DESIGN"
-              showOnShirt={showOnShirt}
+              badge={design.badge}
+              href={design.href}
+              showOnShirt={showOnShirt && !design.image_url.endsWith(".jpeg")}
             />
           ))}
         </div>

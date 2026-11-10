@@ -526,6 +526,158 @@ Store: Keep in a cool, dry place away from direct sunlight to maintain color and
       ],
     },
   },
+  "caution-choking-hazard": {
+    title: "Caution: Choking Hazard — Heavyweight Tee",
+    subtitle: "High-Voltage Distressed Warning Graphic • S–5XL",
+    category: "NEW DROP • GAG HUMOR",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/designs/1.jpeg",
+    images: [
+      "/images/designs/1.jpeg",
+      "/images/designs/10.jpeg",
+      "/images/designs/7.jpeg",
+    ],
+    productType: "shirt",
+    availableColors: [
+      { name: "Black", hex: "#000000" },
+      { name: "Dark Heather", hex: "#4A4A4A" },
+      { name: "Navy", hex: "#1B1F3B" },
+    ],
+    material: `100% preshrunk cotton (5.3 oz/yd² / 180 g/m²). Gildan® 5000 heavyweight body. Seamless double-needle collar, taped neck & shoulders. Distressed high-contrast DTG print.`,
+    description: `Bold, unapologetic, and guaranteed to get a double-take across the room. The Caution: Choking Hazard tee pairs high-voltage distressed yellow warning graphics with our signature Gildan® 5000 heavyweight black cotton tee.
+
+Why you'll love it:
+• Classic unisex crewneck built on the proven Gildan® 5000 heavyweight block
+• High-contrast distressed yellow warning print that won't crack or peel
+• Seamless double-needle 7/8" collar with taped neck and shoulders
+• Eligible for our storewide Buy 3, Get 1 FREE promotion`,
+    fit: `Relaxed, true-to-size unisex fit (S–5XL). Size up for an oversized streetwear look.`,
+    care: `Machine wash cold, inside-out with similar colors. Tumble dry low or hang dry. Do not iron directly on the graphic.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
+  "dig-bick-read-wrong": {
+    title: "I Got a Dig Bick — You Read That Wrong Tee",
+    subtitle: "The Ultimate Double-Take Optical Illusion Graphic Tee",
+    category: "NEW DROP • SARCASM",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/designs/3.jpeg",
+    images: [
+      "/images/designs/3.jpeg",
+      "/images/designs/5.jpeg",
+      "/images/designs/6.jpeg",
+    ],
+    productType: "shirt",
+    availableColors: [
+      { name: "Black", hex: "#000000" },
+      { name: "Dark Heather", hex: "#4A4A4A" },
+      { name: "Navy", hex: "#1B1F3B" },
+    ],
+    material: `100% preshrunk cotton (5.3 oz/yd² / 180 g/m²). Gildan® 5000 heavyweight body. Vintage distressed cream & burnt-orange DTG print.`,
+    description: `"I Got a Dig Bick. You That Read Wrong. You Read That Wrong Too." Watch everyone read your shirt three times in a row before realizing they fell for both traps.
+
+Why you'll love it:
+• Instant conversation starter and ultimate party/bar icebreaker
+• Printed on our heavyweight 100% preshrunk cotton Gildan® 5000 tee
+• Vintage distressed typography that looks broken-in from day one
+• Eligible for our storewide Buy 3, Get 1 FREE promotion`,
+    fit: `Relaxed, true-to-size unisex fit (S–5XL).`,
+    care: `Machine wash cold, inside-out with like colors. Tumble dry low.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
+  "warning-choking-hazard": {
+    title: "Warning: Choking Hazard (Large Parts) — Gag Tee",
+    subtitle: "Unapologetic Adult Humor Warning Label Graphic Tee",
+    category: "NEW DROP • ADULT HUMOR",
+    price: 15.69,
+    originalPrice: 35.69,
+    image: "/images/designs/2.jpeg",
+    images: [
+      "/images/designs/2.jpeg",
+      "/images/designs/9.jpeg",
+      "/images/designs/4.jpeg",
+    ],
+    productType: "shirt",
+    availableColors: [
+      { name: "Black", hex: "#000000" },
+      { name: "Dark Heather", hex: "#4A4A4A" },
+      { name: "Navy", hex: "#1B1F3B" },
+    ],
+    material: `100% preshrunk cotton (5.3 oz/yd² / 180 g/m²). Gildan® 5000 heavyweight body. Crisp high-opacity white DTG print.`,
+    description: `For people with zero filter and a bold sense of humor. Styled like an official safety warning sign ("Warning: Choking Hazard — Package Contains Large Parts"), this heavyweight tee is the ultimate gag gift, bachelor party shirt, or white elephant winner.
+
+Why you'll love it:
+• High-opacity white safety-sign print on jet-black 100% cotton
+• Built on the durable Gildan® 5000 block with double-needle stitching
+• Eligible for our storewide Buy 3, Get 1 FREE promotion`,
+    fit: `Relaxed, true-to-size unisex fit (S–5XL).`,
+    care: `Machine wash cold, inside-out with similar colors. Tumble dry low.`,
+    sizeChart: {
+      cm: [
+        { size: "S", length: "71.1", width: "91.4", chest: "45.7" },
+        { size: "M", length: "73.7", width: "101.6", chest: "50.8" },
+        { size: "L", length: "76.2", width: "111.8", chest: "55.9" },
+        { size: "XL", length: "78.7", width: "122", chest: "61" },
+        { size: "2XL", length: "81.3", width: "132", chest: "66" },
+        { size: "3XL", length: "83.8", width: "142.2", chest: "71.1" },
+        { size: "4XL", length: "86", width: "152", chest: "76" },
+        { size: "5XL", length: "89", width: "162", chest: "81" },
+      ],
+      inches: [
+        { size: "S", length: "28", width: "36", chest: "18" },
+        { size: "M", length: "29", width: "40", chest: "20" },
+        { size: "L", length: "30", width: "44", chest: "22" },
+        { size: "XL", length: "31", width: "48", chest: "24" },
+        { size: "2XL", length: "32", width: "52", chest: "26" },
+        { size: "3XL", length: "33", width: "56", chest: "28" },
+        { size: "4XL", length: "33.9", width: "59.8", chest: "29.9" },
+        { size: "5XL", length: "35", width: "63.8", chest: "31.9" },
+      ],
+    },
+  },
 };
 
 const ProductDetail = () => {
@@ -707,7 +859,7 @@ const ProductDetail = () => {
               )}
 
               {/* Strikethrough pricing */}
-              <div className="flex items-center gap-3 mt-3">
+              <div className="flex flex-wrap items-center gap-3 mt-3">
                 <p className="text-3xl font-black text-foreground">
                   ${product.price.toFixed(2)}
                 </p>
@@ -718,6 +870,17 @@ const ProductDetail = () => {
                   <Tag className="h-3 w-3" />
                   SAVE ${savings.toFixed(0)}
                 </span>
+                <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
+                  🔥 BUY 3, GET 1 FREE
+                </span>
+              </div>
+
+              {/* Buy 3 Get 1 Free Promo Banner */}
+              <div className="mt-3 p-3 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-between gap-2">
+                <div className="text-xs sm:text-sm font-bold text-foreground">
+                  <span className="text-primary font-black uppercase tracking-wider">Sale Event: </span>
+                  Buy any 3 items, get the <strong>4th item 100% FREE</strong> automatically in your cart!
+                </div>
               </div>
             </div>
 

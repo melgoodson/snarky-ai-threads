@@ -12,6 +12,7 @@ interface ProductCardProps {
   hoverImage?: string;
   category?: string;
   badge?: string;
+  promoTag?: string;
   showOnShirt?: boolean;
   priceLabel?: string;
   href?: string;
@@ -26,13 +27,16 @@ export const ProductCard = ({
   hoverImage,
   category,
   badge,
+  promoTag = "BUY 3 GET 1 FREE",
   showOnShirt = false,
   priceLabel,
   href,
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const isPng = image.toLowerCase().endsWith(".png");
-  const isDesignHover = hoverImage?.includes("/designs/");
+  const isDesignHover =
+    Boolean(hoverImage?.includes("/designs/")) &&
+    Boolean(hoverImage?.toLowerCase().endsWith(".jpg"));
   const targetPath = href || `/designs/${id}`;
 
   return (
@@ -118,18 +122,25 @@ export const ProductCard = ({
           </h3>
         </div>
         {price > 0 ? (
-          <div className="flex items-baseline gap-2 pt-0.5">
-            {priceLabel && (
-              <span className="text-[11px] font-medium text-muted-foreground">
-                {priceLabel}
-              </span>
-            )}
-            <p className="text-sm sm:text-lg font-black text-foreground">
-              ${price.toFixed(2)}
-            </p>
-            {originalPrice && originalPrice > price && (
-              <span className="text-xs text-muted-foreground line-through font-medium">
-                ${originalPrice.toFixed(2)}
+          <div className="flex flex-wrap items-center justify-between gap-1.5 pt-0.5">
+            <div className="flex items-baseline gap-1.5">
+              {priceLabel && (
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {priceLabel}
+                </span>
+              )}
+              <p className="text-sm sm:text-lg font-black text-foreground">
+                ${price.toFixed(2)}
+              </p>
+              {originalPrice && originalPrice > price && (
+                <span className="text-xs text-muted-foreground line-through font-medium">
+                  ${originalPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+            {promoTag && (
+              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.5 rounded">
+                {promoTag}
               </span>
             )}
           </div>
