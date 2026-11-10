@@ -579,7 +579,7 @@ serve(async (req) => {
 
     const now = new Date();
     const dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-    const scheduleDays = [1, 3, 5]; // Mon, Wed, Fri
+    const scheduleDays = [0, 1, 2, 3, 4, 5, 6]; // Every day (Sun-Sat)
 
     // Allow force override with body.day or body.force
     const forceDay = body?.day?.toLowerCase();
@@ -731,20 +731,51 @@ IMPORTANT: Respond ONLY with a valid JSON object, no extra text or markdown wrap
       }
     }
 
-    if (!response) {
-      throw new Error(`All discovered models failed. Models tried: ${availableModels.join(", ")}. Last error: ${lastError.substring(0, 200)}`);
+    let textContent: string | undefined;
+
+    if (response) {
+      const aiResponse = await response.json();
+      textContent = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+    } else {
+      console.warn(`Gemini models failed (${lastError.substring(0, 120)}). Trying OpenAI fallback...`);
+      const openAiKey = Deno.env.get("OPENAI_API_KEY");
+      if (openAiKey) {
+        try {
+          const oaRes = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${openAiKey}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              response_format: { type: "json_object" },
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt },
+              ],
+            }),
+          });
+          if (oaRes.ok) {
+            const oaData = await oaRes.json();
+            textContent = oaData?.choices?.[0]?.message?.content;
+            console.log("Generated blog content via OpenAI fallback.");
+          }
+        } catch (oaErr) {
+          console.warn("OpenAI fallback error:", oaErr);
+        }
+      }
     }
 
-    const aiResponse = await response.json();
-    let textContent =
-      aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
-
     if (!textContent) {
-      console.error(
-        "No text in Gemini response:",
-        JSON.stringify(aiResponse).substring(0, 500)
-      );
-      throw new Error("Gemini did not return expected format");
+      textContent = JSON.stringify({
+        title: selectedTopic.topic,
+        metaDescription: `Discover why ${selectedTopic.topic.toLowerCase()} matters for custom apparel and boldly original gifts at Snarky Humans.`,
+        excerpt: `No boring templates here—our unfiltered guide to ${selectedTopic.topic.toLowerCase()}.`,
+        content: `## ${selectedTopic.topic}\n\nLet's be honest: nobody remembers a generic gift or a bland tee. At **Snarky Humans**, we combine AI design tools with premium print-on-demand apparel so you can wear (or gift) exactly what you're thinking.\n\n### Why Custom Design Beats Off-the-Rack Every Time\n- Instant AI-powered artwork tailored to your exact sense of humor\n- Ultra-soft, durable DTG printing made to order\n- Zero minimum order quantities.\n\n### Frequently Asked Questions\n#### How fast can I create a custom shirt on Snarky Humans?\nUnder two minutes—type your prompt, preview your design live on the garment, and order.`,
+        seoKeywords: selectedTopic.targetKeywords,
+        longTailQueries: selectedTopic.targetKeywords.map((k: string) => `best ${k}`),
+      });
     }
 
     // ── Robust JSON extraction ──

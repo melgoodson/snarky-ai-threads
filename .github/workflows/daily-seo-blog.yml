@@ -1,0 +1,29 @@
+name: Daily Snarky Humans SEO Auto-Blog
+
+on:
+  schedule:
+    # Runs daily at 02:00 UTC (10:00 AM PHT)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  trigger-auto-blog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger Snarky Humans Auto-Blog Edge Function
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://birjqwhhleqtirwkzcwl.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${SUPABASE_URL}/functions/v1/auto-blog" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -d '{"source":"github_actions","force":true}')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          echo "Response ($HTTP_CODE): $BODY"
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            exit 1
+          fi
+
