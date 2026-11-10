@@ -34,9 +34,10 @@ export const ProductCard = ({
 }: ProductCardProps) => {
   const navigate = useNavigate();
   const isPng = image.toLowerCase().endsWith(".png");
+  const isArtPngHover = Boolean(hoverImage?.toLowerCase().endsWith("-art.png"));
   const isDesignHover =
     Boolean(hoverImage?.includes("/designs/")) &&
-    Boolean(hoverImage?.toLowerCase().endsWith(".jpg"));
+    Boolean(hoverImage?.toLowerCase().endsWith(".jpg") || isArtPngHover);
   const targetPath = href || `/designs/${id}`;
 
   return (
@@ -83,7 +84,9 @@ export const ProductCard = ({
                 src={hoverImage}
                 alt={`${title} alternate view`}
                 className={`absolute inset-0 w-full h-full opacity-0 group-hover:opacity-100 transition-all duration-500 bg-white ${
-                  isDesignHover
+                  isArtPngHover
+                    ? "object-contain p-2 pt-5 scale-95 group-hover:scale-100"
+                    : isDesignHover
                     ? "object-contain p-7 pt-10 scale-95 group-hover:scale-100"
                     : "object-cover scale-105 group-hover:scale-100"
                 }`}

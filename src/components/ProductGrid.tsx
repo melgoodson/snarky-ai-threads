@@ -8,7 +8,7 @@ import { ArrowRight, TrendingUp, Shirt, Palette, Sparkles, Flame, Calendar, Gift
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
 import { HIDDEN_DESIGN_PATTERNS } from "@/lib/designConstants";
 
-// Curated 2-Row (8-item) Featured Apparel Showcase with paired lifestyle & flat-lay photography
+// Curated 2-Row (8-item) Featured Apparel Showcase with paired lifestyle & design art views
 const FEATURED_APPAREL_ITEMS = [
   {
     id: "caution-choking-hazard",
@@ -16,7 +16,7 @@ const FEATURED_APPAREL_ITEMS = [
     price: 15.69,
     originalPrice: 35.69,
     image: "/images/designs/1.jpeg",
-    hoverImage: "/images/designs/7.jpeg",
+    hoverImage: "/images/designs/caution-choking-hazard-art.png",
     category: "NEW DROP • GAG HUMOR",
     badge: "🔥 NEW DROP",
     href: "/product/caution-choking-hazard",
@@ -27,7 +27,7 @@ const FEATURED_APPAREL_ITEMS = [
     price: 15.69,
     originalPrice: 35.69,
     image: "/images/designs/5.jpeg",
-    hoverImage: "/images/designs/6.jpeg",
+    hoverImage: "/images/designs/dig-bick-read-wrong-art.png",
     category: "NEW DROP • SARCASM TEE",
     badge: "🔥 NEW DROP",
     href: "/product/dig-bick-read-wrong",
@@ -38,7 +38,7 @@ const FEATURED_APPAREL_ITEMS = [
     price: 15.69,
     originalPrice: 35.69,
     image: "/images/designs/2.jpeg",
-    hoverImage: "/images/designs/4.jpeg",
+    hoverImage: "/images/designs/warning-choking-hazard-art.png",
     category: "NEW DROP • ADULT HUMOR",
     badge: "🔥 NEW DROP",
     href: "/product/warning-choking-hazard",
@@ -98,14 +98,13 @@ const FEATURED_APPAREL_ITEMS = [
   },
 ];
 
-// Latest paired tee designs also surfaced at the top of All Designs
+// Latest paired tee designs also surfaced at the top of All Designs (standalone design art)
 const LATEST_PAIRED_DESIGNS: Design[] = [
   {
     id: "caution-choking-hazard",
     title: "Caution: Choking Hazard — Heavyweight Tee",
     description: "High-voltage distressed yellow warning graphic tee — paired with lifestyle & flat-lay views.",
-    image_url: "/images/designs/7.jpeg",
-    hover_image_url: "/images/designs/10.jpeg",
+    image_url: "/images/designs/caution-choking-hazard-art.png",
     href: "/product/caution-choking-hazard",
     badge: "🔥 NEW DROP",
   },
@@ -113,8 +112,7 @@ const LATEST_PAIRED_DESIGNS: Design[] = [
     id: "dig-bick-read-wrong",
     title: "I Got a Dig Bick — You Read That Wrong Tee",
     description: "I Got a Dig Bick — You That Read Wrong — You Read That Wrong Too double-take graphic tee.",
-    image_url: "/images/designs/6.jpeg",
-    hover_image_url: "/images/designs/3.jpeg",
+    image_url: "/images/designs/dig-bick-read-wrong-art.png",
     href: "/product/dig-bick-read-wrong",
     badge: "🔥 NEW DROP",
   },
@@ -122,8 +120,7 @@ const LATEST_PAIRED_DESIGNS: Design[] = [
     id: "warning-choking-hazard",
     title: "Warning: Choking Hazard (Large Parts) — Tee",
     description: "Warning: Choking Hazard — Package Contains Large Parts — Keep Out Of Reach Of Small Women gag tee.",
-    image_url: "/images/designs/4.jpeg",
-    hover_image_url: "/images/designs/9.jpeg",
+    image_url: "/images/designs/warning-choking-hazard-art.png",
     href: "/product/warning-choking-hazard",
     badge: "🔥 NEW DROP",
   },
@@ -1000,7 +997,7 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
               category="SNARKY DESIGN"
               badge={design.badge}
               href={design.href}
-              showOnShirt={showOnShirt && !design.image_url.endsWith(".jpeg")}
+              showOnShirt={showOnShirt}
             />
           ))}
         </div>

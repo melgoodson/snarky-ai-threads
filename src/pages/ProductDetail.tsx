@@ -537,6 +537,7 @@ Store: Keep in a cool, dry place away from direct sunlight to maintain color and
       "/images/designs/1.jpeg",
       "/images/designs/10.jpeg",
       "/images/designs/7.jpeg",
+      "/images/designs/caution-choking-hazard-art.png",
     ],
     productType: "shirt",
     availableColors: [
@@ -588,6 +589,7 @@ Why you'll love it:
       "/images/designs/3.jpeg",
       "/images/designs/5.jpeg",
       "/images/designs/6.jpeg",
+      "/images/designs/dig-bick-read-wrong-art.png",
     ],
     productType: "shirt",
     availableColors: [
@@ -639,6 +641,7 @@ Why you'll love it:
       "/images/designs/2.jpeg",
       "/images/designs/9.jpeg",
       "/images/designs/4.jpeg",
+      "/images/designs/warning-choking-hazard-art.png",
     ],
     productType: "shirt",
     availableColors: [
