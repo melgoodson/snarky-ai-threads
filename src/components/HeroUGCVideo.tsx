@@ -1,11 +1,29 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Play, Volume2, VolumeX } from "lucide-react";
 import ugcVideo from "@/assets/ugc_440.mp4";
 
 export const HeroUGCVideo = () => {
+    const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
+    const [isInView, setIsInView] = useState(false);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsInView(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "250px" }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     const togglePlay = () => {
         if (!videoRef.current) return;
@@ -28,17 +46,18 @@ export const HeroUGCVideo = () => {
         <section className="py-10 md:py-16 bg-background">
             <div className="container px-4">
                 <div
+                    ref={containerRef}
                     className="relative max-w-sm mx-auto aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black cursor-pointer shadow-2xl"
                     onClick={togglePlay}
                 >
                     <video
                         ref={videoRef}
-                        src={ugcVideo}
+                        src={isInView ? ugcVideo : undefined}
                         className="w-full h-full object-contain"
                         loop
                         muted
                         playsInline
-                        preload="metadata"
+                        preload={isInView ? "metadata" : "none"}
                         onEnded={() => setIsPlaying(false)}
                     />
 

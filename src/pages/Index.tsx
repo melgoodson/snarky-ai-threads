@@ -1,13 +1,23 @@
+import { lazy, Suspense } from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
-import { HeroUGCVideo } from "@/components/HeroUGCVideo";
 import { ProductShowcase } from "@/components/ProductShowcase";
-import { UGCTestimonials } from "@/components/UGCTestimonials";
-import { WebsiteReviews } from "@/components/WebsiteReviews";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Footer } from "@/components/Footer";
-import { EmailCapture } from "@/components/EmailCapture";
 import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
+
+const HeroUGCVideo = lazy(() =>
+  import("@/components/HeroUGCVideo").then((m) => ({ default: m.HeroUGCVideo }))
+);
+const UGCTestimonials = lazy(() =>
+  import("@/components/UGCTestimonials").then((m) => ({ default: m.UGCTestimonials }))
+);
+const WebsiteReviews = lazy(() =>
+  import("@/components/WebsiteReviews").then((m) => ({ default: m.WebsiteReviews }))
+);
+const EmailCapture = lazy(() =>
+  import("@/components/EmailCapture").then((m) => ({ default: m.EmailCapture }))
+);
 
 const Index = () => {
   const orgSchema = {
@@ -63,11 +73,13 @@ const Index = () => {
         <div id="products">
           <ProductGrid section="all-only" />
         </div>
-        <HeroUGCVideo />
-        <UGCTestimonials />
-        <WebsiteReviews />
-        {/* Email capture — placed after social proof */}
-        <EmailCapture variant="homepage" source="homepage_banner" />
+        <Suspense fallback={null}>
+          <HeroUGCVideo />
+          <UGCTestimonials />
+          <WebsiteReviews />
+          {/* Email capture — placed after social proof */}
+          <EmailCapture variant="homepage" source="homepage_banner" />
+        </Suspense>
 
         {/* Commercial Intent SEO Section */}
         <section className="container px-4 py-10 md:py-16 bg-muted/30">

@@ -712,47 +712,10 @@ const ProductDetail = () => {
   }, [id, product, trackTikTokEvent]);
 
 
-  // Auto-generate mockup when color is selected
+  // Reset custom mockup preview when color changes (on-demand AI generation is handled in the Try It On tab)
   useEffect(() => {
-    if (!selectedColor || !product) return;
-
     setMockupPreview(null);
-    setGeneratingMockup(true);
-
-    const toAbsoluteUrl = (path: string) => {
-      if (path.startsWith('http') || path.startsWith('data:')) return path;
-      return window.location.origin + (path.startsWith('/') ? path : '/' + path);
-    };
-
-    const productImgUrl = toAbsoluteUrl(product.image);
-
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Mockup generation timed out')), 45000)
-    );
-
-    const apiCall = supabase.functions.invoke('generate-user-mockup', {
-      body: {
-        userImage: productImgUrl,
-        productImage: productImgUrl,
-        productTitle: product.title,
-        productColor: selectedColor,
-      },
-    });
-
-    Promise.race([apiCall, timeout])
-      .then(({ data, error }: any) => {
-        if (error) {
-          console.error('[Mockup] Error:', error);
-          return;
-        }
-        if (data?.mockupUrl) {
-          setMockupPreview(data.mockupUrl);
-        }
-      })
-      .catch((err) => {
-        console.error('[Mockup] Failed:', err);
-      })
-      .finally(() => setGeneratingMockup(false));
+    setGeneratingMockup(false);
   }, [selectedColor]);
 
   if (!product) {

@@ -57,9 +57,27 @@ const TESTIMONIALS = [
 ];
 
 function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
+    const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
+    const [isInView, setIsInView] = useState(false);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsInView(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "250px" }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     const togglePlay = (e: React.MouseEvent) => {
         if (!videoRef.current) return;
@@ -79,7 +97,7 @@ function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
     };
 
     return (
-        <div className="w-full group select-none">
+        <div ref={containerRef} className="w-full group select-none">
             {/* Video container */}
             <div
                 className={`relative w-full ${testimonial.aspect} rounded-xl overflow-hidden border border-border bg-black cursor-pointer shadow-md`}
@@ -87,12 +105,12 @@ function VideoCard({ testimonial }: { testimonial: typeof TESTIMONIALS[0] }) {
             >
                 <video
                     ref={videoRef}
-                    src={testimonial.video}
+                    src={isInView ? testimonial.video : undefined}
                     className="w-full h-full object-cover"
                     loop
                     muted
                     playsInline
-                    preload="metadata"
+                    preload={isInView ? "metadata" : "none"}
                     onEnded={() => setIsPlaying(false)}
                 />
 

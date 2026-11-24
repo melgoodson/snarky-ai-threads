@@ -153,6 +153,10 @@ const CategoryCard = ({ category }: { category: ProductCategory }) => {
                             key={img}
                             src={img}
                             alt={`${category.title} ${category.highlight} — snarky product ${idx + 1}`}
+                            loading="lazy"
+                            decoding="async"
+                            width={600}
+                            height={450}
                             className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${
                                 idx === currentIndex
                                     ? "opacity-100 scale-100"

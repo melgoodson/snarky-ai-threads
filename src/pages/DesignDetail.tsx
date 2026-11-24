@@ -77,18 +77,17 @@ const DesignDetail = () => {
       img.src = src;
     });
 
-  // Auto-generate mockup when product is selected (with or without color)
+  // Reset AI mockup when product or color changes (instant CSS overlay shows by default; AI mockup runs on explicit click)
   useEffect(() => {
-    if (!selectedProduct || !design) return;
+    setMockupPreview(null);
+    setMockupError(false);
+    setGeneratingMockup(false);
+  }, [selectedProduct, selectedColor]);
+
+  const handleGenerateAiMockup = () => {
+    if (!selectedProduct || !design || generatingMockup) return;
     const product = products.find((p) => p.id === selectedProduct);
     if (!product) return;
-
-    // Check if this product has color options
-    const opts = getAvailableOptions(product.variants || [], product.title);
-    const hasColors = opts.colors.length > 0;
-
-    // If product has colors, wait for color selection
-    if (hasColors && !selectedColor) return;
 
     const colorForMockup = selectedColor && isRealColor(selectedColor) ? selectedColor : 'White';
 
@@ -100,9 +99,7 @@ const DesignDetail = () => {
       setTimeout(() => reject(new Error("Mockup generation timed out")), 60000)
     );
 
-    // Resolve the design image path
     const designSrc = resolveDesignImage(design.image_url);
-    // Resolve the product reference image (Printify catalog URL — already public, matching variant if possible)
     const productImgRaw = (() => {
       if (!product.images || product.images.length === 0) return '';
       let img = product.images[0];
@@ -124,8 +121,6 @@ const DesignDetail = () => {
       return getBlankMockup(rawSrc, product.title);
     })();
 
-    // Convert the design image to base64 in the browser so the edge function can access it
-    // Product images from Printify are already public URLs
     const generateAsync = async () => {
       let designBase64: string;
       try {
@@ -137,19 +132,15 @@ const DesignDetail = () => {
         return;
       }
 
-      // Use the product image URL as-is if it's a public URL, otherwise convert too
       let productImageForApi = productImgRaw;
       if (productImageForApi && !productImageForApi.startsWith('http')) {
         try {
           productImageForApi = await imageToBase64(window.location.origin + (productImageForApi.startsWith('/') ? productImageForApi : '/' + productImageForApi));
         } catch (e) {
-          // Fall back to design image if product image can't be loaded
           productImageForApi = designBase64;
         }
       }
       if (!productImageForApi) productImageForApi = designBase64;
-
-      console.log('[Mockup] Generating for:', product.title, colorForMockup, 'designBase64:', designBase64.substring(0, 50) + '...', 'productImg:', productImageForApi.substring(0, 80) + '...');
 
       const apiCall = supabase.functions.invoke("generate-user-mockup", {
         body: {
@@ -161,7 +152,6 @@ const DesignDetail = () => {
       });
 
       const { data, error } = await Promise.race([apiCall, timeout]) as any;
-      console.log('[Mockup] Response:', { data: data ? 'received' : null, error });
       if (error) {
         console.error('[Mockup] Error:', error);
         setMockupError(true);
@@ -170,7 +160,6 @@ const DesignDetail = () => {
       if (data?.mockupUrl) {
         setMockupPreview(data.mockupUrl);
       } else {
-        console.warn('[Mockup] No mockupUrl in response:', data);
         setMockupError(true);
       }
     };
@@ -181,7 +170,7 @@ const DesignDetail = () => {
         setMockupError(true);
       })
       .finally(() => setGeneratingMockup(false));
-  }, [selectedProduct, selectedColor]);
+  };
 
   useEffect(() => {
     if (id) {
@@ -571,9 +560,23 @@ const DesignDetail = () => {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground text-center">
-                      {generatingMockup ? 'AI mockup generating...' : mockupError ? 'AI preview unavailable — showing design overlay' : 'Design preview'}
-                    </p>
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <p className="text-xs text-muted-foreground">
+                        {generatingMockup ? 'AI mockup generating...' : mockupError ? 'AI preview unavailable — showing design overlay' : 'Instant design preview'}
+                      </p>
+                      {!generatingMockup && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs font-semibold"
+                          onClick={handleGenerateAiMockup}
+                        >
+                          <Sparkles className="mr-1.5 h-3 w-3 text-primary" />
+                          AI Photo Mockup
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
 

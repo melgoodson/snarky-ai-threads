@@ -15,4 +15,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom", "react-helmet-async"],
+          "vendor-supabase": ["@supabase/supabase-js", "@tanstack/react-query"],
+          "vendor-ui": ["lucide-react", "embla-carousel-react", "sonner"],
+        },
+      },
+    },
+  },
 }));

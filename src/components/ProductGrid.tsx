@@ -696,7 +696,7 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
           {/* 2 Rows of Clothing (8 items = 4 cols × 2 rows on desktop) */}
           {heroTab === "apparel" ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-              {FEATURED_APPAREL_ITEMS.map((item) => (
+              {FEATURED_APPAREL_ITEMS.map((item, idx) => (
                 <ProductCard
                   key={item.id}
                   id={item.id}
@@ -708,6 +708,7 @@ export const ProductGrid = ({ categorySlug, section = "both" }: ProductGridProps
                   category={item.category}
                   badge={item.badge}
                   href={item.href}
+                  priority={idx < 4}
                 />
               ))}
             </div>

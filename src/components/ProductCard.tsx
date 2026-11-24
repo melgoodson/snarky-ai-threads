@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
@@ -16,6 +17,7 @@ interface ProductCardProps {
   showOnShirt?: boolean;
   priceLabel?: string;
   href?: string;
+  priority?: boolean;
 }
 
 export const ProductCard = ({
@@ -31,8 +33,10 @@ export const ProductCard = ({
   showOnShirt = false,
   priceLabel,
   href,
+  priority = false,
 }: ProductCardProps) => {
   const navigate = useNavigate();
+  const [hasHovered, setHasHovered] = useState(false);
   const isPng = image.toLowerCase().endsWith(".png");
   const isArtPngHover = Boolean(hoverImage?.toLowerCase().endsWith("-art.png"));
   const isDesignHover =
@@ -44,6 +48,12 @@ export const ProductCard = ({
     <Card
       className="group overflow-hidden border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_24px_hsl(var(--primary)/0.22)] cursor-pointer flex flex-col"
       onClick={() => navigate(targetPath)}
+      onMouseEnter={() => {
+        if (hoverImage && !hasHovered) setHasHovered(true);
+      }}
+      onTouchStart={() => {
+        if (hoverImage && !hasHovered) setHasHovered(true);
+      }}
     >
       <div className="relative aspect-square overflow-hidden bg-white">
         {showOnShirt ? (
@@ -51,12 +61,20 @@ export const ProductCard = ({
             <img
               src="/images/shirt-mockup.png"
               alt={`${title} T-Shirt`}
+              loading="lazy"
+              decoding="async"
+              width={600}
+              height={600}
               className="w-full h-full object-contain"
             />
             <div className="absolute top-[22%] left-[28%] w-[44%] h-[44%] flex items-center justify-center pointer-events-none">
               <img
                 src={image}
                 alt={title}
+                loading="lazy"
+                decoding="async"
+                width={400}
+                height={400}
                 className="max-w-full max-h-full object-contain"
                 style={{
                   mixBlendMode: isPng ? "normal" : "multiply",
@@ -73,16 +91,25 @@ export const ProductCard = ({
             <img
               src={image}
               alt={title}
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
+              decoding={priority ? "sync" : "async"}
+              width={600}
+              height={600}
               className={`w-full h-full object-cover transition-all duration-500 ${
                 hoverImage
                   ? "group-hover:opacity-0 group-hover:scale-105"
                   : "group-hover:scale-108"
               }`}
             />
-            {hoverImage && (
+            {hoverImage && hasHovered && (
               <img
                 src={hoverImage}
                 alt={`${title} alternate view`}
+                loading="eager"
+                decoding="async"
+                width={600}
+                height={600}
                 className={`absolute inset-0 w-full h-full opacity-0 group-hover:opacity-100 transition-all duration-500 bg-white ${
                   isArtPngHover
                     ? "object-contain p-2 pt-5 scale-95 group-hover:scale-100"

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { toast } from "sonner";
@@ -13,51 +13,52 @@ import { useTikTokTracking } from "@/hooks/useTikTokTracking";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
-import ProductDetail from "./pages/ProductDetail";
-import Collections from "./pages/Collections";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import BlogPostDynamic from "./pages/BlogPostDynamic";
-import FAQ from "./pages/FAQ";
-import About from "./pages/About";
-import Checkout from "./pages/Checkout";
-import Designs from "./pages/Designs";
-import DesignDetail from "./pages/DesignDetail";
-import OrderConfirmation from "./pages/OrderConfirmation";
-import OrderTracking from "./pages/OrderTracking";
-import NotFound from "./pages/NotFound";
-import PrintifyAdmin from "./pages/PrintifyAdmin";
-import CustomDesign from "./pages/CustomDesign";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminLogin from "./pages/AdminLogin";
-import AdminBlog from "./pages/AdminBlog";
-import AdminFAQ from "./pages/AdminFAQ";
-import AdminOrders from "./pages/AdminOrders";
-import TeeinblueAdmin from "./pages/TeeinblueAdmin";
-import Auth from "./pages/Auth";
-import ProductManagement from "./pages/ProductManagement";
-import CreateProduct from "./pages/CreateProduct";
-import UserProfile from "./pages/UserProfile";
-import NewArrivals from "./pages/NewArrivals";
-import Contact from "./pages/Contact";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import ShippingInfo from "./pages/ShippingInfo";
-import Returns from "./pages/Returns";
-import ShirtLanding from "./pages/ShirtLanding";
-import HoodieLanding from "./pages/HoodieLanding";
-import JournalLanding from "./pages/JournalLanding";
-import ToteBagLanding from "./pages/ToteBagLanding";
-import MugLanding from "./pages/MugLanding";
-import GreetingCardLanding from "./pages/GreetingCardLanding";
-import DeskMatLanding from "./pages/DeskMatLanding";
-import CategoryLanding from "./pages/CategoryLanding";
-import WhiteElephantLanding from "./pages/WhiteElephantLanding";
-import CoworkerGiftsLanding from "./pages/CoworkerGiftsLanding";
-import AiCustomClothing from "./pages/AiCustomClothing";
-import ThankYou from "./pages/ThankYou";
 import { BestSellersPopup } from "./components/BestSellersPopup";
 import { UtmRedirect } from "./components/UtmRedirect";
+
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Collections = lazy(() => import("./pages/Collections"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const BlogPostDynamic = lazy(() => import("./pages/BlogPostDynamic"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const About = lazy(() => import("./pages/About"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Designs = lazy(() => import("./pages/Designs"));
+const DesignDetail = lazy(() => import("./pages/DesignDetail"));
+const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
+const OrderTracking = lazy(() => import("./pages/OrderTracking"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PrintifyAdmin = lazy(() => import("./pages/PrintifyAdmin"));
+const CustomDesign = lazy(() => import("./pages/CustomDesign"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminBlog = lazy(() => import("./pages/AdminBlog"));
+const AdminFAQ = lazy(() => import("./pages/AdminFAQ"));
+const AdminOrders = lazy(() => import("./pages/AdminOrders"));
+const TeeinblueAdmin = lazy(() => import("./pages/TeeinblueAdmin"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ProductManagement = lazy(() => import("./pages/ProductManagement"));
+const CreateProduct = lazy(() => import("./pages/CreateProduct"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const NewArrivals = lazy(() => import("./pages/NewArrivals"));
+const Contact = lazy(() => import("./pages/Contact"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const ShippingInfo = lazy(() => import("./pages/ShippingInfo"));
+const Returns = lazy(() => import("./pages/Returns"));
+const ShirtLanding = lazy(() => import("./pages/ShirtLanding"));
+const HoodieLanding = lazy(() => import("./pages/HoodieLanding"));
+const JournalLanding = lazy(() => import("./pages/JournalLanding"));
+const ToteBagLanding = lazy(() => import("./pages/ToteBagLanding"));
+const MugLanding = lazy(() => import("./pages/MugLanding"));
+const GreetingCardLanding = lazy(() => import("./pages/GreetingCardLanding"));
+const DeskMatLanding = lazy(() => import("./pages/DeskMatLanding"));
+const CategoryLanding = lazy(() => import("./pages/CategoryLanding"));
+const WhiteElephantLanding = lazy(() => import("./pages/WhiteElephantLanding"));
+const CoworkerGiftsLanding = lazy(() => import("./pages/CoworkerGiftsLanding"));
+const AiCustomClothing = lazy(() => import("./pages/AiCustomClothing"));
+const ThankYou = lazy(() => import("./pages/ThankYou"));
 
 
 const queryClient = new QueryClient();
@@ -191,6 +192,7 @@ const App = () => (
             <ScrollToTop />
             <AppContent />
             <BestSellersPopup />
+          <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/product/:id" element={<ProductDetail />} />
@@ -244,6 +246,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
           </AnalyticsProvider>
         </BrowserRouter>
       </TooltipProvider>
