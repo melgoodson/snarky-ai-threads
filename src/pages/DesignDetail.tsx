@@ -443,9 +443,9 @@ const DesignDetail = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>{design.title} | Snarky Humans</title>
-        <meta name="description" content={design.description || `Shop the ${design.title} design at Snarky Humans. Customize it on t-shirts, hoodies, mugs, and more.`} />
-        <link rel="canonical" href={`https://snarkyhumans.com/designs/${id}`} />
+        <title>{`${design.title.length > 42 ? design.title.slice(0, 39) + "..." : design.title} | Snarky Humans`}</title>
+        <meta name="description" content={(design.description || `Shop the ${design.title} design at Snarky Humans. Customize it on t-shirts, hoodies, mugs, and more.`).slice(0, 155)} />
+        <link rel="canonical" href={`https://www.snarkyhumans.com/designs/${id}`} />
         <meta property="og:title" content={`${design.title} | Snarky Humans`} />
         <meta property="og:image" content={resolveDesignImage(design.image_url)} />
         <meta property="og:type" content="product" />

@@ -34,8 +34,8 @@ const ShirtLanding = () => {
     return (
         <div className="min-h-screen flex flex-col">
             <Helmet>
-                <title>Funny &amp; Sarcastic T-Shirts | Snarky</title>
-                <meta name="description" content="Shop high-quality sarcastic and funny t-shirts. Heavyweight preshrunk cotton graphic tees with bold attitude for people who refuse boring apparel." />
+                <title>Funny &amp; Sarcastic T-Shirts | Buy 3 Get 1 Free | Snarky</title>
+                <meta name="description" content="Shop sarcastic and funny t-shirts on sale from $15.69 + Buy 3, Get 1 FREE. Heavyweight preshrunk cotton graphic tees with bold attitude." />
                 <link rel="canonical" href="https://www.snarkyhumans.com/shirts" />
             </Helmet>
             <Header />

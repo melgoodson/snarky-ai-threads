@@ -781,10 +781,10 @@ const ProductDetail = () => {
     "@type": "Product",
     "name": product.title,
     "description": product.subtitle || product.title,
-    "image": product.images.map((img) => img.startsWith('/') ? `https://snarkyhumans.com${img}` : img),
+    "image": product.images.map((img) => img.startsWith('/') ? `https://www.snarkyhumans.com${img}` : img),
     "offers": {
       "@type": "Offer",
-      "url": `https://snarkyhumans.com/product/${id}`,
+      "url": `https://www.snarkyhumans.com/product/${id}`,
       "priceCurrency": "USD",
       "price": product.price,
       "itemCondition": "https://schema.org/NewCondition",
@@ -796,14 +796,25 @@ const ProductDetail = () => {
     }
   };
 
+  const seoTitle =
+    `${product.title} | Snarky Humans`.length <= 60
+      ? `${product.title} | Snarky Humans`
+      : `${product.title} | Snarky`.length <= 60
+      ? `${product.title} | Snarky`
+      : `${product.title.slice(0, 48)}... | Snarky`;
+  const rawMetaDesc = `${product.subtitle}. ${product.description ? product.description.replace(/\s+/g, ' ').trim() : ''}`.trim();
+  const seoMetaDesc = rawMetaDesc.length > 155 ? `${rawMetaDesc.slice(0, 152)}...` : rawMetaDesc;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>{product.title} | Snarky Humans</title>
-        <meta name="description" content={`${product.subtitle}. ${product.description ? product.description.substring(0, 150) : ''}`} />
-        <link rel="canonical" href={`https://snarkyhumans.com/product/${id}`} />
-        <meta property="og:title" content={product.title} />
-        <meta property="og:image" content={product.images[0].startsWith('/') ? `https://snarkyhumans.com${product.images[0]}` : product.images[0]} />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoMetaDesc} />
+        <link rel="canonical" href={`https://www.snarkyhumans.com/product/${id}`} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoMetaDesc} />
+        <meta property="og:url" content={`https://www.snarkyhumans.com/product/${id}`} />
+        <meta property="og:image" content={product.images[0].startsWith('/') ? `https://www.snarkyhumans.com${product.images[0]}` : product.images[0]} />
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
       </Helmet>
       <Header />

@@ -14,8 +14,8 @@ const Index = () => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Snarky Humans",
-    "url": "https://snarkyhumans.com",
-    "logo": "https://snarkyhumans.com/images/snarky-logo.png",
+    "url": "https://www.snarkyhumans.com",
+    "logo": "https://www.snarkyhumans.com/images/snarky-logo.png",
     "sameAs": [
       "https://twitter.com/SnarkyHumans",
       "https://instagram.com/snarkyhumans"
@@ -26,10 +26,10 @@ const Index = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Snarky Humans",
-    "url": "https://snarkyhumans.com",
+    "url": "https://www.snarkyhumans.com",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://snarkyhumans.com/collections?q={search_term_string}",
+      "target": "https://www.snarkyhumans.com/collections?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };
