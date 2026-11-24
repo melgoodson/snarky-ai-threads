@@ -463,121 +463,52 @@ const DesignDetail = () => {
                 />
               </div>
 
-              {/* Mockup Preview Section — always visible */}
+              {/* AI Product Preview Section — only renders mockup when explicitly requested */}
               <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  Product Preview
-                </h3>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    AI Product Preview
+                  </h3>
+                  {selectedProduct && !generatingMockup && (
+                    <Button
+                      type="button"
+                      variant={mockupPreview ? "outline" : "default"}
+                      size="sm"
+                      className="h-8 text-xs font-bold"
+                      onClick={handleGenerateAiMockup}
+                    >
+                      <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                      {mockupPreview ? "Regenerate Preview" : "Generate AI Preview"}
+                    </Button>
+                  )}
+                </div>
 
-                {!selectedProduct ? (
-                  <div className="aspect-video bg-muted/50 rounded-lg flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground text-center px-4">
-                      Select a product to see your design on it
-                    </p>
-                  </div>
-                ) : mockupPreview ? (
-                  /* AI mockup is ready — show it */
-                  <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-                    <img src={mockupPreview} alt="Product mockup" className="w-full h-full object-contain" />
-                  </div>
-                ) : (
-                  /* CSS overlay: design on product (immediate + loading state) */
-                  <div className="space-y-2">
-                    <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
-                      {(() => {
-                        const product = products.find((p) => p.id === selectedProduct);
-                        // Find the image matching the selected variant, or fallback to the first image
-                        const productImg = (() => {
-                          if (!product?.images || product.images.length === 0) return null;
-                          if (!selectedVariant) return product.images[0];
-                          const variantIdNum = Number(selectedVariant.id);
-                          const matching = product.images.filter((img: any) => 
-                            img && img.variant_ids && img.variant_ids.includes(variantIdNum)
-                          );
-                          if (matching.length === 0) return product.images[0];
-                          
-                          // Prefer front view
-                          const front = matching.find((img: any) => 
-                            img.position === 'front' || 
-                            (img.src && img.src.toLowerCase().includes('front')) ||
-                            (img.camera_label && img.camera_label.toLowerCase().includes('front'))
-                          );
-                          return front || matching[0];
-                        })();
-                        const productSrc = (() => {
-                          if (!productImg) return null;
-                          const rawSrc = typeof productImg === 'string' ? productImg : productImg.src || productImg.url || '';
-                          return getBlankMockup(rawSrc, product.title);
-                        })();
-                        return productSrc ? (
-                          <>
-                            <img src={productSrc} alt="Product" className="w-full h-full object-contain" />
-                            {(() => {
-                               const overlay = getOverlayStyle(product?.title || "");
-                               // Determine blend mode based on selected product color
-                               const colorHex = selectedColor ? (COLOR_HEX_MAP[selectedColor] || "#FFFFFF") : "#FFFFFF";
-                               const r = parseInt(colorHex.slice(1, 3), 16);
-                               const g = parseInt(colorHex.slice(3, 5), 16);
-                               const b = parseInt(colorHex.slice(5, 7), 16);
-                               const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                               const isDarkProduct = luminance < 0.45;
-                               const resolvedSrc = resolveDesignImage(design.image_url);
-                               const isPng = resolvedSrc.toLowerCase().endsWith('.png');
-                               return (
-                                 <div className={overlay.containerClass}>
-                                   <img
-                                     src={resolvedSrc}
-                                     alt="Design on product"
-                                     className={`${overlay.imageClass} rounded-lg`}
-                                     style={{
-                                       filter: isDarkProduct
-                                         ? "drop-shadow(0px 2px 4px rgba(0,0,0,0.4))"
-                                         : "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))",
-                                       mixBlendMode: isPng ? "normal" : (isDarkProduct ? "normal" : "multiply"),
-                                       opacity: isPng ? 0.98 : (isDarkProduct ? 0.95 : 0.92),
-                                     }}
-                                   />
-                                 </div>
-                               );
-                             })()}
-                          </>
-                        ) : (
-                          <img
-                            src={resolveDesignImage(design.image_url)}
-                            alt="Design preview"
-                            className="w-full h-full object-contain p-4"
-                          />
-                        );
-                      })()}
-                      {/* Loading spinner overlay while AI generates */}
-                      {generatingMockup && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
-                          <div className="text-center space-y-2">
-                            <Loader2 className="h-8 w-8 animate-spin text-white mx-auto" />
-                            <p className="text-xs text-white font-medium">Generating AI preview...</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2 pt-1">
-                      <p className="text-xs text-muted-foreground">
-                        {generatingMockup ? 'AI mockup generating...' : mockupError ? 'AI preview unavailable — showing design overlay' : 'Instant design preview'}
+                {generatingMockup && (
+                  <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
+                    <div className="text-center space-y-2 px-4">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                      <p className="text-xs text-muted-foreground font-medium">
+                        Generating realistic AI product preview...
                       </p>
-                      {!generatingMockup && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs font-semibold"
-                          onClick={handleGenerateAiMockup}
-                        >
-                          <Sparkles className="mr-1.5 h-3 w-3 text-primary" />
-                          AI Photo Mockup
-                        </Button>
-                      )}
                     </div>
                   </div>
+                )}
+
+                {!generatingMockup && mockupPreview && (
+                  <div className="aspect-square bg-muted rounded-lg overflow-hidden">
+                    <img
+                      src={mockupPreview}
+                      alt="AI product mockup"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+
+                {!generatingMockup && mockupError && (
+                  <p className="text-xs text-destructive text-center py-2">
+                    AI preview is temporarily unavailable. Please try again in a moment.
+                  </p>
                 )}
 
                 {/* AI Try-On Button — prominent CTA for wearables */}
