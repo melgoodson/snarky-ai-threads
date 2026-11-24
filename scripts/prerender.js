@@ -601,53 +601,53 @@ SEO_ROUTES.forEach(route => {
   // 1. Replace Title
   outputHtml = outputHtml.replace(
     /<title>.*?<\/title>/,
-    `<title>${route.title}</title>`
+    () => `<title>${route.title}</title>`
   );
 
   // 2. Replace Meta Description
   outputHtml = outputHtml.replace(
     /<meta\s+name="description"\s+content="[\s\S]*?"\s*\/?>/,
-    `<meta name="description" content="${route.desc}">`
+    () => `<meta name="description" content="${route.desc}">`
   );
 
   outputHtml = outputHtml.replace(
     /<meta\s+property="og:title"\s+content="[\s\S]*?">/,
-    `<meta property="og:title" content="${route.title}">`
+    () => `<meta property="og:title" content="${route.title}">`
   );
 
   outputHtml = outputHtml.replace(
     /<meta\s+name="twitter:title"\s+content="[\s\S]*?">/,
-    `<meta name="twitter:title" content="${route.title}">`
+    () => `<meta name="twitter:title" content="${route.title}">`
   );
 
   outputHtml = outputHtml.replace(
     /<meta\s+property="og:description"[\s\S]*?>/,
-    `<meta property="og:description" content="${route.desc}">`
+    () => `<meta property="og:description" content="${route.desc}">`
   );
 
   outputHtml = outputHtml.replace(
     /<meta\s+name="twitter:description"[\s\S]*?>/,
-    `<meta name="twitter:description" content="${route.desc}">`
+    () => `<meta name="twitter:description" content="${route.desc}">`
   );
 
   const canonicalUrl = route.canonical || `https://www.snarkyhumans.com${route.path.split('?')[0]}`;
   outputHtml = outputHtml.replace(/<link\s+rel="canonical"[\s\S]*?>/gi, '');
   outputHtml = outputHtml.replace(
     '</head>',
-    `  <link rel="canonical" href="${canonicalUrl}">\n  <meta property="og:url" content="${canonicalUrl}">\n</head>`
+    () => `  <link rel="canonical" href="${canonicalUrl}">\n  <meta property="og:url" content="${canonicalUrl}">\n</head>`
   );
 
   if (route.schemas) {
     const schemaHtml = route.schemas
       .map(schema => `  <script type="application/ld+json">${JSON.stringify(schema).replace(/</g, '\\u003c')}</script>`)
       .join('\n');
-    outputHtml = outputHtml.replace('</head>', `${schemaHtml}\n</head>`);
+    outputHtml = outputHtml.replace('</head>', () => `${schemaHtml}\n</head>`);
   }
 
   // 3. Replace the crawler block content with unique high-word-count body content
   outputHtml = outputHtml.replace(
     /<div style="position: absolute;[^>]+>([\s\S]*?)<\/div>/,
-    `<div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">\n      ${route.body}\n    </div>`
+    () => `<div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">\n      ${route.body}\n    </div>`
   );
 
   // Directory handling for prerendering
