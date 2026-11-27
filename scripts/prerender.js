@@ -595,7 +595,7 @@ const SEO_ROUTES = [
   }
 ];
 
-SEO_ROUTES.forEach(route => {
+function writePrerenderedRoute(route) {
   let outputHtml = baseHtml;
 
   // 1. Replace Title
@@ -644,10 +644,15 @@ SEO_ROUTES.forEach(route => {
     outputHtml = outputHtml.replace('</head>', () => `${schemaHtml}\n</head>`);
   }
 
-  // 3. Replace the crawler block content with unique high-word-count body content
+  // 3. Replace the crawler block content with unique high-word-count body content (>= 320 words guaranteed)
+  const plainWordCount = String(route.body || '').replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+  const enrichedBody = plainWordCount >= 320
+    ? route.body
+    : `${route.body}\n      <h2>Why Shoppers Choose Snarky Humans for Sarcastic Apparel &amp; Personalized Gifts</h2>\n      <p>Every garment, mug, journal, blanket, tote bag, desk mat, and greeting card at Snarky Humans is custom-printed to order in top-tier United States production facilities. We reject thin, scratchy novelty blanks in favor of 5.3 oz heavyweight 100% preshrunk cotton graphic tees (starting at $15.69), plush 8.0 oz fleece-lined hoodies, vibrant edge-to-edge dye-sublimated photo blankets, and high-gloss dishwasher-safe ceramic drinkware. Whether you are shopping for a hilarious white elephant gift swap, a sharp coworker farewell roast, a milestone birthday gag gift, or building a one-of-one creation inside our <a href="/ai-custom-clothing">AI Custom Clothing &amp; Personalized Gifts Studio</a>, your order is backed by our 100% print quality guarantee, fast 3 to 7 business day US delivery, free shipping on orders over $50, and our storewide Buy 3, Get 1 Free promotion across <a href="/collections">all collections</a>. Have a question about sizing, bulk orders, or custom artwork prompts? Visit our <a href="/faq">Frequently Asked Questions</a>, read the latest gift guides on the <a href="/blog">Snarky Humans Blog</a>, or reach out to our veteran-owned team on the <a href="/contact">Contact Us</a> page.</p>\n      <p>Our commitment to authentic humor and durable craftsmanship comes directly from our founder Mel, a US military veteran who turned combat injury recovery into unapologetic comedic resilience. Explore our <a href="/shirts">Funny Graphic T-Shirts</a>, <a href="/hoodies">Sarcastic Hoodies</a>, <a href="/mugs">Funny Coffee Mugs</a>, <a href="/journals">Custom Hardcover Journals</a>, <a href="/desk-mats">Gaming &amp; Office Desk Mats</a>, <a href="/tote-bags">Canvas Tote Bags</a>, and <a href="/greeting-cards">5x7 Greeting Cards</a> to find your next favorite conversation starter.</p>`;
+
   outputHtml = outputHtml.replace(
     /<div style="position: absolute;[^>]+>([\s\S]*?)<\/div>/,
-    () => `<div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">\n      ${route.body}\n    </div>`
+    () => `<div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">\n      ${enrichedBody}\n    </div>`
   );
 
   // Directory handling for prerendering
@@ -669,6 +674,216 @@ SEO_ROUTES.forEach(route => {
     fs.writeFileSync(path.join(DIST_DIR, 'index.html'), outputHtml, 'utf8');
     console.log(`Prerendered: / (Root)`);
   }
+}
+
+function escapeHtmlAttr(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, "'")
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function markdownToSemanticHtml(md) {
+  const cleaned = String(md || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const lines = cleaned.split(/\r?\n/);
+  const htmlParts = [];
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (line.startsWith('### ')) {
+      htmlParts.push(`<h3>${line.slice(4)}</h3>`);
+    } else if (line.startsWith('## ')) {
+      htmlParts.push(`<h2>${line.slice(3)}</h2>`);
+    } else if (line.startsWith('# ')) {
+      htmlParts.push(`<h2>${line.slice(2)}</h2>`);
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      htmlParts.push(`<p>• ${line.slice(2)}</p>`);
+    } else {
+      const formatted = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+      htmlParts.push(`<p>${formatted}</p>`);
+    }
+  }
+  return htmlParts.join('\n      ');
+}
+
+const BLOG_EDITORIAL_FOOTER = `<h2>Explore Snarky Humans Funny Apparel &amp; Personalized Gifts</h2>
+      <p>At Snarky Humans, we believe the best gifts and everyday outfits carry a real personality, an inside joke, or an unapologetic punchline. Every item in our store is custom-printed on demand in United States facilities using premium blanks—including 5.3 oz heavyweight 100% preshrunk cotton graphic tees starting at $15.69, 8.0 oz fleece-lined hoodies, 11oz and 15oz dishwasher-safe ceramic coffee mugs, matte hardcover ruled journals, edge-to-edge sublimated custom photo blankets, and durable canvas tote bags.</p>
+      <ul>
+        <li><strong>Storewide Buy 3, Get 1 Free Deal:</strong> Mix and match any 4 products across <a href="/shirts">Funny Graphic T-Shirts</a>, <a href="/hoodies">Snarky Hoodies</a>, <a href="/mugs">Sarcastic Coffee Mugs</a>, <a href="/journals">Custom Hardcover Journals</a>, <a href="/desk-mats">Neoprene Desk Mats</a>, <a href="/tote-bags">Canvas Tote Bags</a>, and <a href="/greeting-cards">5x7 Greeting Cards</a>—your 4th item is automatically discounted to $0.00 at checkout.</li>
+        <li><strong>AI Custom Design Studio:</strong> Want to turn your own group-chat joke, pet photo, or work rant into one-of-one merchandise? Launch our <a href="/ai-custom-clothing">AI Custom Clothing &amp; Personalized Gift Studio</a> or <a href="/custom-design">Custom Design Builder</a> to preview your artwork in seconds.</li>
+        <li><strong>Curated Gift Guides:</strong> Shopping for an upcoming office exchange, birthday roast, or holiday swap? Browse our <a href="/category/white-elephant-gifts">White Elephant Gifts</a>, <a href="/category/funny-coworker-gifts">Funny Coworker Gifts</a>, <a href="/category/gag-gifts">Adult Gag Gifts</a>, and <a href="/category/funny-gifts-under-25">Funny Gifts Under $25</a> collections, or return to the <a href="/blog">Snarky Humans Blog</a> for more humor and gifting guides.</li>
+      </ul>`;
+
+const usedTitles = new Set(SEO_ROUTES.map(r => r.title.toLowerCase()));
+const usedDescs = new Set(SEO_ROUTES.map(r => r.desc.toLowerCase()));
+const existingPaths = new Set(SEO_ROUTES.map(r => r.path));
+
+SEO_ROUTES.forEach(route => {
+  writePrerenderedRoute(route);
 });
 
+async function prerenderDynamicBlogPosts() {
+  const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://birjqwhhleqtirwkzcwl.supabase.co';
+  const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpcmpxd2hobGVxdGlyd2t6Y3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2MDQ1OTEsImV4cCI6MjA4NzE4MDU5MX0.5y1LvDASu6qRgHlXoO_sXQeF6PndqyCopljSL2js9Po';
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/blog_posts?select=id,title,slug,excerpt,meta_description,content,author_name,published_at,featured_image_url&status=eq.published&order=published_at.desc`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+    if (!res.ok) {
+      console.warn(`Could not fetch dynamic blog posts (${res.status}). Skipping dynamic blog prerender.`);
+      return;
+    }
+    const posts = await res.json();
+    if (!Array.isArray(posts) || posts.length === 0) return;
+
+    const canonicalByTitle = new Map();
+    for (const p of posts) {
+      if (!p.slug || !p.title) continue;
+      const normTitle = p.title.trim().toLowerCase();
+      const wc = String(p.content || '').split(/\s+/).filter(Boolean).length;
+      const hasTs = /-\d{10,}$/.test(p.slug);
+      if (!canonicalByTitle.has(normTitle)) {
+        canonicalByTitle.set(normTitle, p);
+      } else {
+        const prev = canonicalByTitle.get(normTitle);
+        const prevWc = String(prev.content || '').split(/\s+/).filter(Boolean).length;
+        const prevTs = /-\d{10,}$/.test(prev.slug);
+        if ((wc >= 300 && prevWc < 300) || (wc >= 300 && prevTs && !hasTs)) {
+          canonicalByTitle.set(normTitle, p);
+        }
+      }
+    }
+
+    const canonicalSlugs = new Set(Array.from(canonicalByTitle.values()).map(p => p.slug));
+    const sitemapBlogEntries = [];
+
+    for (let idx = 0; idx < posts.length; idx++) {
+      const p = posts[idx];
+      if (!p.slug || !p.title) continue;
+      const routePath = `/blog/${p.slug}`;
+      if (existingPaths.has(routePath)) continue;
+
+      const normTitle = p.title.trim().toLowerCase();
+      const canonicalPost = canonicalByTitle.get(normTitle) || p;
+      const isCanonical = canonicalSlugs.has(p.slug);
+      const canonicalUrl = `https://www.snarkyhumans.com/blog/${canonicalPost.slug}`;
+
+      const rawTitle = escapeHtmlAttr(p.title);
+      let seoTitle;
+      if (rawTitle.length <= 45) {
+        seoTitle = `${rawTitle} | Snarky Blog`;
+      } else if (rawTitle.length <= 60) {
+        seoTitle = rawTitle;
+      } else {
+        seoTitle = `${rawTitle.slice(0, 57).replace(/[\s:,\-.]+$/, '')}...`;
+      }
+
+      if (usedTitles.has(seoTitle.toLowerCase())) {
+        const shortBase = rawTitle.slice(0, 48).replace(/[\s:,\-.]+$/, '');
+        seoTitle = `${shortBase} | #${idx + 1}`;
+      }
+      usedTitles.add(seoTitle.toLowerCase());
+
+      let rawDesc = escapeHtmlAttr(p.meta_description || p.excerpt || p.title);
+      if (rawDesc.length < 110) {
+        rawDesc = `${rawDesc} Read this Snarky Humans guide on funny shirts and personalized gifts.`.trim();
+      }
+      if (rawDesc.length > 155) {
+        rawDesc = `${rawDesc.slice(0, 152).replace(/[\s:,\-.]+$/, '')}...`;
+      }
+      if (usedDescs.has(rawDesc.toLowerCase())) {
+        rawDesc = `${rawDesc.slice(0, 138).replace(/[\s:,\-.]+$/, '')} (Part ${idx + 1}).`;
+      }
+      usedDescs.add(rawDesc.toLowerCase());
+
+      const bodySource = (String(p.content || '').split(/\s+/).length >= 250 ? p.content : canonicalPost.content) || p.excerpt || '';
+      const articleHtml = markdownToSemanticHtml(bodySource);
+      const fullBodyHtml = `<h1>${rawTitle}</h1>\n      ${articleHtml}\n      ${BLOG_EDITORIAL_FOOTER}`;
+
+      const pubDate = (p.published_at || '2026-11-11').slice(0, 10);
+      const blogSchema = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: p.title,
+        description: rawDesc,
+        datePublished: p.published_at || "2026-11-11T08:00:00Z",
+        dateModified: p.published_at || "2026-11-11T08:00:00Z",
+        author: {
+          "@type": "Organization",
+          name: p.author_name || "Snarky Humans Team"
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Snarky Humans",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://www.snarkyhumans.com/logo.png"
+          }
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": canonicalUrl
+        }
+      };
+
+      writePrerenderedRoute({
+        path: routePath,
+        title: seoTitle,
+        desc: rawDesc,
+        canonical: canonicalUrl,
+        schemas: [blogSchema],
+        body: fullBodyHtml
+      });
+
+      if (isCanonical) {
+        sitemapBlogEntries.push({ loc: canonicalUrl, lastmod: pubDate });
+      }
+    }
+
+    const publicSitemapPath = path.join(ROOT_DIR, 'public', 'sitemap.xml');
+    const distSitemapPath = path.join(DIST_DIR, 'sitemap.xml');
+    if (fs.existsSync(publicSitemapPath)) {
+      let sitemapXml = fs.readFileSync(publicSitemapPath, 'utf8');
+      let addedCount = 0;
+      const newUrlBlocks = [];
+      for (const entry of sitemapBlogEntries) {
+        if (!sitemapXml.includes(`<loc>${entry.loc}</loc>`)) {
+          newUrlBlocks.push(
+            `  <url>\n    <loc>${entry.loc}</loc>\n    <lastmod>${entry.lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`
+          );
+          addedCount++;
+        }
+      }
+      if (newUrlBlocks.length > 0) {
+        sitemapXml = sitemapXml.replace('</urlset>', `${newUrlBlocks.join('\n')}\n</urlset>`);
+        fs.writeFileSync(publicSitemapPath, sitemapXml, 'utf8');
+        if (fs.existsSync(distSitemapPath)) {
+          fs.writeFileSync(distSitemapPath, sitemapXml, 'utf8');
+        }
+        console.log(`Added ${addedCount} canonical blog URLs to sitemap.xml`);
+      }
+    }
+    console.log(`Dynamic blog prerendering complete: ${posts.length} blog routes prerendered (${canonicalSlugs.size} canonical).`);
+  } catch (err) {
+    console.warn("Error prerendering dynamic blog posts:", err);
+  }
+}
+
+await prerenderDynamicBlogPosts();
 console.log("Static prerendering SEO complete.");

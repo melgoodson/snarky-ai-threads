@@ -27,13 +27,13 @@ interface BlogPost {
   created_at: string;
 }
 
-// Simple markdown to HTML conversion
+// Simple markdown to HTML conversion (demotes # to h2 since page header already renders the single h1)
 function renderMarkdown(content: string): string {
   return content
     // Headers
     .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3">$1</h3>')
     .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>')
+    .replace(/^# (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4">$1</h2>')
     // Bold and italic
     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -148,11 +148,24 @@ export default function BlogPostDynamic() {
     );
   }
 
+  const canonicalUrl = `https://www.snarkyhumans.com/blog/${post.slug}`;
+  const rawTitle = (post.title || "Snarky Humans Blog").trim();
+  const seoTitle =
+    rawTitle.length <= 44
+      ? `${rawTitle} | Snarky Humans`
+      : rawTitle.length <= 51
+      ? `${rawTitle} | Snarky`
+      : rawTitle.length <= 60
+      ? rawTitle
+      : `${rawTitle.slice(0, 57).replace(/\s+\S*$/, "")}...`;
+  const rawDesc = (post.meta_description || post.excerpt || `Read ${rawTitle} on the Snarky Humans blog. Explore sarcastic apparel, funny gifts, and custom AI designs.`).trim();
+  const seoDesc = rawDesc.length > 158 ? `${rawDesc.slice(0, 155).replace(/\s+\S*$/, "")}...` : rawDesc;
+
   const blogPostSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
-    "description": post.meta_description || post.excerpt,
+    "description": seoDesc,
     "datePublished": post.published_at,
     "dateModified": post.published_at,
     "author": {
@@ -164,12 +177,12 @@ export default function BlogPostDynamic() {
       "name": "Snarky Humans",
       "logo": {
         "@type": "ImageObject",
-        "url": `${window.location.origin}/logo.png`
+        "url": "https://www.snarkyhumans.com/logo.png"
       }
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `${window.location.origin}/blog/${post.slug}`
+      "@id": canonicalUrl
     },
     ...(post.featured_image_url && { "image": post.featured_image_url })
   };
@@ -177,26 +190,26 @@ export default function BlogPostDynamic() {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>{post.title} | Snarky Humans Blog</title>
-        <meta name="description" content={post.meta_description || post.excerpt || ""} />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDesc} />
         {post.seo_keywords && post.seo_keywords.length > 0 && (
           <meta name="keywords" content={post.seo_keywords.join(", ")} />
         )}
-        <link rel="canonical" href={`${window.location.origin}/blog/${post.slug}`} />
+        <link rel="canonical" href={canonicalUrl} />
 
         {/* Open Graph */}
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.meta_description || post.excerpt || ""} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDesc} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`${window.location.origin}/blog/${post.slug}`} />
+        <meta property="og:url" content={canonicalUrl} />
         {post.featured_image_url && (
           <meta property="og:image" content={post.featured_image_url} />
         )}
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.title} />
-        <meta name="twitter:description" content={post.meta_description || post.excerpt || ""} />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDesc} />
 
         {/* Structured Data */}
         <script type="application/ld+json">

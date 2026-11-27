@@ -50,8 +50,23 @@ const Blog = () => {
 
       if (error) throw error;
       
-      // Combine database posts with static posts
-      const dbPosts = (data as BlogPost[]) || [];
+      // Combine database posts with static posts and deduplicate by title
+      const rawDbPosts = (data as BlogPost[]) || [];
+      const seenTitles = new Map<string, BlogPost>();
+      for (const p of rawDbPosts) {
+        const key = (p.title || "").trim().toLowerCase();
+        const existing = seenTitles.get(key);
+        if (!existing) {
+          seenTitles.set(key, p);
+        } else {
+          const existingHasTs = /-\d{10,}$/.test(existing.slug);
+          const currentHasTs = /-\d{10,}$/.test(p.slug);
+          if (existingHasTs && !currentHasTs) {
+            seenTitles.set(key, p);
+          }
+        }
+      }
+      const dbPosts = Array.from(seenTitles.values());
       // Filter out any static post that has a matching slug in database
       const filteredStatic = staticPosts.filter(
         sp => !dbPosts.some(dp => dp.slug === sp.slug)
