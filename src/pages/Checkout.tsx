@@ -464,6 +464,24 @@ const Checkout = () => {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
+      // Apply automatic promotional discount (BFCM 25% Off Sitewide or Buy 3, Get 1 Free) to cartItems sent to Stripe Checkout
+      const promoRatio = rawSubtotal > 0 ? effectiveTotal / rawSubtotal : 1;
+      const stripeCartItems = checkoutItems.map((item) => {
+        const discountedUnit =
+          promoRatio < 1
+            ? Number((Number(item.price) * promoRatio).toFixed(2))
+            : Number(item.price);
+        const promoTag =
+          promoRatio < 1 && activePromoLabel
+            ? ` [${activePromoLabel.includes('25%') ? '25% Off BFCM' : 'Buy 3 Get 1 Free'}]`
+            : '';
+        return {
+          ...item,
+          title: `${item.title}${promoTag}`,
+          price: discountedUnit,
+        };
+      });
+
       // Create Stripe checkout session via direct functions URL
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
@@ -471,7 +489,8 @@ const Checkout = () => {
           method: 'POST',
           headers,
           body: JSON.stringify({
-            cartItems: checkoutItems,
+            cartItems: stripeCartItems,
+            discountAlreadyApplied: true,
             shippingAddress: formData,
             guestEmail: formData.email,
             couponCode: appliedCoupon || undefined,

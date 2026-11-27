@@ -38,7 +38,7 @@ serve(withAllowedOrigin(async (req) => {
       }
     }
 
-    const { cartItems, shippingAddress, guestEmail, couponCode } = await req.json();
+    const { cartItems, shippingAddress, guestEmail, couponCode, discountAlreadyApplied } = await req.json();
 
     // Use authenticated email or fall back to guest email from form
     const email = userEmail || guestEmail;
@@ -73,9 +73,11 @@ serve(withAllowedOrigin(async (req) => {
     const bfcmActive = Date.now() < BFCM_EXPIRATION_UTC_MS;
     const bfcm25Discount = bfcmActive ? Number((subtotalAmount * 0.25).toFixed(2)) : 0;
 
-    const promoDiscount = Math.max(bfcm25Discount, rawBogoDiscount);
+    const promoDiscount = discountAlreadyApplied ? 0 : Math.max(bfcm25Discount, rawBogoDiscount);
     const activePromoLabel =
-      bfcmActive && bfcm25Discount >= rawBogoDiscount
+      discountAlreadyApplied
+        ? null
+        : bfcmActive && bfcm25Discount >= rawBogoDiscount
         ? "BFCM 25% Off Sitewide"
         : rawBogoDiscount > 0
         ? "Buy 3, Get 1 Free"
