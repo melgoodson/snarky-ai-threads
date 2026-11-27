@@ -52,8 +52,37 @@ serve(withAllowedOrigin(async (req) => {
 
     console.log("Checkout email:", email, "| User ID:", userId || "GUEST");
 
-    // Calculate total
-    let totalAmount = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    // Calculate subtotal and automatic promotional discount (BFCM 25% Off Sitewide vs. Storewide Buy 3, Get 1 Free — best offer applied automatically, non-stacking)
+    const unitPrices: number[] = [];
+    for (const item of cartItems) {
+      const p = Number(item.price) || 0;
+      const q = Math.max(1, Number(item.quantity) || 1);
+      for (let i = 0; i < q; i++) {
+        unitPrices.push(p);
+      }
+    }
+    unitPrices.sort((a, b) => a - b);
+    const subtotalAmount = Number(unitPrices.reduce((sum, p) => sum + p, 0).toFixed(2));
+    const freeItemsCount = Math.floor(unitPrices.length / 4);
+    const rawBogoDiscount = Number(
+      unitPrices.slice(0, freeItemsCount).reduce((sum, p) => sum + p, 0).toFixed(2)
+    );
+
+    // BFCM 25% Off Sitewide technical expiration: Dec 1, 2026 at 12:00 a.m. America/Los_Angeles (2026-12-01T08:00:00.000Z)
+    const BFCM_EXPIRATION_UTC_MS = Date.UTC(2026, 11, 1, 8, 0, 0, 0);
+    const bfcmActive = Date.now() < BFCM_EXPIRATION_UTC_MS;
+    const bfcm25Discount = bfcmActive ? Number((subtotalAmount * 0.25).toFixed(2)) : 0;
+
+    const promoDiscount = Math.max(bfcm25Discount, rawBogoDiscount);
+    const activePromoLabel =
+      bfcmActive && bfcm25Discount >= rawBogoDiscount
+        ? "BFCM 25% Off Sitewide"
+        : rawBogoDiscount > 0
+        ? "Buy 3, Get 1 Free"
+        : null;
+
+    let totalAmount = Number(Math.max(0, subtotalAmount - promoDiscount).toFixed(2));
+    const discountRatio = subtotalAmount > 0 ? totalAmount / subtotalAmount : 1;
 
     const isTestPurchase = couponCode?.trim().toUpperCase() === "TESTPURCHASE";
     if (isTestPurchase) {
@@ -178,15 +207,17 @@ serve(withAllowedOrigin(async (req) => {
       }];
     } else {
       lineItems = cartItems.map((item: any) => {
-        const unitAmount = Math.round((Number(item.price) || 0) * 100); // Stripe expects cents
+        const rawUnitCents = Math.round((Number(item.price) || 0) * 100);
+        const discountedUnitCents = Math.max(1, Math.round(rawUnitCents * discountRatio));
+        const promoSuffix = activePromoLabel ? ` (${activePromoLabel})` : "";
 
         return {
           price_data: {
             currency: "usd",
             product_data: {
-              name: item.title || "Custom Product",
+              name: `${item.title || "Custom Product"}${promoSuffix}`,
             },
-            unit_amount: unitAmount,
+            unit_amount: discountedUnitCents,
           },
           quantity: item.quantity,
         };

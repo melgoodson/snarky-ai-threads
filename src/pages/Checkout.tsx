@@ -362,6 +362,7 @@ const Checkout = () => {
   const {
     subtotalPrice: rawSubtotal,
     bogoDiscount,
+    activePromoLabel,
     freeItemsCount,
     totalPrice: effectiveTotal,
   } = calculateBogoDiscount(checkoutItems);
@@ -899,9 +900,14 @@ const Checkout = () => {
                     <span>${rawSubtotal.toFixed(2)}</span>
                   </div>
                   {bogoDiscount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600 font-semibold">
-                      <span>Buy 3, Get 1 Free ({freeItemsCount} FREE)</span>
-                      <span>-${bogoDiscount.toFixed(2)}</span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm text-green-600 font-semibold">
+                        <span>{activePromoLabel || `Buy 3, Get 1 Free (${freeItemsCount} FREE)`}</span>
+                        <span>-${bogoDiscount.toFixed(2)}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Best eligible promotion applied automatically (25% Off Sitewide vs. Buy 3, Get 1 Free — offers do not stack).
+                      </p>
                     </div>
                   )}
                   {appliedCoupon && (

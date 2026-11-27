@@ -626,16 +626,26 @@ const DesignDetail = () => {
                 <>
                   {/* Price summary */}
                   {currentPricing && currentPricing.price > 0 && (
-                    <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
-                      <p className="text-2xl font-black">
-                        ${currentPricing.price.toFixed(2)}
-                      </p>
-                      <p className="text-lg text-muted-foreground line-through">
-                        ${currentPricing.originalPrice.toFixed(2)}
-                      </p>
-                      <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20">
-                        SAVE $20
-                      </span>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
+                        <p className="text-2xl font-black">
+                          ${currentPricing.price.toFixed(2)}
+                        </p>
+                        <p className="text-lg text-muted-foreground line-through">
+                          ${currentPricing.originalPrice.toFixed(2)}
+                        </p>
+                        <span className="text-xs font-black text-white bg-[#C62828] px-2.5 py-1 rounded-full">
+                          BLACK FRIDAY: 25% OFF AT CHECKOUT
+                        </span>
+                      </div>
+                      <div className="rounded-xl bg-[#111111] text-white border border-white/15 px-3.5 py-2.5 text-xs space-y-0.5">
+                        <p className="font-bold">
+                          <span className="text-[#ef5350] uppercase font-black">25% Off Sitewide:</span> Auto-applied in cart &amp; checkout through Nov 30 at 11:59 p.m. PT.
+                        </p>
+                        <p className="text-[11px] text-white/70">
+                          Or mix &amp; match 4 items with <strong>Buy 3, Get 1 Free</strong> across the store (best eligible offer applied automatically).
+                        </p>
+                      </div>
                     </div>
                   )}
 

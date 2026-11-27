@@ -21,6 +21,8 @@ export const Cart = () => {
     totalItems,
     subtotalPrice,
     bogoDiscount,
+    activePromoType,
+    activePromoLabel,
     freeItemsCount,
     totalPrice,
   } = useCart();
@@ -85,30 +87,35 @@ export const Cart = () => {
               <p className="text-sm text-muted-foreground mt-2">
                 Add some snarky threads to get started
               </p>
-              <div className="mt-4 inline-flex items-center gap-2 bg-primary/10 border border-primary/25 text-primary px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider">
+              <div className="mt-4 inline-flex items-center gap-2 bg-[#C62828]/15 border border-[#C62828]/40 text-[#ef5350] px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider">
                 <Gift className="h-4 w-4" />
-                Sale: Buy 3, Get 1 FREE Storewide
+                Black Friday: 25% Off Sitewide • Or Buy 3, Get 1 Free
               </div>
             </div>
           ) : (
             <>
-              {/* Buy 3, Get 1 Free Promotion Banner */}
-              <div className="p-3.5 bg-primary/10 rounded-xl border border-primary/30 mb-3 space-y-2">
+              {/* Active BFCM 25% Off + Secondary Buy 3, Get 1 Free Promotion Banner */}
+              <div className="p-3.5 bg-[#C62828]/15 rounded-xl border border-[#C62828]/40 mb-3 space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-primary">
-                    <Gift className="h-4 w-4 shrink-0" />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-foreground">
+                    <Gift className="h-4 w-4 shrink-0 text-[#ef5350]" />
                     <span>
-                      {freeItemsCount > 0 && rem === 0
+                      {activePromoType === 'bfcm25'
+                        ? `🔥 BLACK FRIDAY 25% OFF SITEWIDE APPLIED! (-$${bogoDiscount.toFixed(2)})`
+                        : freeItemsCount > 0 && rem === 0
                         ? `🎉 BUY 3, GET 1 FREE APPLIED! (${freeItemsCount} item${freeItemsCount > 1 ? 's' : ''} FREE)`
                         : rem === 3
-                        ? "🎁 You have 3 items! Your 4th item is 100% FREE!"
-                        : `🔥 Buy 3, Get 1 FREE: Add ${itemsNeededForFree} more for a FREE item!`}
+                        ? "🎁 You have 3 items! Add a 4th item to compare Buy 3, Get 1 Free!"
+                        : `🔥 25% Off Sitewide Auto-Applied! (Secondary Offer: Buy 3, Get 1 Free across the store)`}
                     </span>
                   </div>
-                  <span className="text-[11px] font-black uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full shrink-0">
-                    {totalItems % 4 === 0 && freeItemsCount > 0 ? 'UNLOCKED' : `${totalItems % 4}/4`}
+                  <span className="text-[11px] font-black uppercase tracking-wider bg-[#C62828] text-white px-2 py-0.5 rounded-full shrink-0">
+                    {activePromoType === 'bfcm25' ? '25% OFF' : totalItems % 4 === 0 && freeItemsCount > 0 ? 'B3G1 FREE' : `${totalItems % 4}/4`}
                   </span>
                 </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Secondary offer: <strong>Buy 3, Get 1 Free</strong> — mix &amp; match across the store. Best eligible offer is applied automatically at checkout (offers do not stack).
+                </p>
                 {rem === 3 && (
                   <Button
                     type="button"
@@ -118,7 +125,7 @@ export const Cart = () => {
                     onClick={handleClaimFreeFourthItem}
                   >
                     <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                    + Add 4th Item for FREE ($0.00)
+                    + Add 4th Item to Complete 4-Item Gift Haul
                   </Button>
                 )}
               </div>
@@ -290,7 +297,7 @@ export const Cart = () => {
                       <span>${subtotalPrice.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm font-bold text-green-500">
-                      <span>Buy 3, Get 1 Free ({freeItemsCount} FREE)</span>
+                      <span>{activePromoLabel || `Buy 3, Get 1 Free (${freeItemsCount} FREE)`}</span>
                       <span>-${bogoDiscount.toFixed(2)}</span>
                     </div>
                   </>

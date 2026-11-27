@@ -5,6 +5,14 @@ import { ProductShowcase } from "@/components/ProductShowcase";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Footer } from "@/components/Footer";
 import { AiCustomGiftCTA } from "@/components/AiCustomGiftCTA";
+import {
+  BfcmAnnouncementBar,
+  BfcmHeroSection,
+  BfcmGiftShortcuts,
+  BfcmFeaturedGiftPicks,
+  BfcmSecondaryOfferBanner,
+  BfcmSaleFaqSection,
+} from "@/components/BfcmWeekendSections";
 
 const HeroUGCVideo = lazy(() =>
   import("@/components/HeroUGCVideo").then((m) => ({ default: m.HeroUGCVideo }))
@@ -58,14 +66,21 @@ const Index = () => {
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       </Helmet>
       <Header />
-      <div className="bg-primary text-primary-foreground py-2 px-4 text-center">
-        <p className="text-xs sm:text-sm font-bold leading-snug tracking-wide">
-          <span className="sm:hidden">🔥 SALE: BUY 3, GET 1 FREE Storewide + Up to 56% Off!</span>
-          <span className="hidden sm:inline">🔥 SALE EVENT: BUY 3, GET 1 FREE on all tees, hoodies &amp; gifts (4th item automatically FREE in cart) — or use CUSTOMIZE to craft your own AI design!</span>
-        </p>
-      </div>
+      <BfcmAnnouncementBar />
       <main className="flex-1">
-        {/* First thing visitors see: 2 rows of Featured / Seasonal Clothing */}
+        {/* BFCM Primary Hero with Live Countdown Timer + 3 Featured Products */}
+        <BfcmHeroSection />
+
+        {/* Gift Shortcuts: Who Are We Shopping For? */}
+        <BfcmGiftShortcuts />
+
+        {/* Featured Gift Picks: Good Gifts. Questionable Attitude. */}
+        <BfcmFeaturedGiftPicks />
+
+        {/* Secondary Storewide Offer: Four Gifts. Three You Pay For. (Buy 3, Get 1 Free) */}
+        <BfcmSecondaryOfferBanner />
+
+        {/* Full Apparel & Design Catalog */}
         <ProductGrid section="featured-hero" />
 
         <AiCustomGiftCTA location="homepage_banner" variant="homepage" />
@@ -73,6 +88,7 @@ const Index = () => {
         <div id="products">
           <ProductGrid section="all-only" />
         </div>
+        <BfcmSaleFaqSection />
         <Suspense fallback={null}>
           <HeroUGCVideo />
           <UGCTestimonials />

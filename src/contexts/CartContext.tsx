@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { isTrackingExcluded } from '@/lib/trackingExclusion';
 import { getOverlayStyle } from '@/lib/variantUtils';
+import { isBfcmActive, BFCM_DISCOUNT_RATE } from '@/lib/bfcmConfig';
 
 const TTP_COOKIE_KEY = '_ttp';
 const STORED_TTCLID_KEY = 'sah_ttclid';
@@ -42,7 +43,7 @@ export function calculateBogoDiscount(cartItems: CartItem[]) {
   // Sort ascending so the lowest-priced item in every 4-item bundle is FREE
   unitPrices.sort((a, b) => a - b);
   const freeItemsCount = Math.floor(unitPrices.length / 4);
-  const bogoDiscount = Number(
+  const rawBogoDiscount = Number(
     unitPrices
       .slice(0, freeItemsCount)
       .reduce((sum, p) => sum + p, 0)
@@ -51,8 +52,43 @@ export function calculateBogoDiscount(cartItems: CartItem[]) {
   const subtotalPrice = Number(
     unitPrices.reduce((sum, p) => sum + p, 0).toFixed(2)
   );
+
+  // During BFCM Weekend (through Nov 30, 2026 11:59 p.m. PT), compare 25% Off Sitewide vs. Buy 3, Get 1 Free.
+  // Promotions do not stack — automatically apply whichever offer gives the customer the larger discount.
+  const bfcmActive = isBfcmActive();
+  const bfcm25Discount = bfcmActive
+    ? Number((subtotalPrice * BFCM_DISCOUNT_RATE).toFixed(2))
+    : 0;
+
+  const activePromoType: 'bfcm25' | 'bogo' | 'none' =
+    subtotalPrice === 0
+      ? 'none'
+      : bfcmActive && bfcm25Discount >= rawBogoDiscount
+      ? 'bfcm25'
+      : rawBogoDiscount > 0
+      ? 'bogo'
+      : 'none';
+
+  const bogoDiscount =
+    activePromoType === 'bfcm25' ? bfcm25Discount : rawBogoDiscount;
+  const activePromoLabel =
+    activePromoType === 'bfcm25'
+      ? 'Black Friday 25% Off Sitewide (Auto-Applied)'
+      : activePromoType === 'bogo'
+      ? `Buy 3, Get 1 Free (${freeItemsCount} FREE)`
+      : '';
+
   const totalPrice = Number(Math.max(0, subtotalPrice - bogoDiscount).toFixed(2));
-  return { subtotalPrice, bogoDiscount, freeItemsCount, totalPrice };
+  return {
+    subtotalPrice,
+    bogoDiscount,
+    rawBogoDiscount,
+    bfcm25Discount,
+    activePromoType,
+    activePromoLabel,
+    freeItemsCount,
+    totalPrice,
+  };
 }
 
 interface CartContextType {
@@ -64,6 +100,10 @@ interface CartContextType {
   totalItems: number;
   subtotalPrice: number;
   bogoDiscount: number;
+  rawBogoDiscount: number;
+  bfcm25Discount: number;
+  activePromoType: 'bfcm25' | 'bogo' | 'none';
+  activePromoLabel: string;
   freeItemsCount: number;
   totalPrice: number;
 }
@@ -167,12 +207,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setItems(prev => {
       const nextCount = prev.reduce((s, it) => s + it.quantity, 0) + 1;
       const rem = nextCount % 4;
-      const bogoMessage =
-        rem === 0
-          ? '🎉 Buy 3, Get 1 FREE Applied! 1 item is now FREE!'
-          : rem === 3
-          ? '🎁 Add 1 more item and get it 100% FREE!'
-          : `🔥 Buy 3, Get 1 FREE: Add ${4 - rem} more for a FREE item!`;
+      const bogoMessage = isBfcmActive()
+        ? '🔥 Black Friday 25% Off Sitewide Auto-Applied in Cart! (Or Mix & Match 4 items with Buy 3, Get 1 Free)'
+        : rem === 0
+        ? '🎉 Buy 3, Get 1 FREE Applied! 1 item is now FREE!'
+        : rem === 3
+        ? '🎁 Add 1 more item and get it 100% FREE!'
+        : `🔥 Buy 3, Get 1 FREE: Add ${4 - rem} more for a FREE item!`;
 
       const existing = prev.find(
         item => item.productId === newItem.productId && item.size === newItem.size
@@ -297,7 +338,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const { subtotalPrice, bogoDiscount, freeItemsCount, totalPrice } = calculateBogoDiscount(items);
+  const {
+    subtotalPrice,
+    bogoDiscount,
+    rawBogoDiscount,
+    bfcm25Discount,
+    activePromoType,
+    activePromoLabel,
+    freeItemsCount,
+    totalPrice,
+  } = calculateBogoDiscount(items);
 
   return (
     <CartContext.Provider
@@ -310,6 +360,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         totalItems,
         subtotalPrice,
         bogoDiscount,
+        rawBogoDiscount,
+        bfcm25Discount,
+        activePromoType,
+        activePromoLabel,
         freeItemsCount,
         totalPrice,
       }}

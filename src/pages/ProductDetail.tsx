@@ -847,17 +847,23 @@ const ProductDetail = () => {
                   <Tag className="h-3 w-3" />
                   SAVE ${savings.toFixed(0)}
                 </span>
-                <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
-                  🔥 BUY 3, GET 1 FREE
+                <span className="inline-flex items-center gap-1 bg-[#C62828] text-white text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
+                  🔥 BLACK FRIDAY: 25% OFF SITEWIDE
+                </span>
+                <span className="inline-flex items-center gap-1 bg-primary/15 text-primary border border-primary/30 text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full">
+                  OR BUY 3, GET 1 FREE
                 </span>
               </div>
 
-              {/* Buy 3 Get 1 Free Promo Banner */}
-              <div className="mt-3 p-3 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-between gap-2">
-                <div className="text-xs sm:text-sm font-bold text-foreground">
-                  <span className="text-primary font-black uppercase tracking-wider">Sale Event: </span>
-                  Buy any 3 items, get the <strong>4th item 100% FREE</strong> automatically in your cart!
+              {/* BFCM Primary + Secondary Offer Callout */}
+              <div className="mt-3 p-3.5 rounded-xl bg-[#111111] text-white border border-white/15 space-y-1">
+                <div className="text-xs sm:text-sm font-bold">
+                  <span className="text-[#ef5350] font-black uppercase tracking-wider">Black Friday Sale: </span>
+                  Take <strong>25% Off Sitewide</strong> (auto-applied at checkout through Nov 30, 11:59 p.m. PT).
                 </div>
+                <p className="text-[11px] text-white/70">
+                  Secondary offer: <strong>Buy 3, Get 1 Free</strong> — mix &amp; match across the store. Best eligible discount is applied automatically at checkout (offers do not stack).
+                </p>
               </div>
             </div>
 
