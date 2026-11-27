@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { User, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
-import { HIDDEN_DESIGN_PATTERNS } from "@/lib/designConstants";
+import { HIDDEN_DESIGN_PATTERNS, isHiddenDesign } from "@/lib/designConstants";
 
 // HIDDEN_DESIGN_PATTERNS imported from @/lib/designConstants
 
@@ -200,9 +200,7 @@ const Designs = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {designs
-                .filter((design) => !HIDDEN_DESIGN_PATTERNS.some(
-                  (p) => design.title.toLowerCase().includes(p.toLowerCase())
-                ))
+                .filter((design) => !isHiddenDesign(design))
                 .map((design) => (
                 <Card
                   key={design.id}

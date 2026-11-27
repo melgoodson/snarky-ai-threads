@@ -5,6 +5,7 @@ import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { resolveDesignImage } from "@/lib/resolveDesignImage";
+import { isHiddenDesign } from "@/lib/designConstants";
 
 interface SearchResult {
     id: string;
@@ -58,12 +59,14 @@ export const SearchModal = ({ open, onClose }: SearchModalProps) => {
 
             if (error) throw error;
 
-            const searchResults: SearchResult[] = (designs || []).map((d) => ({
-                id: d.id,
-                title: d.title,
-                image_url: d.image_url,
-                type: "design" as const,
-            }));
+            const searchResults: SearchResult[] = (designs || [])
+                .filter((d) => !isHiddenDesign(d))
+                .map((d) => ({
+                    id: d.id,
+                    title: d.title,
+                    image_url: d.image_url,
+                    type: "design" as const,
+                }));
 
             setResults(searchResults);
         } catch (error) {
